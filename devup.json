@@ -1,0 +1,28 @@
+{
+  "colors": {
+    "default": {
+      "background": "#ffffff",
+      "panel": "#f8f9fa",
+      "panel2": "rgba(248,249,250,0.6)",
+      "border": "rgba(0,0,0,0.10)",
+      "text": "#1a1a1a",
+      "muted": "rgba(26,26,26,0.60)",
+      "brand": "#7C3AED",
+      "brand2": "#EC4899",
+      "good": "#34D399",
+      "danger": "#F87171"
+    },
+    "dark": {
+      "background": "#030014",
+      "panel": "#0a0a1f",
+      "panel2": "rgba(10,10,31,0.6)",
+      "border": "rgba(255,255,255,0.10)",
+      "text": "#EEF2FF",
+      "muted": "rgba(238,242,255,0.60)",
+      "brand": "#7C3AED",
+      "brand2": "#EC4899",
+      "good": "#34D399",
+      "danger": "#F87171"
+    }
+  }
+}
