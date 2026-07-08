@@ -5,7 +5,7 @@ import "./globals.css";
 
 import DVNav from "@/components/Common/DVNav";
 import { ThemeProvider } from "@/lib/ThemeProvider";
-import CosmicBackground from "@/components/Common/CosmicBackground";
+import CosmicBackground from "@/components/themes/CosmicBackground";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
 import PageAnimatePresence from "@/components/Common/PageAnimatePresence";
 import { FramerMotionProvider } from "@/components/Providers/FramerMotionProvider";
