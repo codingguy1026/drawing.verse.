@@ -6,7 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase/client";
 import { squishyVariants } from "@/lib/animations";
 import { useWeatherStore } from "@/store/useWeatherStore";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import CosmicGalaxyExplorer from "@/components/Universe/CosmicGalaxyExplorer";
+import { Pencil, Save, X as CloseIcon } from "lucide-react";
 
 const boards = ["전체", "인기", "창작", "피드백", "팬아트", "세계관"];
 const shortcuts = ["실시간 베스트", "Best", "Hot", "New", "최근 방문"];
@@ -106,13 +108,81 @@ function SidebarShell(props: { sidebarExtra: React.ReactNode; children: React.Re
   );
 }
 
+function EditableText({
+  isEditing,
+  value,
+  onChange,
+  className,
+  multiline = false,
+  as: Component = "span"
+}: {
+  isEditing: boolean;
+  value: string;
+  onChange: (val: string) => void;
+  className?: string;
+  multiline?: boolean;
+  as?: any;
+}) {
+  if (isEditing) {
+    if (multiline) {
+      return (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={cn("w-full bg-slate-100/50 dark:bg-white/10 border border-violet-500/30 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-slate-900 dark:text-white", className)}
+          rows={3}
+        />
+      );
+    }
+    return (
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn("w-full bg-slate-100/50 dark:bg-white/10 border border-violet-500/30 rounded-xl px-3 py-1 focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-slate-900 dark:text-white", className)}
+      />
+    );
+  }
+  return <Component className={className}>{value}</Component>;
+}
+
 export default function HomeClient() {
   const { weather } = useWeatherStore();
+  const { user } = useSupabaseUser();
   const [posts, setPosts] = useState<any[]>([]);
   const [universes, setUniverses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Editable Home State
+  const [isEditing, setIsEditing] = useState(false);
+  const [heroTitle, setHeroTitle] = useState("그림과 이야기,");
+  const [heroHighlight, setHeroHighlight] = useState("너만의 우주");
+  const [heroSuffix, setHeroSuffix] = useState("가 모이다");
+  const [heroDesc, setHeroDesc] = useState("팬아트, 오리지널 세계관, 짧은 글, 긴 이야기까지. Drawing Verse에서는 당신의 상상이 빛나는 별이 됩니다.");
+  const [tags, setTags] = useState(["세계관", "팬아트", "시", "단편", "창작 커뮤니티"]);
+  const [notices, setNotices] = useState([
+    "[공지] 홈 화면 리워크 의견 모아보기",
+    "[이벤트] 이번 주 인기 유니버스 선정 중",
+    "[안내] 신규 유저 가이드 업데이트",
+  ]);
+
   useEffect(() => {
+    // Load local storage data if exists
+    const savedData = localStorage.getItem("dv_home_config");
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed.heroTitle) setHeroTitle(parsed.heroTitle);
+        if (parsed.heroHighlight) setHeroHighlight(parsed.heroHighlight);
+        if (parsed.heroSuffix) setHeroSuffix(parsed.heroSuffix);
+        if (parsed.heroDesc) setHeroDesc(parsed.heroDesc);
+        if (parsed.tags) setTags(parsed.tags);
+        if (parsed.notices) setNotices(parsed.notices);
+      } catch (e) {
+        console.error("Failed to load home config", e);
+      }
+    }
+
     async function loadData() {
       setLoading(true);
       try {
@@ -171,6 +241,18 @@ export default function HomeClient() {
     };
   }, []);
 
+  const handleSave = () => {
+    localStorage.setItem("dv_home_config", JSON.stringify({
+      heroTitle,
+      heroHighlight,
+      heroSuffix,
+      heroDesc,
+      tags,
+      notices
+    }));
+    setIsEditing(false);
+  };
+
   const previewChecks = [
     { label: "boards", pass: boards.length > 0 },
     { label: "posts (fetched)", pass: posts.length > 0 },
@@ -202,6 +284,44 @@ export default function HomeClient() {
               <div className="pointer-events-none absolute -left-16 top-0 h-44 w-44 rounded-full bg-pink-200/35 dark:bg-pink-600/20 blur-3xl" />
               <div className="pointer-events-none absolute right-0 top-10 h-40 w-40 rounded-full bg-sky-200/35 dark:bg-sky-600/20 blur-3xl" />
 
+              {/* Edit Controls */}
+              {user && (
+                <div className="absolute right-6 top-6 z-20">
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleSave}
+                        className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/20"
+                      >
+                        <Save size={16} />
+                        저장
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setIsEditing(false)}
+                        className="flex items-center gap-2 rounded-full bg-slate-200 px-4 py-2 text-sm font-bold text-slate-700 shadow-lg dark:bg-white/10 dark:text-white"
+                      >
+                        <CloseIcon size={16} />
+                        취소
+                      </motion.button>
+                    </div>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIsEditing(true)}
+                      className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-bold text-slate-700 shadow-lg backdrop-blur-md dark:bg-white/10 dark:text-white"
+                    >
+                      <Pencil size={16} />
+                      홈 수정하기
+                    </motion.button>
+                  )}
+                </div>
+              )}
+
               <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
                 <div className="flex flex-col gap-5">
                   <span className="w-fit rounded-full border border-fuchsia-200/70 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-fuchsia-500 shadow-sm backdrop-blur">
@@ -209,7 +329,11 @@ export default function HomeClient() {
                   </span>
                   <div className="space-y-6">
                     <h1 className="max-w-4xl text-5xl font-black leading-[1.1] tracking-tighter text-slate-950 dark:text-white md:text-6xl lg:text-7xl">
-                      그림과 이야기,
+                      <EditableText
+                        isEditing={isEditing}
+                        value={heroTitle}
+                        onChange={setHeroTitle}
+                      />
                       <br />
                       <span className={cn("bg-clip-text text-transparent transition-all duration-1000", 
                         weather === 'sunny' ? "bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 dark:from-orange-400 dark:via-amber-400 dark:to-yellow-300" :
@@ -218,13 +342,28 @@ export default function HomeClient() {
                         weather === 'snowy' ? "bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-300 dark:from-blue-200 dark:via-cyan-200 dark:to-sky-200" :
                         "bg-gradient-to-r from-violet-600 via-indigo-500 to-sky-400 dark:from-violet-400 dark:via-indigo-300 dark:to-sky-200"
                       )}>
-                        너만의 우주
+                        <EditableText
+                          isEditing={isEditing}
+                          value={heroHighlight}
+                          onChange={setHeroHighlight}
+                        />
                       </span>
-                      가 모이다
+                      <EditableText
+                        isEditing={isEditing}
+                        value={heroSuffix}
+                        onChange={setHeroSuffix}
+                      />
                     </h1>
-                    <p className="max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-400">
-                      팬아트, 오리지널 세계관, 짧은 글, 긴 이야기까지. Drawing Verse에서는 당신의 상상이 빛나는 별이 됩니다.
-                    </p>
+                    <div className="max-w-xl">
+                      <EditableText
+                        isEditing={isEditing}
+                        value={heroDesc}
+                        onChange={setHeroDesc}
+                        multiline
+                        className="text-lg leading-relaxed text-slate-600 dark:text-slate-400"
+                        as="p"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap gap-4">
@@ -247,21 +386,49 @@ export default function HomeClient() {
                     </motion.button>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <div className="flex w-full flex-wrap items-center gap-2 pb-2 text-xs text-slate-500">
-                      <StatPill>오늘 게시글 993</StatPill>
-                      <StatPill>댓글 2.6K</StatPill>
-                      <StatPill>유니버스 93개</StatPill>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <div className="flex w-full flex-wrap items-center gap-2 pb-2 text-xs text-slate-500">
+                        <StatPill>오늘 게시글 993</StatPill>
+                        <StatPill>댓글 2.6K</StatPill>
+                        <StatPill>유니버스 93개</StatPill>
+                      </div>
+                      {tags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="group relative rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm"
+                        >
+                          {isEditing ? (
+                            <input
+                              value={tag}
+                              onChange={(e) => {
+                                const newTags = [...tags];
+                                newTags[idx] = e.target.value;
+                                setTags(newTags);
+                              }}
+                              className="w-20 bg-transparent outline-none focus:ring-1 focus:ring-violet-500 rounded"
+                            />
+                          ) : (
+                            `#${tag}`
+                          )}
+                          {isEditing && (
+                            <button
+                              onClick={() => setTags(tags.filter((_, i) => i !== idx))}
+                              className="ml-1 text-rose-500 hover:text-rose-700"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </span>
+                      ))}
+                      {isEditing && (
+                        <button
+                          onClick={() => setTags([...tags, "새 태그"])}
+                          className="rounded-full border border-dashed border-slate-300 dark:border-white/20 px-3 py-1.5 text-xs font-medium text-slate-400 hover:border-violet-500 hover:text-violet-500 transition-colors"
+                        >
+                          + 태그 추가
+                        </button>
+                      )}
                     </div>
-                    {featuredTags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="grid gap-4">
@@ -368,12 +535,40 @@ export default function HomeClient() {
                 <section className="rounded-3xl border border-white/70 bg-white/72 dark:border-white/10 dark:bg-white/5 p-6 shadow-[0_12px_30px_rgba(148,163,184,0.14)] dark:shadow-none backdrop-blur-xl">
                   <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">실시간 인기</p>
                   <div className="mt-3 space-y-2.5">
-                    {noticeRankings.map((notice, index) => (
-                      <button key={notice} className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 dark:bg-white/5 px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-white/10">
+                    {notices.map((notice, index) => (
+                      <div key={index} className="group relative flex w-full items-center gap-3 rounded-2xl bg-slate-50 dark:bg-white/5 px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-white/10">
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 dark:bg-white/20 text-xs font-bold text-white">{index + 1}</span>
-                        <span className="truncate">{notice}</span>
-                      </button>
+                        {isEditing ? (
+                          <input
+                            value={notice}
+                            onChange={(e) => {
+                              const newNotices = [...notices];
+                              newNotices[index] = e.target.value;
+                              setNotices(newNotices);
+                            }}
+                            className="flex-1 bg-transparent outline-none focus:ring-1 focus:ring-violet-500 rounded"
+                          />
+                        ) : (
+                          <span className="truncate">{notice}</span>
+                        )}
+                        {isEditing && (
+                          <button
+                            onClick={() => setNotices(notices.filter((_, i) => i !== index))}
+                            className="text-rose-500 hover:text-rose-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <CloseIcon size={14} />
+                          </button>
+                        )}
+                      </div>
                     ))}
+                    {isEditing && (
+                      <button
+                        onClick={() => setNotices([...notices, "[새 소식] 내용을 입력하세요"])}
+                        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 dark:border-white/20 py-2.5 text-xs font-medium text-slate-400 hover:border-violet-500 hover:text-violet-500 transition-colors"
+                      >
+                        + 소식 추가
+                      </button>
+                    )}
                   </div>
                 </section>
               </aside>
