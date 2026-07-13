@@ -20,6 +20,57 @@ const noticeRankings = [
 ];
 const featuredTags = ["세계관", "팬아트", "시", "단편", "창작 커뮤니티"];
 
+type HomeConfig = {
+  heroTitle: string;
+  heroHighlight: string;
+  heroSuffix: string;
+  heroDesc: string;
+  tags: string[];
+  notices: string[];
+};
+
+const defaultHomeConfig: HomeConfig = {
+  heroTitle: "그림과 이야기,",
+  heroHighlight: "너만의 우주",
+  heroSuffix: "가 모이다",
+  heroDesc:
+    "팬아트, 오리지널 세계관, 짧은 글, 긴 이야기까지. Drawing Verse에서는 당신의 상상이 빛나는 별이 됩니다.",
+  tags: featuredTags,
+  notices: noticeRankings,
+};
+
+function cloneHomeConfig(config: HomeConfig): HomeConfig {
+  return {
+    ...config,
+    tags: [...config.tags],
+    notices: [...config.notices],
+  };
+}
+
+function parseHomeConfig(value: unknown): HomeConfig | null {
+  if (!value || typeof value !== "object") return null;
+
+  const candidate = value as Partial<HomeConfig>;
+  const readText = (text: unknown, fallback: string, maxLength: number) =>
+    typeof text === "string" ? text.slice(0, maxLength) : fallback;
+  const readList = (list: unknown, fallback: string[], limit: number) =>
+    Array.isArray(list)
+      ? list
+          .filter((item): item is string => typeof item === "string")
+          .map((item) => item.slice(0, 80))
+          .slice(0, limit)
+      : [...fallback];
+
+  return {
+    heroTitle: readText(candidate.heroTitle, defaultHomeConfig.heroTitle, 80),
+    heroHighlight: readText(candidate.heroHighlight, defaultHomeConfig.heroHighlight, 80),
+    heroSuffix: readText(candidate.heroSuffix, defaultHomeConfig.heroSuffix, 80),
+    heroDesc: readText(candidate.heroDesc, defaultHomeConfig.heroDesc, 320),
+    tags: readList(candidate.tags, defaultHomeConfig.tags, 10),
+    notices: readList(candidate.notices, defaultHomeConfig.notices, 8),
+  };
+}
+
 function cn(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
 }
@@ -148,41 +199,69 @@ function EditableText({
 
 export default function HomeClient() {
   const { weather } = useWeatherStore();
-  const { user } = useSupabaseUser();
+  const { user, loading: userLoading } = useSupabaseUser();
   const [posts, setPosts] = useState<any[]>([]);
   const [universes, setUniverses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Editable Home State
   const [isEditing, setIsEditing] = useState(false);
-  const [heroTitle, setHeroTitle] = useState("그림과 이야기,");
-  const [heroHighlight, setHeroHighlight] = useState("너만의 우주");
-  const [heroSuffix, setHeroSuffix] = useState("가 모이다");
-  const [heroDesc, setHeroDesc] = useState("팬아트, 오리지널 세계관, 짧은 글, 긴 이야기까지. Drawing Verse에서는 당신의 상상이 빛나는 별이 됩니다.");
-  const [tags, setTags] = useState(["세계관", "팬아트", "시", "단편", "창작 커뮤니티"]);
-  const [notices, setNotices] = useState([
-    "[공지] 홈 화면 리워크 의견 모아보기",
-    "[이벤트] 이번 주 인기 유니버스 선정 중",
-    "[안내] 신규 유저 가이드 업데이트",
-  ]);
+  const [heroTitle, setHeroTitle] = useState(defaultHomeConfig.heroTitle);
+  const [heroHighlight, setHeroHighlight] = useState(defaultHomeConfig.heroHighlight);
+  const [heroSuffix, setHeroSuffix] = useState(defaultHomeConfig.heroSuffix);
+  const [heroDesc, setHeroDesc] = useState(defaultHomeConfig.heroDesc);
+  const [tags, setTags] = useState([...defaultHomeConfig.tags]);
+  const [notices, setNotices] = useState([...defaultHomeConfig.notices]);
+  const [savedConfig, setSavedConfig] = useState(() =>
+    cloneHomeConfig(defaultHomeConfig)
+  );
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  const applyHomeConfig = React.useCallback((config: HomeConfig) => {
+    setHeroTitle(config.heroTitle);
+    setHeroHighlight(config.heroHighlight);
+    setHeroSuffix(config.heroSuffix);
+    setHeroDesc(config.heroDesc);
+    setTags([...config.tags]);
+    setNotices([...config.notices]);
+  }, []);
 
   useEffect(() => {
-    // Load local storage data if exists
-    const savedData = localStorage.getItem("dv_home_config");
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        if (parsed.heroTitle) setHeroTitle(parsed.heroTitle);
-        if (parsed.heroHighlight) setHeroHighlight(parsed.heroHighlight);
-        if (parsed.heroSuffix) setHeroSuffix(parsed.heroSuffix);
-        if (parsed.heroDesc) setHeroDesc(parsed.heroDesc);
-        if (parsed.tags) setTags(parsed.tags);
-        if (parsed.notices) setNotices(parsed.notices);
-      } catch (e) {
-        console.error("Failed to load home config", e);
-      }
+    if (userLoading) return;
+
+    if (!user) {
+      const defaults = cloneHomeConfig(defaultHomeConfig);
+      applyHomeConfig(defaults);
+      setSavedConfig(defaults);
+      setIsEditing(false);
+      setSaveMessage(null);
+      return;
     }
 
+    const storageKey = `dv_home_config:${user.id}`;
+    let localConfig: HomeConfig | null = null;
+
+    try {
+      const savedData =
+        localStorage.getItem(storageKey) ?? localStorage.getItem("dv_home_config");
+      if (savedData) localConfig = parseHomeConfig(JSON.parse(savedData));
+    } catch (error) {
+      console.error("Failed to load local home config", error);
+    }
+
+    const config =
+      parseHomeConfig(user.user_metadata?.home_config) ??
+      localConfig ??
+      cloneHomeConfig(defaultHomeConfig);
+
+    applyHomeConfig(config);
+    setSavedConfig(cloneHomeConfig(config));
+    setIsEditing(false);
+    setSaveMessage(null);
+  }, [applyHomeConfig, user, userLoading]);
+
+  useEffect(() => {
     async function loadData() {
       setLoading(true);
       try {
@@ -241,16 +320,61 @@ export default function HomeClient() {
     };
   }, []);
 
-  const handleSave = () => {
-    localStorage.setItem("dv_home_config", JSON.stringify({
+  const handleSave = async () => {
+    if (!user || isSaving) return;
+
+    const nextConfig = parseHomeConfig({
       heroTitle,
       heroHighlight,
       heroSuffix,
       heroDesc,
       tags,
-      notices
-    }));
+      notices,
+    });
+
+    if (!nextConfig) return;
+
+    if (
+      !nextConfig.heroTitle.trim() ||
+      !nextConfig.heroHighlight.trim() ||
+      !nextConfig.heroDesc.trim()
+    ) {
+      setSaveMessage("제목과 소개 문구는 비워둘 수 없어요.");
+      return;
+    }
+
+    nextConfig.tags = nextConfig.tags.map((tag) => tag.trim()).filter(Boolean);
+    nextConfig.notices = nextConfig.notices
+      .map((notice) => notice.trim())
+      .filter(Boolean);
+
+    setIsSaving(true);
+    setSaveMessage(null);
+
+    const { error } = await supabase.auth.updateUser({
+      data: { home_config: nextConfig },
+    });
+
+    if (error) {
+      console.error("Failed to save home config", error);
+      setSaveMessage("저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
+      setIsSaving(false);
+      return;
+    }
+
+    localStorage.setItem(`dv_home_config:${user.id}`, JSON.stringify(nextConfig));
+    localStorage.removeItem("dv_home_config");
+    applyHomeConfig(nextConfig);
+    setSavedConfig(cloneHomeConfig(nextConfig));
     setIsEditing(false);
+    setIsSaving(false);
+    setSaveMessage("내 홈에 저장됐어요.");
+  };
+
+  const handleCancel = () => {
+    applyHomeConfig(savedConfig);
+    setIsEditing(false);
+    setSaveMessage(null);
   };
 
   const previewChecks = [
@@ -285,7 +409,7 @@ export default function HomeClient() {
               <div className="pointer-events-none absolute right-0 top-10 h-40 w-40 rounded-full bg-sky-200/35 dark:bg-sky-600/20 blur-3xl" />
 
               {/* Edit Controls */}
-              {user && (
+              {!userLoading && user && (
                 <div className="absolute right-6 top-6 z-20">
                   {isEditing ? (
                     <div className="flex gap-2">
@@ -293,15 +417,17 @@ export default function HomeClient() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={handleSave}
-                        className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/20"
+                        disabled={isSaving}
+                        className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 disabled:cursor-wait disabled:opacity-60"
                       >
                         <Save size={16} />
-                        저장
+                        {isSaving ? "저장 중..." : "저장"}
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setIsEditing(false)}
+                        onClick={handleCancel}
+                        disabled={isSaving}
                         className="flex items-center gap-2 rounded-full bg-slate-200 px-4 py-2 text-sm font-bold text-slate-700 shadow-lg dark:bg-white/10 dark:text-white"
                       >
                         <CloseIcon size={16} />
@@ -312,12 +438,28 @@ export default function HomeClient() {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => setIsEditing(true)}
+                      onClick={() => {
+                        setSaveMessage(null);
+                        setIsEditing(true);
+                      }}
                       className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-bold text-slate-700 shadow-lg backdrop-blur-md dark:bg-white/10 dark:text-white"
                     >
                       <Pencil size={16} />
                       홈 수정하기
                     </motion.button>
+                  )}
+                  {saveMessage && (
+                    <p
+                      role="status"
+                      className={cn(
+                        "mt-2 max-w-56 rounded-xl px-3 py-2 text-right text-xs font-semibold backdrop-blur-md",
+                        saveMessage.includes("실패") || saveMessage.includes("비워둘")
+                          ? "bg-rose-50/90 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300"
+                          : "bg-emerald-50/90 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300"
+                      )}
+                    >
+                      {saveMessage}
+                    </p>
                   )}
                 </div>
               )}
