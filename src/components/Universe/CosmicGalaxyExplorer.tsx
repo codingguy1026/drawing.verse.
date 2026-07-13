@@ -252,9 +252,10 @@ function MoonCluster({ moons, systemTitle, satelliteName, onSelect }: { moons: s
         const y = Math.sin((angle * Math.PI) / 180) * radius;
 
         return (
-          <button
-            type="button"
+          <div
             key={moon}
+            role="button"
+            tabIndex={0}
             onClick={(event) => {
               event.stopPropagation();
               onSelect({
@@ -264,12 +265,12 @@ function MoonCluster({ moons, systemTitle, satelliteName, onSelect }: { moons: s
                 desc: `${satelliteName} 안에 있는 더 작은 산하 세계예요. 행성에 가까이 가면 위성 궤도가 열려요.`,
               });
             }}
-            className="pointer-events-auto absolute left-1/2 top-1/2 grid h-7 w-7 place-items-center rounded-full border border-white/45 bg-cyan-100 text-[8px] font-black text-slate-950 shadow-[0_0_18px_rgba(165,243,252,0.85)] transition hover:scale-125 hover:bg-white"
+            className="pointer-events-auto absolute left-1/2 top-1/2 grid h-7 w-7 place-items-center rounded-full border border-white/45 bg-cyan-100 text-[8px] font-black text-slate-950 shadow-[0_0_18px_rgba(165,243,252,0.85)] transition hover:scale-125 hover:bg-white cursor-pointer"
             style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}
             title={moon}
           >
             {moon.slice(0, 1)}
-          </button>
+          </div>
         );
       })}
     </div>
@@ -599,8 +600,12 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
 
   return (
     <div
+<<<<<<< Updated upstream
       ref={mapRef}
       className="relative mx-auto h-[600px] w-full overflow-hidden rounded-[2rem] border border-white/12 bg-black/20 shadow-2xl shadow-black/30 backdrop-blur-xl sm:h-[680px] sm:rounded-[2.5rem] lg:h-[740px] lg:rounded-[3rem]"
+=======
+      className="relative mx-auto h-[720px] w-full min-w-0 overflow-hidden rounded-[3rem] border border-white/12 bg-black/20 shadow-2xl shadow-black/30 backdrop-blur-xl md:h-[780px]"
+>>>>>>> Stashed changes
       onMouseLeave={() => {
         setHoveredSystem(null);
         setHoveredPlanet(null);
@@ -798,8 +803,13 @@ export default function CosmicGalaxyExplorer({ items }: { items?: UniverseItem[]
       <div className="pointer-events-none absolute -right-24 top-1/3 h-[28rem] w-[28rem] rounded-full bg-cyan-300/10 blur-3xl" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.12),transparent_28%),linear-gradient(to_bottom,transparent,rgba(0,0,0,0.34))]" />
 
+<<<<<<< Updated upstream
       <div className="relative z-10 mx-auto w-full max-w-[1180px]">
         <div className="mb-6 flex flex-col justify-between gap-4 sm:mb-8 md:flex-row md:items-end">
+=======
+      <section className="relative z-10 mx-auto w-[min(1180px,calc(100%-28px))]">
+        <div className="mb-9 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+>>>>>>> Stashed changes
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.07] px-4 py-2 text-xs font-bold text-cyan-100/80 backdrop-blur-xl">
               <Orbit className="h-4 w-4" />
