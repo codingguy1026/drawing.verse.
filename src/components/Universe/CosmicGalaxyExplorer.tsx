@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
@@ -14,6 +14,7 @@ import {
   Star,
   Users,
 } from "lucide-react";
+import type { UniverseItem } from "./universe.types";
 
 interface Satellite {
   name: string;
@@ -49,6 +50,15 @@ interface SelectedNode {
   desc: string;
   slug?: string;
 }
+
+interface PlanetPoint {
+  system: System;
+  satellite: Satellite;
+  x: string;
+  y: string;
+}
+
+type CSSVariables = React.CSSProperties & Record<`--${string}`, string | number>;
 
 const galaxySystems: System[] = [
   {
@@ -145,7 +155,7 @@ const galaxySystems: System[] = [
 
 const categoryTabs = ["전체", "인기", "최신", "팬아트", "창작 세계관", "소설", "캐릭터", "구독 중"];
 
-function cn(...items: any[]) {
+function cn(...items: Array<string | false | null | undefined>) {
   return items.filter(Boolean).join(" ");
 }
 
@@ -243,6 +253,7 @@ function MoonCluster({ moons, systemTitle, satelliteName, onSelect }: { moons: s
 
         return (
           <button
+            type="button"
             key={moon}
             onClick={(event) => {
               event.stopPropagation();
@@ -265,15 +276,20 @@ function MoonCluster({ moons, systemTitle, satelliteName, onSelect }: { moons: s
   );
 }
 
-function SystemStar({ system, hovered, onSelect, onHover }: { system: System; hovered: boolean; onSelect: (selected: SelectedNode) => void; onHover: (sys: System) => void }) {
+function SystemStar({ system, hovered, scale, onSelect, onHover }: { system: System; hovered: boolean; scale: number; onSelect: (selected: SelectedNode) => void; onHover: (sys: System) => void }) {
+  const size = Math.max(58, system.starSize * Math.max(scale, 0.64));
+
   return (
     <button
+      type="button"
+      aria-label={`${system.title} 항성계 선택`}
       onMouseEnter={() => onHover(system)}
       onFocus={() => onHover(system)}
       onClick={() =>
         onSelect({
           type: "항성계",
           name: system.title,
+          slug: system.id,
           path: [system.title],
           desc: system.subtitle,
         })
@@ -285,8 +301,8 @@ function SystemStar({ system, hovered, onSelect, onHover }: { system: System; ho
       style={{
         left: `${system.x}%`,
         top: `${system.y}%`,
-        width: system.starSize,
-        height: system.starSize,
+        width: size,
+        height: size,
         boxShadow: hovered ? `0 0 70px ${system.aura}` : `0 0 42px ${system.aura}`,
       }}
     >
@@ -300,16 +316,18 @@ function SystemStar({ system, hovered, onSelect, onHover }: { system: System; ho
   );
 }
 
-function OrbitRings({ system, hovered }: { system: System; hovered: boolean }) {
+function OrbitRings({ system, hovered, scale }: { system: System; hovered: boolean; scale: number }) {
+  const orbit = system.orbit * scale;
+
   return (
     <div className="pointer-events-none absolute inset-0">
       <div
         className="absolute rounded-full border transition duration-300"
         style={{
-          left: `calc(${system.x}% - ${system.orbit}px)`,
-          top: `calc(${system.y}% - ${system.orbit}px)`,
-          width: system.orbit * 2,
-          height: system.orbit * 2,
+          left: `calc(${system.x}% - ${orbit}px)`,
+          top: `calc(${system.y}% - ${orbit}px)`,
+          width: orbit * 2,
+          height: orbit * 2,
           borderColor: hovered ? "rgba(165,243,252,0.42)" : "rgba(255,255,255,0.075)",
           boxShadow: hovered ? "0 0 36px rgba(103,232,249,0.13)" : "none",
           transform: hovered ? "scale(1.05)" : "scale(1)",
@@ -318,10 +336,10 @@ function OrbitRings({ system, hovered }: { system: System; hovered: boolean }) {
       <div
         className="absolute rounded-full border transition duration-300"
         style={{
-          left: `calc(${system.x}% - ${(system.orbit * 0.68).toFixed(1)}px)`,
-          top: `calc(${system.y}% - ${(system.orbit * 0.68).toFixed(1)}px)`,
-          width: system.orbit * 1.36,
-          height: system.orbit * 1.36,
+          left: `calc(${system.x}% - ${(orbit * 0.68).toFixed(1)}px)`,
+          top: `calc(${system.y}% - ${(orbit * 0.68).toFixed(1)}px)`,
+          width: orbit * 1.36,
+          height: orbit * 1.36,
           borderColor: hovered ? "rgba(244,114,182,0.25)" : "rgba(255,255,255,0.045)",
           transform: hovered ? "scale(0.88) rotate(12deg)" : "scale(1)",
         }}
@@ -329,7 +347,7 @@ function OrbitRings({ system, hovered }: { system: System; hovered: boolean }) {
       {hovered && (
         <span
           className="absolute z-50 -translate-x-1/2 rounded-full border border-white/12 bg-slate-950/75 px-3 py-1 text-[10px] font-bold text-white/60 shadow-xl backdrop-blur-xl"
-          style={{ left: `${system.x}%`, top: `calc(${system.y}% + ${system.starSize / 2 + 12}px)` }}
+          style={{ left: `${system.x}%`, top: `calc(${system.y}% + ${Math.max(58, system.starSize * Math.max(scale, 0.64)) / 2 + 12}px)` }}
         >
           {system.title} System
         </span>
@@ -338,9 +356,11 @@ function OrbitRings({ system, hovered }: { system: System; hovered: boolean }) {
   );
 }
 
-function PlanetUniverse({ system, satellite, point, hovered, onHover, onSelect }: { system: System; satellite: Satellite; point: any; hovered: boolean; onHover: (target: { system: System; satellite: Satellite }) => void; onSelect: (selected: SelectedNode) => void }) {
+function PlanetUniverse({ system, satellite, point, hovered, onHover, onSelect }: { system: System; satellite: Satellite; point: PlanetPoint; hovered: boolean; onHover: (target: { system: System; satellite: Satellite }) => void; onSelect: (selected: SelectedNode) => void }) {
   return (
     <motion.button
+      type="button"
+      aria-label={`${satellite.name} 선택`}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.15, duration: 0.45 }}
@@ -379,13 +399,14 @@ function SelectionPanel({ selected }: { selected: SelectedNode }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="absolute bottom-5 left-1/2 z-[70] w-[min(620px,calc(100%-40px))] -translate-x-1/2 rounded-[1.8rem] border border-white/12 bg-slate-950/64 p-4 text-white shadow-2xl backdrop-blur-2xl"
+      aria-live="polite"
+      className="absolute bottom-3 left-1/2 z-[70] w-[calc(100%_-_24px)] -translate-x-1/2 rounded-[1.5rem] border border-white/12 bg-slate-950/78 p-3 text-white shadow-2xl backdrop-blur-2xl sm:bottom-5 sm:w-[min(620px,calc(100%_-_40px))] sm:rounded-[1.8rem] sm:p-4"
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100/55">{selected.type}</p>
-          <h3 className="mt-1 text-xl font-black tracking-[-0.03em]">{selected.name}</h3>
-          <p className="mt-1 text-sm leading-6 text-white/52">{selected.desc}</p>
+          <h3 className="mt-1 text-base font-black tracking-[-0.03em] sm:text-xl">{selected.name}</h3>
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/52 sm:text-sm sm:leading-6">{selected.desc}</p>
         </div>
         <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-white/50 md:justify-end">
           {selected.path.map((item, index) => (
@@ -453,6 +474,8 @@ function GalaxyFilterBar({ activeTab, onTabChange, totalCount }: { activeTab: st
           const active = activeTab === tab;
           return (
             <button
+              type="button"
+              aria-pressed={active}
               key={tab}
               onClick={() => onTabChange(tab)}
               className={cn(
@@ -472,9 +495,9 @@ function GalaxyFilterBar({ activeTab, onTabChange, totalCount }: { activeTab: st
         <span>
           <b className="text-violet-200">{totalCount}</b>개의 유니버스
         </span>
-        <button className="rounded-full border border-white/10 bg-white/[0.055] px-3 py-2 text-white/62 transition hover:bg-white/[0.09] hover:text-white">
+        <span className="rounded-full border border-white/10 bg-white/[0.055] px-3 py-2 text-white/62">
           높은 인기순 ↓
-        </button>
+        </span>
       </div>
     </div>
   );
@@ -482,12 +505,19 @@ function GalaxyFilterBar({ activeTab, onTabChange, totalCount }: { activeTab: st
 
 function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: SelectedNode; onSelect: (node: SelectedNode) => void; activeTab: string; systems: System[] }) {
   const router = useRouter();
+  const prefersReducedMotion = useReducedMotion();
   const [time, setTime] = useState(0);
+  const [mapWidth, setMapWidth] = useState(1100);
+  const [isVisible, setIsVisible] = useState(true);
   const [hoveredSystem, setHoveredSystem] = useState<System | null>(null);
   const [hoveredPlanet, setHoveredPlanet] = useState<{ system: System; satellite: Satellite } | null>(null);
-  const [warpTarget, setWarpTarget] = useState<any>(null);
+  const [warpTarget, setWarpTarget] = useState<SelectedNode | null>(null);
+  const mapRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
-  const previousTimeRef = useRef<number | null>(null);
+  const lastFrameRef = useRef(0);
+  const warpTimerRef = useRef<number | null>(null);
+
+  const orbitScale = Math.min(1, Math.max(0.38, mapWidth / 1080));
 
   const visibleSystems = useMemo(() => {
     if (activeTab === "전체" || activeTab === "구독 중" || activeTab === "창작 세계관") return systems;
@@ -495,47 +525,82 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
   }, [activeTab, systems]);
 
   const planetPoints = useMemo(() => {
-    const points = [];
+    const points: PlanetPoint[] = [];
     for (const system of visibleSystems) {
       for (const satellite of system.satellites) {
         const baseAngle = (satellite.angle * Math.PI) / 180;
         const currentAngle = baseAngle + time * satellite.speed;
-        const x = `calc(${system.x}% + ${Math.cos(currentAngle) * system.orbit}px)`;
-        const y = `calc(${system.y}% + ${Math.sin(currentAngle) * system.orbit}px)`;
+        const orbit = system.orbit * orbitScale;
+        const x = `calc(${system.x}% + ${Math.cos(currentAngle) * orbit}px)`;
+        const y = `calc(${system.y}% + ${Math.sin(currentAngle) * orbit}px)`;
         points.push({ system, satellite, x, y });
       }
     }
     return points;
-  }, [time, visibleSystems]);
+  }, [orbitScale, time, visibleSystems]);
 
   useEffect(() => {
+    const element = mapRef.current;
+    if (!element) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) setMapWidth(entry.contentRect.width);
+    });
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry) setIsVisible(entry.isIntersecting);
+    }, { rootMargin: "180px" });
+
+    resizeObserver.observe(element);
+    intersectionObserver.observe(element);
+    return () => {
+      resizeObserver.disconnect();
+      intersectionObserver.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion || !isVisible) return;
+    lastFrameRef.current = 0;
+
     const animate = (timestamp: number) => {
-      if (previousTimeRef.current !== null) {
+      if (lastFrameRef.current === 0) {
+        lastFrameRef.current = timestamp;
+      } else if (timestamp - lastFrameRef.current >= 50) {
         const speedMultiplier = hoveredPlanet || hoveredSystem ? 0.22 : 1;
-        setTime((prev) => prev + 0.32 * speedMultiplier);
+        const elapsed = Math.min(100, timestamp - lastFrameRef.current);
+        setTime((prev) => prev + elapsed * 0.0064 * speedMultiplier);
+        lastFrameRef.current = timestamp;
       }
-      previousTimeRef.current = timestamp;
       frameRef.current = requestAnimationFrame(animate);
     };
     frameRef.current = requestAnimationFrame(animate);
     return () => {
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
     };
-  }, [hoveredPlanet, hoveredSystem]);
+  }, [hoveredPlanet, hoveredSystem, isVisible, prefersReducedMotion]);
 
-  function handleWarp(target: any) {
+  useEffect(() => {
+    return () => {
+      if (warpTimerRef.current !== null) window.clearTimeout(warpTimerRef.current);
+    };
+  }, []);
+
+  function handleWarp(target: SelectedNode) {
+    if (!target.slug) return;
     setWarpTarget(target);
-    window.setTimeout(() => {
+    warpTimerRef.current = window.setTimeout(() => {
       setWarpTarget(null);
-      if (target.slug) {
-        router.push(`/universe/${target.slug}`);
-      }
+      router.push(`/universe/${target.slug}`);
     }, 1400);
   }
 
   return (
     <div
-      className="relative mx-auto h-[720px] w-full overflow-hidden rounded-[3rem] border border-white/12 bg-black/20 shadow-2xl shadow-black/30 backdrop-blur-xl md:h-[780px]"
+      ref={mapRef}
+      className="relative mx-auto h-[600px] w-full overflow-hidden rounded-[2rem] border border-white/12 bg-black/20 shadow-2xl shadow-black/30 backdrop-blur-xl sm:h-[680px] sm:rounded-[2.5rem] lg:h-[740px] lg:rounded-[3rem]"
       onMouseLeave={() => {
         setHoveredSystem(null);
         setHoveredPlanet(null);
@@ -545,10 +610,10 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:46px_46px] opacity-20" />
       <StarField />
 
-      <div className="absolute left-5 top-5 z-[70] rounded-3xl border border-white/12 bg-white/[0.07] p-4 text-white backdrop-blur-2xl">
+      <div className="absolute left-3 top-3 z-[70] rounded-2xl border border-white/12 bg-slate-950/50 p-3 text-white backdrop-blur-2xl sm:left-5 sm:top-5 sm:rounded-3xl sm:p-4">
         <p className="text-xs font-black uppercase tracking-[0.22em] text-white/42">interactive galaxy</p>
-        <p className="mt-1 text-lg font-black">Mouse Orbit View</p>
-        <div className="mt-3 flex items-center gap-2 text-xs font-bold text-cyan-100/70">
+        <p className="mt-1 text-sm font-black sm:text-lg">Orbit View</p>
+        <div className="mt-2 hidden items-center gap-2 text-xs font-bold text-cyan-100/70 sm:flex">
           <MousePointer2 className="h-3.5 w-3.5" />
           가까이 가면 공전이 느려져요
         </div>
@@ -556,7 +621,7 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
 
       {visibleSystems.map((system) => {
         const isHovered = hoveredSystem?.id === system.id || hoveredPlanet?.system.id === system.id;
-        return <OrbitRings key={`ring-${system.id}`} system={system} hovered={isHovered} />;
+        return <OrbitRings key={`ring-${system.id}`} system={system} hovered={isHovered} scale={orbitScale} />;
       })}
 
       {visibleSystems.map((system) => {
@@ -566,6 +631,7 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
             key={system.id}
             system={system}
             hovered={isHovered}
+            scale={orbitScale}
             onHover={(target) => {
               setHoveredSystem(target);
               setHoveredPlanet(null);
@@ -596,13 +662,16 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
       <HoverHud hoveredSystem={hoveredSystem} hoveredPlanet={hoveredPlanet} />
       <SelectionPanel selected={selected} />
 
-      <button
-        onClick={() => handleWarp(hoveredPlanet?.satellite || hoveredSystem || visibleSystems[0])}
-        className="absolute bottom-24 right-5 z-[70] hidden items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-slate-950 shadow-[0_0_24px_rgba(255,255,255,0.22)] transition hover:scale-105 md:flex"
-      >
-        <Rocket size={14} />
-        차원이동 워프
-      </button>
+      {selected.slug && (
+        <button
+          type="button"
+          onClick={() => handleWarp(selected)}
+          className="absolute bottom-28 right-3 z-[80] flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[11px] font-black text-slate-950 shadow-[0_0_24px_rgba(255,255,255,0.22)] transition hover:scale-105 sm:bottom-24 sm:right-5 sm:px-4 sm:text-xs"
+        >
+          <Rocket size={14} />
+          입장하기
+        </button>
+      )}
 
       <AnimatePresence>
         {warpTarget && (
@@ -617,7 +686,7 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
                 <span
                   key={i}
                   className="absolute left-1/2 top-1/2 h-[2px] w-[220px] origin-left rounded-full bg-gradient-to-r from-transparent via-white to-transparent animate-warp-line"
-                  style={{ transform: `rotate(${i * 12.85}deg) translateX(70px)`, animationDelay: `${(i % 7) * 0.05}s` }}
+                  style={{ "--angle": `${i * 12.85}deg`, animationDelay: `${(i % 7) * 0.05}s` } as CSSVariables}
                 />
               ))}
             </div>
@@ -628,7 +697,7 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
             />
             <div className="z-10 mt-7 text-center">
               <p className="text-xs font-black uppercase tracking-[0.3em] text-violet-300">Warping Dimensions</p>
-              <h3 className="mt-2 text-2xl font-black text-white tracking-tight">{warpTarget.name || warpTarget.title} 차원으로 진입 중...</h3>
+              <h3 className="mt-2 text-2xl font-black text-white tracking-tight">{warpTarget.name} 차원으로 진입 중...</h3>
               <p className="mt-1 text-xs text-white/50">DV 웜홀을 통과하고 있어요.</p>
             </div>
           </motion.div>
@@ -638,7 +707,7 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
   );
 }
 
-export default function CosmicGalaxyExplorer({ items }: { items?: any[] }) {
+export default function CosmicGalaxyExplorer({ items }: { items?: UniverseItem[] }) {
   const [selected, setSelected] = useState<SelectedNode>({
     type: "지도 구조",
     name: "항성계 → 행성 → 위성",
@@ -665,7 +734,7 @@ export default function CosmicGalaxyExplorer({ items }: { items?: any[] }) {
         "from-lime-200 to-emerald-300",
       ];
 
-      sourceData.forEach((item: any, idx: number) => {
+      sourceData.forEach((item, idx) => {
         let system = baseSystems.find(s => s.category === item.category);
         if (!system) {
           system = baseSystems[idx % baseSystems.length];
@@ -673,7 +742,7 @@ export default function CosmicGalaxyExplorer({ items }: { items?: any[] }) {
 
         system.count += item.subscribers || 0;
         const moons = item.tags && item.tags.length > 0 ? item.tags.slice(0, 3) : ["게시판", "정보", "활동"];
-        const hash = item.name.length + idx;
+        const hash = item.id.length + item.name.length + idx;
         const variant = planetVariants[hash % planetVariants.length];
         const tone = planetTones[hash % planetTones.length];
         const angle = (idx * 110 + 40) % 360;
@@ -709,7 +778,7 @@ export default function CosmicGalaxyExplorer({ items }: { items?: any[] }) {
   }, [systems]);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#050515] via-[#090a2a] to-[#16071f] px-4 py-16 text-white">
+    <section className="relative w-full overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#050515] via-[#090a2a] to-[#16071f] px-3 py-8 text-white shadow-[0_28px_90px_rgba(2,6,23,0.38)] sm:rounded-[2.5rem] sm:px-5 sm:py-10 lg:rounded-[3rem] lg:px-8 lg:py-12">
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes twinkle {
           0%, 100% { transform: scale(1); opacity: .25; }
@@ -729,20 +798,20 @@ export default function CosmicGalaxyExplorer({ items }: { items?: any[] }) {
       <div className="pointer-events-none absolute -right-24 top-1/3 h-[28rem] w-[28rem] rounded-full bg-cyan-300/10 blur-3xl" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.12),transparent_28%),linear-gradient(to_bottom,transparent,rgba(0,0,0,0.34))]" />
 
-      <section className="relative z-10 mx-auto w-[min(1180px,calc(100vw-28px))]">
-        <div className="mb-9 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+      <div className="relative z-10 mx-auto w-full max-w-[1180px]">
+        <div className="mb-6 flex flex-col justify-between gap-4 sm:mb-8 md:flex-row md:items-end">
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.07] px-4 py-2 text-xs font-bold text-cyan-100/80 backdrop-blur-xl">
               <Orbit className="h-4 w-4" />
               Universe Galaxy Map · Interactive Orbit
             </div>
-            <h1 className="text-4xl font-black tracking-[-0.05em] text-white md:text-6xl">
+            <h2 className="text-3xl font-black tracking-[-0.05em] text-white sm:text-4xl lg:text-5xl">
               정렬된 목록 말고,
               <br />
               살아있는 성계로 탐험해요.
-            </h1>
+            </h2>
           </div>
-          <p className="max-w-md text-sm leading-7 text-white/55">
+          <p className="max-w-md text-sm leading-6 text-white/55 sm:leading-7">
             마우스가 항성계에 가까워지면 공전이 느려지고, HUD가 열리며, 행성의 위성까지 확인할 수 있어요. 이제 진짜 탐험하는 은하지도에 가까워졌어요.
           </p>
         </div>
@@ -755,7 +824,7 @@ export default function CosmicGalaxyExplorer({ items }: { items?: any[] }) {
           <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 backdrop-blur-xl">행성: 산하 유니버스</span>
           <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 backdrop-blur-xl">위성: 세부 유니버스</span>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }
