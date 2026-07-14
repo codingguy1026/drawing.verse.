@@ -3,15 +3,17 @@
 import { useWeatherStore } from "@/store/useWeatherStore";
 import { useTheme } from "@/lib/ThemeProvider";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function CosmicBackground() {
   const { weather } = useWeatherStore();
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) return null;
+  if (!mounted || pathname === '/universe') return null;
 
   const getBackgroundGradient = () => {
     switch (weather) {

@@ -110,13 +110,16 @@ export default function UniversePage() {
   }, [activeCategory, search, sort, realUniverses]);
 
   return (
-    <div className="relative min-h-screen text-slate-900 dark:text-white">
-      {/* Immersive Background */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute -left-24 top-10 h-96 w-96 rounded-full bg-violet-600/10 blur-[120px] dark:bg-violet-600/10" />
-        <div className="absolute right-0 top-24 h-[500px] w-[500px] rounded-full bg-blue-600/10 blur-[150px] dark:bg-blue-600/10" />
-        <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-fuchsia-600/10 blur-[100px] dark:bg-fuchsia-600/10" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(0,0,0,0.05)_1px,transparent_0)] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] [background-size:32px_32px] opacity-30" />
+    <div className="relative min-h-screen text-slate-900 dark:text-white bg-slate-50/50 dark:bg-[#070612]">
+      {/* Decorative Background Elements */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        {/* Soft Glows - Dreamcore/Space Aesthetic */}
+        <div className="absolute -left-24 top-10 h-96 w-96 rounded-full bg-violet-500/5 blur-[100px] dark:bg-violet-600/10 dark:blur-[130px]" />
+        <div className="absolute right-0 top-1/4 h-[500px] w-[500px] rounded-full bg-cyan-400/5 blur-[120px] dark:bg-cyan-600/10 dark:blur-[150px]" />
+        <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-fuchsia-400/5 blur-[100px] dark:bg-fuchsia-600/10 dark:blur-[120px]" />
+        
+        {/* Subtle Starlight/Dot Pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(0,0,0,0.03)_1px,transparent_0)] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.03)_1px,transparent_0)] [background-size:40px_40px] opacity-40" />
       </div>
 
       <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-12 md:px-6 xl:px-8">

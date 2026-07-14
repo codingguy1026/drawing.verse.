@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
 import {
   ArrowLeft,
   ChevronRight,
@@ -12,13 +11,13 @@ import {
   Music2,
   Orbit,
   Plus,
-  Radio,
   Sparkles,
   Star,
   Users,
 } from "lucide-react";
+import { cn } from "@/lib/utils"; // Assuming cn is available based on usage
 
-type UniverseTheme = "dreamcore" | "space" | "neon" | "sports" | "art";
+type UniverseTheme = "dreamcore" | "space" | "neon";
 
 type Universe = {
   id: string;
@@ -67,74 +66,32 @@ type ActivityItem = {
 };
 
 const universes: Record<string, Universe> = {
-  baseball: {
-    id: "baseball",
-    name: "야구 유니버스",
-    subtitle: "응원과 기록, 명장면이 쌓이는 야구 세계",
-    description:
-      "구단 이야기, 경기 리뷰, 선수 썰, 응원 감정이 한 공간에 모이는 유니버스예요. 글 하나하나가 경기장의 함성처럼 이어져요.",
-    theme: "sports",
-    tags: ["KBO", "응원", "경기리뷰", "선수", "기록"],
-    stats: {
-      series: 14,
-      tracks: 312,
-      members: "12.8K",
-    },
-  },
-  soccer: {
-    id: "soccer",
-    name: "축구 유니버스",
-    subtitle: "전술과 응원, 골 장면이 모이는 축구 세계",
-    description:
-      "리그 이야기, 선수 분석, 전술 토론, 직관 후기가 자연스럽게 쌓이는 축구 유니버스예요.",
-    theme: "sports",
-    tags: ["K리그", "해외축구", "전술", "응원", "하이라이트"],
-    stats: {
-      series: 10,
-      tracks: 206,
-      members: "8.4K",
-    },
-  },
-  compose: {
-    id: "compose",
-    name: "작곡 유니버스",
-    subtitle: "멜로디와 코드가 작은 세계가 되는 공간",
-    description:
-      "짧은 멜로디, 코드 진행, 작업 기록, 음악 아이디어가 모이는 유니버스예요. 아직 완성되지 않은 소리도 여기서는 하나의 별처럼 남아요.",
-    theme: "space",
-    tags: ["작곡", "멜로디", "코드", "음악", "아이디어"],
-    stats: {
-      series: 8,
-      tracks: 134,
-      members: "642",
-    },
-  },
-  doodle: {
-    id: "doodle",
-    name: "낙서 유니버스",
-    subtitle: "가볍게 그린 선들이 모여 커지는 그림 세계",
-    description:
-      "연습장 같은 낙서, 캐릭터 스케치, 즉흥 그림들이 편하게 올라오는 유니버스예요.",
-    theme: "art",
-    tags: ["낙서", "스케치", "팬아트", "연습", "그림"],
-    stats: {
-      series: 11,
-      tracks: 248,
-      members: "3.1K",
-    },
-  },
   dreamcore: {
     id: "dreamcore",
     name: "Dreamcore Universe",
-    subtitle: "흐릿한 꿈과 새벽 감성이 모이는 세계",
+    subtitle: "흐릿한 꿈과 새벽 감성이 모이는 음악 세계",
     description:
-      "새벽 2시의 방, 오래된 라디오, 흐릿한 기억을 닮은 창작물들이 모이는 유니버스예요. 글과 이미지가 장면처럼 이어지고, 시리즈는 작은 이야기처럼 쌓여요.",
+      "새벽 2시의 방, 오래된 라디오, 흐릿한 기억을 닮은 음악들이 모이는 유니버스예요. 곡 하나하나가 장면처럼 이어지고, 시리즈는 작은 이야기처럼 쌓여요.",
     theme: "dreamcore",
-    tags: ["몽환", "새벽", "dreamcore", "story", "감성"],
+    tags: ["몽환", "새벽", "ambient", "story", "dreamcore"],
     stats: {
       series: 12,
       tracks: 248,
       members: "1.2K",
+    },
+  },
+  "space-radio": {
+    id: "space-radio",
+    name: "Space Radio",
+    subtitle: "우주 정거장에서 흘러나오는 작은 전파들",
+    description:
+      "멀리 떨어진 행성, 정거장, 무중력의 밤을 닮은 음악들이 모이는 공간이에요. 잔잔한 전자음과 별빛 같은 멜로디가 중심이에요.",
+    theme: "space",
+    tags: ["우주", "radio", "synth", "ambient", "cinematic"],
+    stats: {
+      series: 8,
+      tracks: 134,
+      members: "642",
     },
   },
 };
@@ -143,7 +100,7 @@ const featuredSeries: SeriesItem[] = [
   {
     id: "night-radio",
     title: "새벽 라디오",
-    description: "잠들지 못한 사람들이 남긴 짧은 이야기들",
+    description: "잠들지 못한 사람들이 남긴 짧은 음악들",
     tracks: 12,
     posts: 34,
     mood: "dreamy",
@@ -152,7 +109,7 @@ const featuredSeries: SeriesItem[] = [
   {
     id: "cloud-station",
     title: "구름 정류장",
-    description: "비 오는 창가와 흐린 하늘을 닮은 공간",
+    description: "비 오는 창가와 흐린 하늘을 닮은 사운드",
     tracks: 18,
     posts: 51,
     mood: "soft",
@@ -161,7 +118,7 @@ const featuredSeries: SeriesItem[] = [
   {
     id: "lost-school",
     title: "꿈속 학교",
-    description: "복도 끝에서 들려오는 이상하고 예쁜 장면들",
+    description: "복도 끝에서 들려오는 이상하고 예쁜 멜로디",
     tracks: 9,
     posts: 22,
     mood: "liminal",
@@ -204,7 +161,7 @@ const satellites: SatelliteItem[] = [
   {
     id: "night-radio",
     name: "새벽 라디오",
-    description: "잠 못 드는 밤의 짧은 기록",
+    description: "잠 못 드는 밤의 짧은 음악",
   },
   {
     id: "memory-archive",
@@ -222,7 +179,7 @@ const activities: ActivityItem[] = [
   {
     id: "activity-1",
     user: "민트구름",
-    action: "새 글을 추가했어요",
+    action: "새 곡을 추가했어요",
     target: "fading window",
     time: "12분 전",
   },
@@ -245,105 +202,76 @@ const activities: ActivityItem[] = [
 const themeStyles: Record<
   UniverseTheme,
   {
+    page: string;
+    heroGlow: string;
     planet: string;
     chip: string;
     border: string;
     accentText: string;
-    softPanel: string;
   }
 > = {
   dreamcore: {
+    page: "from-[#fbf7ff] via-[#eef4ff] to-[#fff7fb]",
+    heroGlow: "bg-[radial-gradient(circle_at_25%_20%,rgba(216,180,254,0.15),transparent)]",
     planet: "from-violet-200 via-sky-100 to-pink-100 shadow-[0_18px_60px_rgba(168,85,247,0.2)]",
     chip: "bg-violet-50 text-violet-700 ring-violet-200/70",
     border: "border-violet-100",
     accentText: "text-violet-600",
-    softPanel: "bg-violet-50/60",
   },
   space: {
+    page: "from-[#03050a] via-[#0b101d] to-[#03050a]",
+    heroGlow: "bg-[radial-gradient(circle_at_75%_30%,rgba(59,130,246,0.15),transparent)]",
     planet: "from-sky-200 via-indigo-200 to-violet-300 shadow-[0_18px_60px_rgba(59,130,246,0.18)]",
     chip: "bg-sky-50 text-sky-700 ring-sky-200/70",
-    border: "border-sky-100",
-    accentText: "text-sky-600",
-    softPanel: "bg-sky-50/60",
+    border: "border-sky-700/30",
+    accentText: "text-sky-400",
   },
   neon: {
+    page: "from-[#0a0a0a] via-[#101010] to-[#0a0a0a]",
+    heroGlow: "bg-[radial-gradient(circle_at_50%_50%,rgba(236,72,153,0.15),transparent)]",
     planet: "from-fuchsia-200 via-cyan-100 to-violet-300 shadow-[0_18px_60px_rgba(236,72,153,0.16)]",
     chip: "bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-200/70",
-    border: "border-fuchsia-100",
-    accentText: "text-fuchsia-600",
-    softPanel: "bg-fuchsia-50/60",
-  },
-  sports: {
-    planet: "from-orange-200 via-amber-100 to-rose-200 shadow-[0_18px_60px_rgba(249,115,22,0.16)]",
-    chip: "bg-orange-50 text-orange-700 ring-orange-200/70",
-    border: "border-orange-100",
-    accentText: "text-orange-600",
-    softPanel: "bg-orange-50/60",
-  },
-  art: {
-    planet: "from-cyan-100 via-violet-100 to-pink-100 shadow-[0_18px_60px_rgba(14,165,233,0.14)]",
-    chip: "bg-cyan-50 text-cyan-700 ring-cyan-200/70",
-    border: "border-cyan-100",
-    accentText: "text-cyan-600",
-    softPanel: "bg-cyan-50/60",
+    border: "border-fuchsia-700/30",
+    accentText: "text-fuchsia-400",
   },
 };
 
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
-function getUniverse(slug: string): Universe {
-  if (universes[slug]) return universes[slug];
-
-  const title = slug
-    .split("-")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-
-  return {
-    id: slug,
-    name: `${title || "Unknown"} Universe`,
-    subtitle: "새로운 창작과 이야기가 모이는 유니버스",
-    description:
-      "아직 정식 데이터가 연결되지 않은 유니버스예요. 지금은 미리보기 화면으로, 이후 Supabase 데이터와 연결하면 실제 소개와 활동이 표시돼요.",
-    theme: "dreamcore",
-    tags: ["창작", "세계관", "커뮤니티", "preview"],
-    stats: {
-      series: 5,
-      tracks: 42,
-      members: "128",
-    },
-  };
-}
-
-export default function UniverseDetailClient({ slug }: { slug: string }) {
-  const universe = getUniverse(slug);
+export default async function UniverseDetailPage({ slug }: { slug: string }) {
+  const universe = universes[slug] ?? universes.dreamcore;
   const theme = themeStyles[universe.theme];
+  const isDark = universe.theme !== "dreamcore";
 
   return (
-    <main className="min-h-screen overflow-hidden bg-white text-slate-950">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-5 sm:px-6 lg:px-8">
-        <TopBar />
+    <main
+      className={cn(
+        "min-h-screen overflow-hidden",
+        isDark ? "bg-[#03050a] text-white" : "bg-white text-slate-950"
+      )}
+    >
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-5 sm:px-6 lg:px-8">
+        <TopBar isDark={isDark} />
 
-        <UniverseHero universe={universe} theme={theme} />
+        <UniverseHero universe={universe} theme={theme} isDark={isDark} />
 
         <section className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)_300px]">
           <aside className="space-y-6">
-            <UniverseInfoCard universe={universe} theme={theme} />
-            <MembersCard theme={theme} />
+            <UniverseInfoCard
+              universe={universe}
+              theme={theme}
+              isDark={isDark}
+            />
+            <MembersCard theme={theme} isDark={isDark} />
           </aside>
 
           <div className="space-y-6">
-            <FeaturedSeriesShelf theme={theme} />
-            <RecentTracksList theme={theme} />
-            <SatelliteMap theme={theme} />
+            <FeaturedSeriesShelf theme={theme} isDark={isDark} />
+            <RecentTracksList theme={theme} isDark={isDark} />
+            <SatelliteMap theme={theme} isDark={isDark} />
           </div>
 
           <aside className="space-y-6">
-            <ActivityFeed theme={theme} />
-            <CreateInUniverseCTA theme={theme} />
+            <ActivityFeed theme={theme} isDark={isDark} />
+            <CreateInUniverseCTA theme={theme} isDark={isDark} />
           </aside>
         </section>
       </div>
@@ -351,12 +279,17 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
   );
 }
 
-function TopBar() {
+function TopBar({ isDark }: { isDark: boolean }) {
   return (
     <header className="flex items-center justify-between">
       <Link
-        href="/universe"
-        className="group inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-950"
+        href="/universes"
+        className={cn(
+          "group inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition",
+          isDark
+            ? "bg-white/10 text-white/80 ring-1 ring-white/15 hover:bg-white/15 hover:text-white"
+            : "bg-white/70 text-slate-700 ring-1 ring-slate-200 hover:bg-white hover:text-slate-950"
+        )}
       >
         <ArrowLeft className="size-4 transition group-hover:-translate-x-0.5" />
         유니버스로 돌아가기
@@ -364,7 +297,12 @@ function TopBar() {
 
       <Link
         href="/create"
-        className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition",
+          isDark
+            ? "bg-white text-slate-950 hover:bg-white/90"
+            : "bg-slate-950 text-white hover:bg-slate-800"
+        )}
       >
         <Plus className="size-4" />
         만들기
@@ -376,20 +314,24 @@ function TopBar() {
 function UniverseHero({
   universe,
   theme,
+  isDark,
 }: {
   universe: Universe;
   theme: (typeof themeStyles)[UniverseTheme];
+  isDark: boolean;
 }) {
   return (
     <section
       className={cn(
-        "relative overflow-hidden rounded-[2rem] border bg-white p-6 shadow-[0_20px_80px_rgba(15,23,42,0.06)] sm:p-8 lg:p-10",
-        theme.border
+        "relative overflow-hidden rounded-[2rem] border p-6 shadow-2xl sm:p-8 lg:p-10",
+        theme.border,
+        isDark ? "bg-white/[0.07]" : "bg-white/65",
+        "backdrop-blur-2xl"
       )}
     >
-      <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_320px]">
+      <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_340px]">
         <div className="space-y-6">
-          <div className={cn("inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-bold ring-1", theme.chip)}>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/20 px-3 py-1 text-sm backdrop-blur-xl">
             <Sparkles className="size-4" />
             Universe Detail
           </div>
@@ -398,7 +340,12 @@ function UniverseHero({
             <h1 className="max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
               {universe.name}
             </h1>
-            <p className="max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
+            <p
+              className={cn(
+                "max-w-2xl text-lg leading-8 sm:text-xl",
+                isDark ? "text-white/72" : "text-slate-600"
+              )}
+            >
               {universe.subtitle}
             </p>
           </div>
@@ -407,7 +354,10 @@ function UniverseHero({
             {universe.tags.map((tag) => (
               <span
                 key={tag}
-                className={cn("rounded-full px-3 py-1 text-sm font-bold ring-1", theme.chip)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-sm font-semibold ring-1 backdrop-blur-xl",
+                  theme.chip
+                )}
               >
                 #{tag}
               </span>
@@ -417,15 +367,25 @@ function UniverseHero({
           <div className="flex flex-wrap gap-3">
             <Link
               href="#recent-tracks"
-              className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white transition hover:bg-slate-800"
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition",
+                isDark
+                  ? "bg-white text-slate-950 hover:bg-white/90"
+                  : "bg-slate-950 text-white hover:bg-slate-800"
+              )}
             >
               <Headphones className="size-4" />
-              최근 글 보기
+              음악 둘러보기
             </Link>
 
             <Link
               href="#featured-series"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-slate-800 ring-1 ring-slate-200 transition hover:bg-slate-50"
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold ring-1 transition",
+                isDark
+                  ? "bg-white/10 text-white ring-white/15 hover:bg-white/15"
+                  : "bg-white/70 text-slate-800 ring-slate-200 hover:bg-white"
+              )}
             >
               <Radio className="size-4" />
               대표 시리즈
@@ -433,19 +393,16 @@ function UniverseHero({
           </div>
         </div>
 
-        <div className="relative mx-auto flex aspect-square w-full max-w-[300px] items-center justify-center">
-          <div className="absolute inset-0 rounded-full border border-slate-100" />
-          <div className="absolute inset-8 rounded-full border border-slate-100" />
-          <div className="absolute inset-16 rounded-full border border-slate-100" />
-
-          <div className={cn("relative size-40 rounded-full bg-gradient-to-br", theme.planet)}>
-            <div className="absolute left-8 top-7 size-8 rounded-full bg-white/60 blur-sm" />
-            <div className="absolute bottom-8 right-7 size-12 rounded-full bg-white/35 blur-md" />
+        <div className="relative mx-auto flex aspect-square w-full max-w-[320px] items-center justify-center">
+          <div
+            className={cn(
+              "relative size-40 rounded-full bg-gradient-to-br",
+              theme.planet
+            )}
+          >
+            <div className="absolute left-8 top-7 size-8 rounded-full bg-white/40 blur-sm" />
+            <div className="absolute bottom-8 right-7 size-12 rounded-full bg-white/25 blur-md" />
           </div>
-
-          <div className="absolute left-8 top-12 size-4 rounded-full bg-slate-200 shadow-sm" />
-          <div className="absolute bottom-12 right-12 size-3 rounded-full bg-slate-200 shadow-sm" />
-          <div className="absolute right-8 top-24 size-5 rounded-full bg-slate-100 shadow-sm" />
         </div>
       </div>
     </section>
@@ -455,23 +412,50 @@ function UniverseHero({
 function UniverseInfoCard({
   universe,
   theme,
+  isDark,
 }: {
   universe: Universe;
   theme: (typeof themeStyles)[UniverseTheme];
+  isDark: boolean;
 }) {
   return (
-    <section className={cn("rounded-3xl border bg-white p-5 shadow-sm", theme.border)}>
+    <section
+      className={cn(
+        "rounded-3xl border p-5 backdrop-blur-2xl",
+        theme.border,
+        isDark ? "bg-white/[0.07]" : "bg-white/65"
+      )}
+    >
       <div className="mb-4 flex items-center gap-2">
         <Orbit className={cn("size-5", theme.accentText)} />
         <h2 className="font-black">유니버스 소개</h2>
       </div>
 
-      <p className="text-sm leading-7 text-slate-600">{universe.description}</p>
+      <p
+        className={cn(
+          "text-sm leading-7",
+          isDark ? "text-white/68" : "text-slate-600"
+        )}
+      >
+        {universe.description}
+      </p>
 
       <div className="mt-5 grid gap-3">
-        <StatRow icon={<Radio className="size-4" />} label="시리즈" value={`${universe.stats.series}개`} />
-        <StatRow icon={<Music2 className="size-4" />} label="글/작품" value={`${universe.stats.tracks}개`} />
-        <StatRow icon={<Users className="size-4" />} label="멤버" value={`${universe.stats.members}명`} />
+        <StatRow
+          icon={<Radio className="size-4" />}
+          label="시리즈"
+          value={`${universe.stats.series}개`}
+        />
+        <StatRow
+          icon={<Music2 className="size-4" />}
+          label="음악"
+          value={`${universe.stats.tracks}개`}
+        />
+        <StatRow
+          icon={<Users className="size-4" />}
+          label="멤버"
+          value={`${universe.stats.members}명`}
+        />
       </div>
     </section>
   );
@@ -482,26 +466,38 @@ function StatRow({
   label,
   value,
 }: {
-  icon: ReactNode;
+  icon: React.ReactNode;
   label: string;
   value: string;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-3 ring-1 ring-slate-100">
-      <div className="flex items-center gap-2 text-sm text-slate-500">
+    <div className="flex items-center justify-between rounded-2xl bg-white/35 px-3 py-3 ring-1 ring-white/20">
+      <div className="flex items-center gap-2 text-sm opacity-80">
         {icon}
         {label}
       </div>
-      <strong className="text-sm text-slate-950">{value}</strong>
+      <strong className="text-sm">{value}</strong>
     </div>
   );
 }
 
-function MembersCard({ theme }: { theme: (typeof themeStyles)[UniverseTheme] }) {
+function MembersCard({
+  theme,
+  isDark,
+}: {
+  theme: (typeof themeStyles)[UniverseTheme];
+  isDark: boolean;
+}) {
   const members = ["드", "구", "별", "몽", "라"];
 
   return (
-    <section className={cn("rounded-3xl border bg-white p-5 shadow-sm", theme.border)}>
+    <section
+      className={cn(
+        "rounded-3xl border p-5 backdrop-blur-2xl",
+        theme.border,
+        isDark ? "bg-white/[0.07]" : "bg-white/65"
+      )}
+    >
       <div className="mb-4 flex items-center gap-2">
         <Users className={cn("size-5", theme.accentText)} />
         <h2 className="font-black">멤버</h2>
@@ -511,10 +507,7 @@ function MembersCard({ theme }: { theme: (typeof themeStyles)[UniverseTheme] }) 
         {members.map((member, index) => (
           <div
             key={member}
-            className={cn(
-              "grid size-10 place-items-center rounded-full border-2 border-white bg-gradient-to-br text-sm font-black text-slate-900 shadow-sm",
-              theme.planet
-            )}
+            className="grid size-10 place-items-center rounded-full border-2 border-white bg-gradient-to-br from-white/80 to-white/30 text-sm font-black shadow-sm"
             style={{ zIndex: members.length - index }}
           >
             {member}
@@ -522,14 +515,25 @@ function MembersCard({ theme }: { theme: (typeof themeStyles)[UniverseTheme] }) 
         ))}
       </div>
 
-      <p className="mt-4 text-sm leading-6 text-slate-600">
-        지금 이 유니버스에서 사람들이 글과 작품을 쌓고 있어요.
+      <p
+        className={cn(
+          "mt-4 text-sm leading-6",
+          isDark ? "text-white/65" : "text-slate-600"
+        )}
+      >
+        지금 이 유니버스에서 사람들이 음악과 이야기를 쌓고 있어요.
       </p>
     </section>
   );
 }
 
-function FeaturedSeriesShelf({ theme }: { theme: (typeof themeStyles)[UniverseTheme] }) {
+function FeaturedSeriesShelf({
+  theme,
+  isDark,
+}: {
+  theme: (typeof themeStyles)[UniverseTheme];
+  isDark: boolean;
+}) {
   return (
     <section id="featured-series" className="space-y-4">
       <SectionTitle
@@ -537,6 +541,7 @@ function FeaturedSeriesShelf({ theme }: { theme: (typeof themeStyles)[UniverseTh
         title="대표 시리즈"
         subtitle="이 유니버스에서 먼저 들어가 보면 좋은 공간들이에요."
         theme={theme}
+        isDark={isDark}
       />
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -545,32 +550,43 @@ function FeaturedSeriesShelf({ theme }: { theme: (typeof themeStyles)[UniverseTh
             key={item.id}
             href={`/series/${item.id}`}
             className={cn(
-              "group relative overflow-hidden rounded-3xl border bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl",
-              theme.border
+              "group relative overflow-hidden rounded-3xl border p-5 backdrop-blur-2xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl",
+              theme.border,
+              isDark
+                ? "bg-white/[0.07] hover:bg-white/[0.1]"
+                : "bg-white/70 hover:bg-white"
             )}
           >
-            <div className={cn("absolute -right-10 -top-10 size-28 rounded-full blur-2xl transition group-hover:scale-125", theme.softPanel)} />
-
             <div className="relative space-y-4">
               <div className="flex items-start justify-between gap-4">
-                <div className={cn("grid size-11 place-items-center rounded-2xl ring-1", theme.chip)}>
+                <div className="grid size-11 place-items-center rounded-2xl bg-white/45 ring-1 ring-white/30">
                   <Disc3 className={cn("size-5", theme.accentText)} />
                 </div>
 
-                <span className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500 ring-1 ring-slate-100">
+                <span className="rounded-full bg-white/35 px-2.5 py-1 text-xs font-bold ring-1 ring-white/25">
                   {item.mood}
                 </span>
               </div>
 
               <div>
                 <h3 className="text-lg font-black">{item.title}</h3>
-                <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+                <p
+                  className={cn(
+                    "mt-2 line-clamp-2 text-sm leading-6",
+                    isDark ? "text-white/65" : "text-slate-600"
+                  )}
+                >
                   {item.description}
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
-                <span>{item.tracks} items</span>
+              <div
+                className={cn(
+                  "flex flex-wrap gap-2 text-xs font-semibold",
+                  isDark ? "text-white/60" : "text-slate-500"
+                )}
+              >
+                <span>{item.tracks} tracks</span>
                 <span>·</span>
                 <span>{item.posts} posts</span>
                 <span>·</span>
@@ -589,51 +605,79 @@ function FeaturedSeriesShelf({ theme }: { theme: (typeof themeStyles)[UniverseTh
   );
 }
 
-function RecentTracksList({ theme }: { theme: (typeof themeStyles)[UniverseTheme] }) {
+function RecentTracksList({
+  theme,
+  isDark,
+}: {
+  theme: (typeof themeStyles)[UniverseTheme];
+  isDark: boolean;
+}) {
   return (
-    <section id="recent-tracks" className={cn("rounded-3xl border bg-white p-5 shadow-sm", theme.border)}>
+    <section
+      id="recent-tracks"
+      className={cn(
+        "rounded-3xl border p-5 backdrop-blur-2xl",
+        theme.border,
+        isDark ? "bg-white/[0.07]" : "bg-white/70"
+      )}
+    >
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <SectionTitle
           icon={<Music2 className="size-5" />}
-          title="최근 추가된 글"
-          subtitle="방금 이 유니버스에 떠오른 작은 기록들이에요."
+          title="최근 추가된 음악"
+          subtitle="방금 이 유니버스에 떠오른 작은 별들이에요."
           theme={theme}
+          isDark={isDark}
           compact
         />
 
         <Link
-          href="/posts"
-          className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-200"
+          href="/tracks"
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-bold transition",
+            isDark
+              ? "bg-white/10 hover:bg-white/15"
+              : "bg-slate-100 hover:bg-slate-200"
+          )}
         >
           전체 보기
           <ChevronRight className="size-4" />
         </Link>
       </div>
 
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-white/20">
         {recentTracks.map((track) => (
           <Link
             key={track.id}
-            href={`/posts/${track.id}`}
+            href={`/tracks/${track.id}`}
             className="group grid gap-3 py-4 transition first:pt-0 last:pb-0 sm:grid-cols-[1fr_130px_90px]"
           >
             <div className="flex min-w-0 items-center gap-3">
-              <div className={cn("grid size-10 shrink-0 place-items-center rounded-2xl ring-1", theme.chip)}>
+              <div className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white/40 ring-1 ring-white/25">
                 <Headphones className={cn("size-5", theme.accentText)} />
               </div>
 
               <div className="min-w-0">
-                <h3 className="truncate font-black group-hover:underline">{track.title}</h3>
-                <p className="text-sm text-slate-500">{track.series}</p>
+                <h3 className="truncate font-black group-hover:underline">
+                  {track.title}
+                </h3>
+                <p
+                  className={cn(
+                    "text-sm",
+                    isDark ? "text-white/55" : "text-slate-500"
+                  )}
+                >
+                  {track.series}
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+            <div className="flex items-center gap-2 text-sm opacity-70">
               <Sparkles className="size-4" />
               {track.mood}
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+            <div className="flex items-center gap-2 text-sm opacity-70">
               <Clock3 className="size-4" />
               {track.duration}
             </div>
@@ -644,14 +688,27 @@ function RecentTracksList({ theme }: { theme: (typeof themeStyles)[UniverseTheme
   );
 }
 
-function SatelliteMap({ theme }: { theme: (typeof themeStyles)[UniverseTheme] }) {
+function SatelliteMap({
+  theme,
+  isDark,
+}: {
+  theme: (typeof themeStyles)[UniverseTheme];
+  isDark: boolean;
+}) {
   return (
-    <section className={cn("relative overflow-hidden rounded-3xl border bg-white p-5 shadow-sm", theme.border)}>
+    <section
+      className={cn(
+        "relative overflow-hidden rounded-3xl border p-5 backdrop-blur-2xl",
+        theme.border,
+        isDark ? "bg-white/[0.07]" : "bg-white/70"
+      )}
+    >
       <SectionTitle
         icon={<Orbit className="size-5" />}
         title="작은 위성들"
         subtitle="이 유니버스 안에 있는 세부 공간들이에요."
         theme={theme}
+        isDark={isDark}
         compact
       />
 
@@ -659,16 +716,34 @@ function SatelliteMap({ theme }: { theme: (typeof themeStyles)[UniverseTheme] })
         {satellites.map((satellite) => (
           <Link
             key={satellite.id}
-            href={`/universe/${satellite.id}`}
-            className={cn("group rounded-3xl border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md", theme.border)}
+            href={`/universes/${satellite.id}`}
+            className={cn(
+              "group rounded-3xl border p-4 transition hover:-translate-y-0.5",
+              theme.border,
+              isDark
+                ? "bg-white/[0.06] hover:bg-white/[0.1]"
+                : "bg-white/55 hover:bg-white"
+            )}
           >
             <div className="mb-4 flex items-center justify-between">
-              <div className={cn("size-4 rounded-full bg-gradient-to-br", theme.planet)} />
-              <ChevronRight className="size-4 text-slate-300 transition group-hover:translate-x-1 group-hover:text-slate-700" />
+              <div
+                className={cn(
+                  "size-4 rounded-full bg-gradient-to-br",
+                  theme.planet
+                )}
+              />
+              <ChevronRight className="size-4 opacity-45 transition group-hover:translate-x-1 group-hover:opacity-100" />
             </div>
 
             <h3 className="font-black">{satellite.name}</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{satellite.description}</p>
+            <p
+              className={cn(
+                "mt-2 text-sm leading-6",
+                isDark ? "text-white/60" : "text-slate-600"
+              )}
+            >
+              {satellite.description}
+            </p>
           </Link>
         ))}
       </div>
@@ -676,9 +751,21 @@ function SatelliteMap({ theme }: { theme: (typeof themeStyles)[UniverseTheme] })
   );
 }
 
-function ActivityFeed({ theme }: { theme: (typeof themeStyles)[UniverseTheme] }) {
+function ActivityFeed({
+  theme,
+  isDark,
+}: {
+  theme: (typeof themeStyles)[UniverseTheme];
+  isDark: boolean;
+}) {
   return (
-    <section className={cn("rounded-3xl border bg-white p-5 shadow-sm", theme.border)}>
+    <section
+      className={cn(
+        "rounded-3xl border p-5 backdrop-blur-2xl",
+        theme.border,
+        isDark ? "bg-white/[0.07]" : "bg-white/65"
+      )}
+    >
       <div className="mb-4 flex items-center gap-2">
         <MessageCircle className={cn("size-5", theme.accentText)} />
         <h2 className="font-black">활동 피드</h2>
@@ -687,14 +774,26 @@ function ActivityFeed({ theme }: { theme: (typeof themeStyles)[UniverseTheme] })
       <div className="space-y-4">
         {activities.map((activity) => (
           <div key={activity.id} className="flex gap-3">
-            <div className={cn("mt-1 size-2.5 shrink-0 rounded-full", theme.softPanel)} />
+            <div className="mt-1 size-2.5 shrink-0 rounded-full bg-current opacity-60" />
 
             <div>
               <p className="text-sm leading-6">
-                <strong>{activity.user}</strong>님이 <span className="text-slate-600">{activity.action}</span>
+                <strong>{activity.user}</strong>님이{" "}
+                <span className={isDark ? "text-white/70" : "text-slate-600"}>
+                  {activity.action}
+                </span>
               </p>
-              <p className={cn("text-sm font-bold", theme.accentText)}>{activity.target}</p>
-              <p className="mt-1 text-xs text-slate-400">{activity.time}</p>
+              <p className={cn("text-sm font-bold", theme.accentText)}>
+                {activity.target}
+              </p>
+              <p
+                className={cn(
+                  "mt-1 text-xs",
+                  isDark ? "text-white/45" : "text-slate-400"
+                )}
+              >
+                {activity.time}
+              </p>
             </div>
           </div>
         ))}
@@ -703,21 +802,48 @@ function ActivityFeed({ theme }: { theme: (typeof themeStyles)[UniverseTheme] })
   );
 }
 
-function CreateInUniverseCTA({ theme }: { theme: (typeof themeStyles)[UniverseTheme] }) {
+function CreateInUniverseCTA({
+  theme,
+  isDark,
+}: {
+  theme: (typeof themeStyles)[UniverseTheme];
+  isDark: boolean;
+}) {
   return (
-    <section className={cn("overflow-hidden rounded-3xl border bg-white p-5 shadow-sm", theme.border)}>
-      <div className={cn("mb-4 grid size-12 place-items-center rounded-2xl bg-gradient-to-br", theme.planet)}>
+    <section
+      className={cn(
+        "overflow-hidden rounded-3xl border p-5 backdrop-blur-2xl",
+        theme.border,
+        isDark ? "bg-white/[0.07]" : "bg-white/65"
+      )}
+    >
+      <div
+        className={cn(
+          "mb-4 grid size-12 place-items-center rounded-2xl bg-gradient-to-br",
+          theme.planet
+        )}
+      >
         <Plus className="size-5 text-slate-950" />
       </div>
 
       <h2 className="text-lg font-black">이 유니버스에 추가하기</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-600">
-        새 시리즈나 글을 올려서 이 세계를 더 크게 만들어봐요.
+      <p
+        className={cn(
+          "mt-2 text-sm leading-6",
+          isDark ? "text-white/62" : "text-slate-600"
+        )}
+      >
+        새 시리즈나 음악을 올려서 이 세계를 더 크게 만들어봐요.
       </p>
 
       <Link
         href="/create"
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800"
+        className={cn(
+          "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition",
+          isDark
+            ? "bg-white text-slate-950 hover:bg-white/90"
+            : "bg-slate-950 text-white hover:bg-slate-800"
+        )}
       >
         <Plus className="size-4" />
         새로 만들기
@@ -731,22 +857,38 @@ function SectionTitle({
   title,
   subtitle,
   theme,
+  isDark,
   compact = false,
 }: {
-  icon: ReactNode;
+  icon: React.ReactNode;
   title: string;
   subtitle: string;
   theme: (typeof themeStyles)[UniverseTheme];
+  isDark: boolean;
   compact?: boolean;
 }) {
   return (
-    <div className="flex gap-3">
+    <div
+      className={cn(
+        "flex gap-3",
+        compact ? "items-start" : "items-end justify-between"
+      )}
+    >
       <div>
         <div className="flex items-center gap-2">
           <span className={theme.accentText}>{icon}</span>
-          <h2 className={cn("font-black", compact ? "text-lg" : "text-2xl")}>{title}</h2>
+          <h2 className={cn("font-black", compact ? "text-lg" : "text-2xl")}>
+            {title}
+          </h2>
         </div>
-        <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+        <p
+          className={cn(
+            "mt-1 text-sm",
+            isDark ? "text-white/58" : "text-slate-500"
+          )}
+        >
+          {subtitle}
+        </p>
       </div>
     </div>
   );
