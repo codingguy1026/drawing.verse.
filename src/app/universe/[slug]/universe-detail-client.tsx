@@ -11,11 +11,14 @@ import {
   Music2,
   Orbit,
   Plus,
+  Radio,
   Sparkles,
   Star,
   Users,
 } from "lucide-react";
-import { cn } from "@/lib/utils"; // Assuming cn is available based on usage
+function cn(...values: Array<string | false | null | undefined>) {
+  return values.filter(Boolean).join(" ");
+}
 
 type UniverseTheme = "dreamcore" | "space" | "neon";
 
