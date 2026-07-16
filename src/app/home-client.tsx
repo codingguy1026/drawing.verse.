@@ -2,12 +2,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase/client";
 import { squishyVariants } from "@/lib/animations";
 import { useWeatherStore } from "@/store/useWeatherStore";
-import { useSupabaseUser } from "@/hooks/useSupabaseUser";
-import { Pencil, Save, X as CloseIcon } from "lucide-react";
 
 const boards = ["전체", "인기", "창작", "피드백", "팬아트", "세계관"];
 const shortcuts = ["실시간 베스트", "Best", "Hot", "New", "최근 방문"];
@@ -18,65 +16,6 @@ const noticeRankings = [
   "[안내] 신규 유저 가이드 업데이트",
 ];
 const featuredTags = ["세계관", "팬아트", "시", "단편", "창작 커뮤니티"];
-
-type HomeConfig = {
-  heroTitle: string;
-  heroHighlight: string;
-  heroSuffix: string;
-  heroDesc: string;
-  tags: string[];
-  notices: string[];
-};
-
-const defaultHomeConfig: HomeConfig = {
-  heroTitle: "그림과 이야기,",
-  heroHighlight: "너만의 우주",
-  heroSuffix: "가 모이다",
-  heroDesc:
-    "팬아트, 오리지널 세계관, 짧은 글, 긴 이야기까지. Drawing Verse에서는 당신의 상상이 빛나는 별이 됩니다.",
-  tags: featuredTags,
-  notices: noticeRankings,
-};
-
-function cloneHomeConfig(config: HomeConfig): HomeConfig {
-  return {
-    ...config,
-    tags: [...config.tags],
-    notices: [...config.notices],
-  };
-}
-
-function parseHomeConfig(value: unknown): HomeConfig | null {
-  if (!value || typeof value !== "object") return null;
-
-  const candidate = value as Partial<HomeConfig>;
-  const readText = (text: unknown, fallback: string, maxLength: number) =>
-    typeof text === "string" ? text.slice(0, maxLength) : fallback;
-  const readList = (list: unknown, fallback: string[], limit: number) =>
-    Array.isArray(list)
-      ? list
-          .filter((item): item is string => typeof item === "string")
-          .map((item) => item.slice(0, 80))
-          .slice(0, limit)
-      : [...fallback];
-
-  return {
-    heroTitle: readText(candidate.heroTitle, defaultHomeConfig.heroTitle, 80),
-    heroHighlight: readText(
-      candidate.heroHighlight,
-      defaultHomeConfig.heroHighlight,
-      80
-    ),
-    heroSuffix: readText(
-      candidate.heroSuffix,
-      defaultHomeConfig.heroSuffix,
-      80
-    ),
-    heroDesc: readText(candidate.heroDesc, defaultHomeConfig.heroDesc, 320),
-    tags: readList(candidate.tags, defaultHomeConfig.tags, 10),
-    notices: readList(candidate.notices, defaultHomeConfig.notices, 8),
-  };
-}
 
 function cn(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
@@ -169,53 +108,10 @@ function SidebarShell(props: {
   );
 }
 
-function EditableText({
-  isEditing,
-  value,
-  onChange,
-  className,
-  multiline = false,
-  as: Component = "span",
-}: {
-  isEditing: boolean;
-  value: string;
-  onChange: (val: string) => void;
-  className?: string;
-  multiline?: boolean;
-  as?: any;
-}) {
-  if (isEditing) {
-    if (multiline) {
-      return (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={cn(
-            "w-full bg-slate-100/50 dark:bg-white/10 border border-violet-500/30 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-slate-900 dark:text-white",
-            className
-          )}
-          rows={3}
-        />
-      );
-    }
-    return (
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={cn(
-          "w-full bg-slate-100/50 dark:bg-white/10 border border-violet-500/30 rounded-xl px-3 py-1 focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-slate-900 dark:text-white",
-          className
-        )}
-      />
-    );
-  }
-  return <Component className={className}>{value}</Component>;
-}
-
 export default function HomeClient() {
   const { weather } = useWeatherStore();
-  const { user, loading: userLoading } = useSupabaseUser();
+  const tags = featuredTags;
+  const notices = noticeRankings;
   const [posts, setPosts] = useState<any[]>([]);
   const [universes, setUniverses] = useState<any[]>([]);
   const [trendData, setTrendData] = useState({ visits: 0, posts: 0, universes: 0 });
@@ -249,66 +145,6 @@ export default function HomeClient() {
     }
     fetchData();
   }, []);
-
-  // Editable Home State
-  const [isEditing, setIsEditing] = useState(false);
-  const [heroTitle, setHeroTitle] = useState(defaultHomeConfig.heroTitle);
-  const [heroHighlight, setHeroHighlight] = useState(
-    defaultHomeConfig.heroHighlight
-  );
-  const [heroSuffix, setHeroSuffix] = useState(defaultHomeConfig.heroSuffix);
-  const [heroDesc, setHeroDesc] = useState(defaultHomeConfig.heroDesc);
-  const [tags, setTags] = useState([...defaultHomeConfig.tags]);
-  const [notices, setNotices] = useState([...defaultHomeConfig.notices]);
-  const [savedConfig, setSavedConfig] = useState(() =>
-    cloneHomeConfig(defaultHomeConfig)
-  );
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
-
-  const applyHomeConfig = React.useCallback((config: HomeConfig) => {
-    setHeroTitle(config.heroTitle);
-    setHeroHighlight(config.heroHighlight);
-    setHeroSuffix(config.heroSuffix);
-    setHeroDesc(config.heroDesc);
-    setTags([...config.tags]);
-    setNotices([...config.notices]);
-  }, []);
-
-  useEffect(() => {
-    if (userLoading) return;
-
-    if (!user) {
-      const defaults = cloneHomeConfig(defaultHomeConfig);
-      applyHomeConfig(defaults);
-      setSavedConfig(defaults);
-      setIsEditing(false);
-      setSaveMessage(null);
-      return;
-    }
-
-    const storageKey = `dv_home_config:${user.id}`;
-    let localConfig: HomeConfig | null = null;
-
-    try {
-      const savedData =
-        localStorage.getItem(storageKey) ??
-        localStorage.getItem("dv_home_config");
-      if (savedData) localConfig = parseHomeConfig(JSON.parse(savedData));
-    } catch (error) {
-      console.error("Failed to load local home config", error);
-    }
-
-    const config =
-      parseHomeConfig(user.user_metadata?.home_config) ??
-      localConfig ??
-      cloneHomeConfig(defaultHomeConfig);
-
-    applyHomeConfig(config);
-    setSavedConfig(cloneHomeConfig(config));
-    setIsEditing(false);
-    setSaveMessage(null);
-  }, [applyHomeConfig, user, userLoading]);
 
   useEffect(() => {
     async function loadData() {
@@ -384,66 +220,6 @@ export default function HomeClient() {
       supabase.removeChannel(universesChannel);
     };
   }, []);
-
-  const handleSave = async () => {
-    if (!user || isSaving) return;
-
-    const nextConfig = parseHomeConfig({
-      heroTitle,
-      heroHighlight,
-      heroSuffix,
-      heroDesc,
-      tags,
-      notices,
-    });
-
-    if (!nextConfig) return;
-
-    if (
-      !nextConfig.heroTitle.trim() ||
-      !nextConfig.heroHighlight.trim() ||
-      !nextConfig.heroDesc.trim()
-    ) {
-      setSaveMessage("제목과 소개 문구는 비워둘 수 없어요.");
-      return;
-    }
-
-    nextConfig.tags = nextConfig.tags.map((tag) => tag.trim()).filter(Boolean);
-    nextConfig.notices = nextConfig.notices
-      .map((notice) => notice.trim())
-      .filter(Boolean);
-
-    setIsSaving(true);
-    setSaveMessage(null);
-
-    const { error } = await supabase.auth.updateUser({
-      data: { home_config: nextConfig },
-    });
-
-    if (error) {
-      console.error("Failed to save home config", error);
-      setSaveMessage("저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
-      setIsSaving(false);
-      return;
-    }
-
-    localStorage.setItem(
-      `dv_home_config:${user.id}`,
-      JSON.stringify(nextConfig)
-    );
-    localStorage.removeItem("dv_home_config");
-    applyHomeConfig(nextConfig);
-    setSavedConfig(cloneHomeConfig(nextConfig));
-    setIsEditing(false);
-    setIsSaving(false);
-    setSaveMessage("내 홈에 저장됐어요.");
-  };
-
-  const handleCancel = () => {
-    applyHomeConfig(savedConfig);
-    setIsEditing(false);
-    setSaveMessage(null);
-  };
 
   const previewChecks = [
     { label: "boards", pass: boards.length > 0 },
@@ -526,62 +302,6 @@ export default function HomeClient() {
               <div className="pointer-events-none absolute -left-16 top-0 h-44 w-44 rounded-full bg-pink-200/35 dark:bg-pink-600/20 blur-3xl" />
               <div className="pointer-events-none absolute right-0 top-10 h-40 w-40 rounded-full bg-sky-200/35 dark:bg-sky-600/20 blur-3xl" />
 
-              {/* Edit Controls */}
-              {!userLoading && user && (
-                <div className="absolute right-6 top-6 z-20">
-                  {isEditing ? (
-                    <div className="flex gap-2">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 disabled:cursor-wait disabled:opacity-60"
-                      >
-                        <Save size={16} />
-                        {isSaving ? "저장 중..." : "저장"}
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleCancel}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 rounded-full bg-slate-200 px-4 py-2 text-sm font-bold text-slate-700 shadow-lg dark:bg-white/10 dark:text-white"
-                      >
-                        <CloseIcon size={16} />
-                        취소
-                      </motion.button>
-                    </div>
-                  ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        setSaveMessage(null);
-                        setIsEditing(true);
-                      }}
-                      className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-bold text-slate-700 shadow-lg backdrop-blur-md dark:bg-white/10 dark:text-white"
-                    >
-                      <Pencil size={16} />홈 수정하기
-                    </motion.button>
-                  )}
-                  {saveMessage && (
-                    <p
-                      role="status"
-                      className={cn(
-                        "mt-2 max-w-56 rounded-xl px-3 py-2 text-right text-xs font-semibold backdrop-blur-md",
-                        saveMessage.includes("실패") ||
-                          saveMessage.includes("비워둘")
-                          ? "bg-rose-50/90 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300"
-                          : "bg-emerald-50/90 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300"
-                      )}
-                    >
-                      {saveMessage}
-                    </p>
-                  )}
-                </div>
-              )}
-
               <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
                 <div className="flex flex-col gap-5">
                   <span className="w-fit rounded-full border border-fuchsia-200/70 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-fuchsia-500 shadow-sm backdrop-blur">
@@ -589,11 +309,7 @@ export default function HomeClient() {
                   </span>
                   <div className="space-y-6">
                     <h1 className="max-w-4xl text-5xl font-black leading-[1.1] tracking-tighter text-slate-950 dark:text-white md:text-6xl lg:text-7xl">
-                      <EditableText
-                        isEditing={isEditing}
-                        value={heroTitle}
-                        onChange={setHeroTitle}
-                      />
+                      그림과 이야기,
                       <br />
                       <span
                         className={cn(
@@ -609,27 +325,14 @@ export default function HomeClient() {
                             : "bg-gradient-to-r from-violet-600 via-indigo-500 to-sky-400 dark:from-violet-400 dark:via-indigo-300 dark:to-sky-200"
                         )}
                       >
-                        <EditableText
-                          isEditing={isEditing}
-                          value={heroHighlight}
-                          onChange={setHeroHighlight}
-                        />
+                        너만의 우주
                       </span>
-                      <EditableText
-                        isEditing={isEditing}
-                        value={heroSuffix}
-                        onChange={setHeroSuffix}
-                      />
+                      가 모이다
                     </h1>
                     <div className="max-w-xl">
-                      <EditableText
-                        isEditing={isEditing}
-                        value={heroDesc}
-                        onChange={setHeroDesc}
-                        multiline
-                        className="text-lg leading-relaxed text-slate-600 dark:text-slate-400"
-                        as="p"
-                      />
+                      <p className="text-lg leading-relaxed text-slate-600 dark:text-slate-400">
+                        팬아트, 오리지널 세계관, 짧은 글, 긴 이야기까지. Drawing Verse에서는 당신의 상상이 빛나는 별이 됩니다.
+                      </p>
                     </div>
                   </div>
 
@@ -664,39 +367,9 @@ export default function HomeClient() {
                         key={idx}
                         className="group relative rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm"
                       >
-                        {isEditing ? (
-                          <input
-                            value={tag}
-                            onChange={(e) => {
-                              const newTags = [...tags];
-                              newTags[idx] = e.target.value;
-                              setTags(newTags);
-                            }}
-                            className="w-20 bg-transparent outline-none focus:ring-1 focus:ring-violet-500 rounded"
-                          />
-                        ) : (
-                          `#${tag}`
-                        )}
-                        {isEditing && (
-                          <button
-                            onClick={() =>
-                              setTags(tags.filter((_, i) => i !== idx))
-                            }
-                            className="ml-1 text-rose-500 hover:text-rose-700"
-                          >
-                            ×
-                          </button>
-                        )}
+                        {`#${tag}`}
                       </span>
                     ))}
-                    {isEditing && (
-                      <button
-                        onClick={() => setTags([...tags, "새 태그"])}
-                        className="rounded-full border border-dashed border-slate-300 dark:border-white/20 px-3 py-1.5 text-xs font-medium text-slate-400 hover:border-violet-500 hover:text-violet-500 transition-colors"
-                      >
-                        + 태그 추가
-                      </button>
-                    )}
                   </div>
                 </div>
 
@@ -867,44 +540,9 @@ export default function HomeClient() {
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 dark:bg-white/20 text-xs font-bold text-white">
                           {index + 1}
                         </span>
-                        {isEditing ? (
-                          <input
-                            value={notice}
-                            onChange={(e) => {
-                              const newNotices = [...notices];
-                              newNotices[index] = e.target.value;
-                              setNotices(newNotices);
-                            }}
-                            className="flex-1 bg-transparent outline-none focus:ring-1 focus:ring-violet-500 rounded"
-                          />
-                        ) : (
-                          <span className="truncate">{notice}</span>
-                        )}
-                        {isEditing && (
-                          <button
-                            onClick={() =>
-                              setNotices(notices.filter((_, i) => i !== index))
-                            }
-                            className="text-rose-500 hover:text-rose-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <CloseIcon size={14} />
-                          </button>
-                        )}
+                        <span className="truncate">{notice}</span>
                       </div>
                     ))}
-                    {isEditing && (
-                      <button
-                        onClick={() =>
-                          setNotices([
-                            ...notices,
-                            "[새 소식] 내용을 입력하세요",
-                          ])
-                        }
-                        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 dark:border-white/20 py-2.5 text-xs font-medium text-slate-400 hover:border-violet-500 hover:text-violet-500 transition-colors"
-                      >
-                        + 소식 추가
-                      </button>
-                    )}
                   </div>
                 </section>
               </aside>
