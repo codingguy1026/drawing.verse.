@@ -1,1 +1,0 @@
-This placeholder will be removed after the transparent PNG is committed correctly.
