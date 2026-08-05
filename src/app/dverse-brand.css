@@ -1,4 +1,4 @@
-/* DVERSE navbar identity: cosmic space + soft dreamcore atmosphere. */
+/* Drawing Verse navbar identity: cosmic space + soft dreamcore atmosphere. */
 
 .dv-nav-shell {
   isolation: isolate;
@@ -57,81 +57,157 @@
   animation: dverseDreamHaze 12s ease-in-out infinite alternate;
 }
 
-/* Replace the old icon + text brand block with the transparent DVERSE logo. */
+/* Keep the original Drawing Verse text and replace only its icon with the DV mark. */
 .dv-nav-shell > .relative.flex > div:first-child > a {
-  position: relative;
-  width: 112px;
-  min-width: 112px;
-  height: 58px;
-  padding: 0 !important;
-  gap: 0 !important;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  gap: 0.65rem !important;
   overflow: visible;
-  background: transparent !important;
+  background: transparent;
 }
 
-.dv-nav-shell > .relative.flex > div:first-child > a > * {
+/* Crop the transparent logo so only the DV symbol is visible. */
+.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child {
+  position: relative;
+  display: block !important;
+  width: 58px !important;
+  min-width: 58px;
+  height: 52px !important;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  isolation: isolate;
+}
+
+.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child > * {
   display: none !important;
 }
 
-.dv-nav-shell > .relative.flex > div:first-child > a::before {
+.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::before,
+.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::after {
   content: "";
   position: absolute;
-  z-index: 2;
   inset: 0;
-  background-image: url("/branding/dverse-logo-transparent.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  filter:
-    drop-shadow(0 0 8px rgba(96, 165, 250, 0.3))
-    drop-shadow(0 0 16px rgba(139, 92, 246, 0.22));
+  background: currentColor;
+  -webkit-mask-image: url("/branding/dverse-logo-transparent.png");
+  mask-image: url("/branding/dverse-logo-transparent.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  mask-position: left center;
+  -webkit-mask-size: auto 52px;
+  mask-size: auto 52px;
   transform-origin: center;
   animation: dverseLogoFloat 5.8s ease-in-out infinite;
 }
 
-.dv-nav-shell > .relative.flex > div:first-child > a::after {
-  content: "";
-  position: absolute;
+/* D: red/coral. */
+.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::before {
+  z-index: 2;
+  color: #ef233c;
+  background: linear-gradient(150deg, #ff5a6f 5%, #ef233c 52%, #be123c 100%);
+  clip-path: inset(0 48% 0 0);
+  filter: drop-shadow(0 0 8px rgba(239, 35, 60, 0.34));
+}
+
+/* V and orbit: blue to violet. */
+.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::after {
   z-index: 1;
-  left: 7%;
-  right: 7%;
-  bottom: 3px;
-  height: 14px;
-  border-radius: 999px;
-  background: radial-gradient(
-    ellipse,
-    rgba(125, 211, 252, 0.42),
-    rgba(167, 139, 250, 0.2) 44%,
-    transparent 72%
-  );
-  filter: blur(9px);
-  opacity: 0.7;
-  transition: opacity 240ms ease, transform 240ms ease;
-}
-
-.dv-nav-shell > .relative.flex > div:first-child > a:hover::before {
+  color: #2563eb;
+  background: linear-gradient(135deg, #2563eb 4%, #0ea5e9 42%, #8b5cf6 100%);
+  clip-path: inset(0 0 0 46%);
   filter:
-    drop-shadow(0 0 10px rgba(103, 232, 249, 0.48))
-    drop-shadow(0 0 22px rgba(139, 92, 246, 0.36));
+    drop-shadow(0 0 8px rgba(37, 99, 235, 0.34))
+    drop-shadow(0 0 14px rgba(139, 92, 246, 0.22));
 }
 
-.dv-nav-shell > .relative.flex > div:first-child > a:hover::after {
-  opacity: 1;
-  transform: scaleX(1.1);
+.dv-nav-shell > .relative.flex > div:first-child > a:hover > div:first-child::before {
+  filter: drop-shadow(0 0 11px rgba(255, 70, 90, 0.52));
 }
 
-@media (min-width: 640px) {
-  .dv-nav-shell > .relative.flex > div:first-child > a {
-    width: 148px;
-    min-width: 148px;
-    height: 62px;
-  }
+.dv-nav-shell > .relative.flex > div:first-child > a:hover > div:first-child::after {
+  filter:
+    drop-shadow(0 0 11px rgba(56, 189, 248, 0.48))
+    drop-shadow(0 0 20px rgba(139, 92, 246, 0.34));
+}
+
+/* Restore and enhance the original Drawing Verse wordmark. */
+.dv-nav-shell > .relative.flex > div:first-child > a > div:last-child {
+  position: relative;
+}
+
+.dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:first-child {
+  position: relative;
+  width: max-content;
+  background: linear-gradient(
+    92deg,
+    #312e81 0%,
+    #6d28d9 34%,
+    #2563eb 68%,
+    #0891b2 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  letter-spacing: 0.015em;
+  text-shadow:
+    0 0 14px rgba(139, 92, 246, 0.18),
+    0 0 24px rgba(14, 165, 233, 0.1);
+}
+
+.dark .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:first-child {
+  background: linear-gradient(
+    92deg,
+    #f5f3ff 0%,
+    #c4b5fd 34%,
+    #7dd3fc 72%,
+    #67e8f9 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  text-shadow:
+    0 0 15px rgba(196, 181, 253, 0.26),
+    0 0 28px rgba(103, 232, 249, 0.16);
+}
+
+.dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:first-child::after {
+  content: "✦";
+  position: absolute;
+  right: -14px;
+  top: -7px;
+  color: #7dd3fc;
+  font-size: 8px;
+  text-shadow:
+    0 0 7px rgba(125, 211, 252, 0.95),
+    0 0 13px rgba(167, 139, 250, 0.7);
+  animation: dverseTwinkle 2.8s ease-in-out infinite;
+}
+
+.dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:last-child {
+  letter-spacing: 0.08em;
+  color: rgba(71, 85, 105, 0.76) !important;
+  text-shadow: 0 0 12px rgba(125, 211, 252, 0.12);
+}
+
+.dark .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:last-child {
+  color: rgba(226, 232, 240, 0.62) !important;
 }
 
 @media (max-width: 420px) {
-  .dv-nav-shell > .relative.flex > div:first-child > a {
-    width: 96px;
-    min-width: 96px;
+  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child {
+    width: 52px !important;
+    min-width: 52px;
+    height: 48px !important;
+  }
+
+  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::before,
+  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::after {
+    -webkit-mask-size: auto 48px;
+    mask-size: auto 48px;
   }
 }
 
@@ -143,6 +219,19 @@
 
   50% {
     transform: translateY(-2px) scale(1.012);
+  }
+}
+
+@keyframes dverseTwinkle {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: scale(0.72) rotate(0deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.18) rotate(18deg);
   }
 }
 
@@ -184,7 +273,9 @@
   .dv-nav-shell::before,
   .dv-nav-shell > div:first-child::before,
   .dv-nav-shell > div:first-child::after,
-  .dv-nav-shell > .relative.flex > div:first-child > a::before {
+  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::before,
+  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::after,
+  .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:first-child::after {
     animation: none !important;
   }
 }
