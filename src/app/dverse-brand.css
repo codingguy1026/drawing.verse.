@@ -1,0 +1,190 @@
+/* DVERSE navbar identity: cosmic space + soft dreamcore atmosphere. */
+
+.dv-nav-shell {
+  isolation: isolate;
+}
+
+/* Small stars around the glass navbar. */
+.dv-nav-shell::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -18px -22px;
+  pointer-events: none;
+  border-radius: 38px;
+  background:
+    radial-gradient(circle at 7% 38%, rgba(125, 211, 252, 0.72) 0 1px, transparent 2px),
+    radial-gradient(circle at 16% 8%, rgba(196, 181, 253, 0.78) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 31% 91%, rgba(244, 114, 182, 0.48) 0 1px, transparent 2px),
+    radial-gradient(circle at 62% 4%, rgba(255, 255, 255, 0.84) 0 1px, transparent 2px),
+    radial-gradient(circle at 78% 94%, rgba(125, 211, 252, 0.58) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 94% 23%, rgba(196, 181, 253, 0.72) 0 1px, transparent 2px);
+  filter: drop-shadow(0 0 7px rgba(139, 92, 246, 0.42));
+  opacity: 0.78;
+  animation: dverseStarDrift 9s ease-in-out infinite alternate;
+}
+
+/* Dreamy aurora and cloud haze inside the navbar glass. */
+.dv-nav-shell > div:first-child::before,
+.dv-nav-shell > div:first-child::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.dv-nav-shell > div:first-child::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 5% 76%, rgba(255, 255, 255, 0.72) 0 1px, transparent 2px),
+    radial-gradient(circle at 24% 22%, rgba(125, 211, 252, 0.72) 0 1px, transparent 2px),
+    radial-gradient(circle at 47% 74%, rgba(196, 181, 253, 0.7) 0 1px, transparent 2px),
+    radial-gradient(circle at 73% 18%, rgba(255, 255, 255, 0.68) 0 1px, transparent 2px),
+    radial-gradient(circle at 91% 68%, rgba(244, 114, 182, 0.48) 0 1px, transparent 2px);
+  background-size: 210px 90px, 260px 110px, 300px 100px, 240px 100px, 280px 105px;
+  opacity: 0.42;
+  animation: dverseStarField 18s linear infinite;
+}
+
+.dv-nav-shell > div:first-child::after {
+  inset: -70% -12%;
+  background:
+    radial-gradient(ellipse at 16% 52%, rgba(196, 181, 253, 0.28), transparent 31%),
+    radial-gradient(ellipse at 52% 42%, rgba(125, 211, 252, 0.2), transparent 28%),
+    radial-gradient(ellipse at 86% 58%, rgba(244, 114, 182, 0.17), transparent 27%);
+  filter: blur(22px);
+  mix-blend-mode: screen;
+  opacity: 0.75;
+  animation: dverseDreamHaze 12s ease-in-out infinite alternate;
+}
+
+/* Replace the old icon + text brand block with the transparent DVERSE logo. */
+.dv-nav-shell > .relative.flex > div:first-child > a {
+  position: relative;
+  width: 112px;
+  min-width: 112px;
+  height: 58px;
+  padding: 0 !important;
+  gap: 0 !important;
+  overflow: visible;
+  background: transparent !important;
+}
+
+.dv-nav-shell > .relative.flex > div:first-child > a > * {
+  display: none !important;
+}
+
+.dv-nav-shell > .relative.flex > div:first-child > a::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  background-image: url("/branding/dverse-logo-transparent.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  filter:
+    drop-shadow(0 0 8px rgba(96, 165, 250, 0.3))
+    drop-shadow(0 0 16px rgba(139, 92, 246, 0.22));
+  transform-origin: center;
+  animation: dverseLogoFloat 5.8s ease-in-out infinite;
+}
+
+.dv-nav-shell > .relative.flex > div:first-child > a::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 7%;
+  right: 7%;
+  bottom: 3px;
+  height: 14px;
+  border-radius: 999px;
+  background: radial-gradient(
+    ellipse,
+    rgba(125, 211, 252, 0.42),
+    rgba(167, 139, 250, 0.2) 44%,
+    transparent 72%
+  );
+  filter: blur(9px);
+  opacity: 0.7;
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+
+.dv-nav-shell > .relative.flex > div:first-child > a:hover::before {
+  filter:
+    drop-shadow(0 0 10px rgba(103, 232, 249, 0.48))
+    drop-shadow(0 0 22px rgba(139, 92, 246, 0.36));
+}
+
+.dv-nav-shell > .relative.flex > div:first-child > a:hover::after {
+  opacity: 1;
+  transform: scaleX(1.1);
+}
+
+@media (min-width: 640px) {
+  .dv-nav-shell > .relative.flex > div:first-child > a {
+    width: 148px;
+    min-width: 148px;
+    height: 62px;
+  }
+}
+
+@media (max-width: 420px) {
+  .dv-nav-shell > .relative.flex > div:first-child > a {
+    width: 96px;
+    min-width: 96px;
+  }
+}
+
+@keyframes dverseLogoFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-2px) scale(1.012);
+  }
+}
+
+@keyframes dverseStarDrift {
+  from {
+    transform: translate3d(-2px, 1px, 0);
+    opacity: 0.58;
+  }
+
+  to {
+    transform: translate3d(4px, -2px, 0);
+    opacity: 0.9;
+  }
+}
+
+@keyframes dverseStarField {
+  from {
+    background-position: 0 0, 25px 12px, 80px 0, 35px 20px, 0 10px;
+  }
+
+  to {
+    background-position: 210px 0, 285px 12px, 380px 0, 275px 20px, 280px 10px;
+  }
+}
+
+@keyframes dverseDreamHaze {
+  from {
+    transform: translate3d(-2%, 0, 0) scale(0.98);
+    opacity: 0.55;
+  }
+
+  to {
+    transform: translate3d(2%, -2%, 0) scale(1.04);
+    opacity: 0.88;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dv-nav-shell::before,
+  .dv-nav-shell > div:first-child::before,
+  .dv-nav-shell > div:first-child::after,
+  .dv-nav-shell > .relative.flex > div:first-child > a::before {
+    animation: none !important;
+  }
+}
