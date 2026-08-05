@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
+import "./dverse-brand.css";
 
 import DVNav from "@/components/Common/DVNav";
 import { ThemeProvider } from "@/lib/ThemeProvider";
