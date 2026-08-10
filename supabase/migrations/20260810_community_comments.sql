@@ -113,3 +113,63 @@ drop trigger if exists comments_sync_post_count on public.comments;
 create trigger comments_sync_post_count
 after insert or delete or update of post_id on public.comments
 for each row execute function public.sync_post_comments_count();
+
+-- post_stars already exists in Drawing Verse. Keep likes_count synchronized in
+-- the database as well, so starring someone else's post does not depend on the
+-- caller having UPDATE permission on that post.
+create or replace function public.sync_post_likes_count()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  target_post_id text;
+begin
+  if tg_op = 'DELETE' then
+    target_post_id := old.post_id::text;
+  else
+    target_post_id := new.post_id::text;
+  end if;
+
+  update public.posts
+  set likes_count = (
+    select count(*)::integer
+    from public.post_stars
+    where post_id::text = target_post_id
+  )
+  where id::text = target_post_id;
+
+  if tg_op = 'UPDATE' and old.post_id::text is distinct from new.post_id::text then
+    update public.posts
+    set likes_count = (
+      select count(*)::integer
+      from public.post_stars
+      where post_id::text = old.post_id::text
+    )
+    where id::text = old.post_id::text;
+  end if;
+
+  return null;
+end;
+$$;
+
+drop trigger if exists post_stars_sync_post_count on public.post_stars;
+create trigger post_stars_sync_post_count
+after insert or delete or update of post_id on public.post_stars
+for each row execute function public.sync_post_likes_count();
+
+-- Backfill counters for existing rows once when the migration is applied.
+update public.posts p
+set comments_count = (
+  select count(*)::integer
+  from public.comments c
+  where c.post_id = p.id::text
+);
+
+update public.posts p
+set likes_count = (
+  select count(*)::integer
+  from public.post_stars s
+  where s.post_id::text = p.id::text
+);
