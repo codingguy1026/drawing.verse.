@@ -3,17 +3,17 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import TabsNav from "@/components/Common/TabsNav";
+import { supabase } from "@/lib/supabase/client";
 
 type Comment = {
-  id: number;
+  id: string;
   author: string;
   content: string;
   date: string;
 };
 
 type Post = {
-  id: number;
+  id: string;
   title: string;
   author: string;
   content: string;
@@ -26,8 +26,8 @@ type Post = {
 };
 
 type CurrentUser = {
-  id: number;
-  email: string;
+  id: string;
+  email: string | null;
   name: string;
 };
 
@@ -41,37 +41,47 @@ const universes = [
 ];
 
 function getUniverseName(id?: string | null) {
-  const u = universes.find((v) => v.id === id);
-  return u ? u.name.replace(" 유니버스", "") : "미분류";
+  const universe = universes.find((item) => item.id === id);
+  return universe ? universe.name.replace(" 유니버스", "") : "미분류";
+}
+
+function getUserName(user: {
+  email?: string | null;
+  user_metadata?: Record<string, unknown>;
+}) {
+  const metadata = user.user_metadata ?? {};
+  const candidates = [
+    metadata.display_name,
+    metadata.full_name,
+    metadata.name,
+    metadata.nickname,
+  ];
+
+  const fromMetadata = candidates.find(
+    (value): value is string => typeof value === "string" && value.trim().length > 0
+  );
+
+  if (fromMetadata) return fromMetadata.trim();
+  return user.email?.split("@")[0] || "익명";
 }
 
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
-
-  const rawId = (params as any)?.id;
-  const id =
-    typeof rawId === "string"
-      ? rawId
-      : Array.isArray(rawId)
-      ? rawId[0]
-      : undefined;
+  const rawId = (params as { id?: string | string[] } | null)?.id;
+  const id = typeof rawId === "string" ? rawId : rawId?.[0];
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // 로그인 유저 정보
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-
-  // 댓글 작성 상태
-  const [commentAuthor, setCommentAuthor] = useState("");
   const [commentContent, setCommentContent] = useState("");
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
 
   const isLoggedIn = !!currentUser;
 
-  // 게시글 로드
   useEffect(() => {
     if (!id) {
       setError("해당 글을 찾을 수 없어요.");
@@ -79,76 +89,125 @@ export default function PostDetailPage() {
       return;
     }
 
+    let cancelled = false;
+
     async function load() {
       try {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`/api/posts/${id}`);
+        const res = await fetch(`/api/posts/${encodeURIComponent(id)}`, {
+          cache: "no-store",
+        });
         const json = await res.json();
 
+        if (cancelled) return;
+
         if (!res.ok || !json.ok) {
-          setError("해당 글을 찾을 수 없어요.");
+          setError(json.error || "해당 글을 찾을 수 없어요.");
           return;
         }
 
         setPost(json.data as Post);
       } catch (err) {
         console.error(err);
-        setError("게시글 불러오기 실패");
+        if (!cancelled) setError("게시글을 불러오지 못했어요.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  // localStorage에서 로그인 상태 읽기
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    let mounted = true;
 
-    try {
-      const raw = window.localStorage.getItem("dv_user");
-      if (!raw) {
+    const applyUser = (user: {
+      id: string;
+      email?: string | null;
+      user_metadata?: Record<string, unknown>;
+    } | null) => {
+      if (!mounted) return;
+
+      if (!user) {
         setCurrentUser(null);
       } else {
-        const user = JSON.parse(raw) as CurrentUser;
-        setCurrentUser(user);
-        setCommentAuthor(user.name);
+        setCurrentUser({
+          id: user.id,
+          email: user.email ?? null,
+          name: getUserName(user),
+        });
       }
-    } catch (err) {
-      console.error(err);
-      setCurrentUser(null);
-    } finally {
+
       setAuthLoading(false);
-    }
+    };
+
+    supabase.auth
+      .getUser()
+      .then(({ data }) => applyUser(data.user))
+      .catch((err) => {
+        console.error("Supabase auth check failed:", err);
+        applyUser(null);
+      });
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      applyUser(session?.user ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
-  const handleAddComment = () => {
-    if (!post) return;
+  const handleAddComment = async () => {
+    if (!post || !id || isCommentSubmitting) return;
 
-    if (!commentAuthor.trim() || !commentContent.trim()) {
-      alert("작성자와 내용은 둘 다 입력해줘야 해요!");
+    const content = commentContent.trim();
+    if (!content) {
+      setCommentError("댓글 내용을 입력해 주세요.");
       return;
     }
 
-    const newComment: Comment = {
-      id: post.comments.length
-        ? post.comments[post.comments.length - 1].id + 1
-        : 1,
-      author: commentAuthor.trim(),
-      content: commentContent.trim(),
-      date: "방금 전",
-    };
+    setIsCommentSubmitting(true);
+    setCommentError(null);
 
-    setPost({
-      ...post,
-      comments: [...post.comments, newComment],
-    });
+    try {
+      const res = await fetch(`/api/comments/${encodeURIComponent(id)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      const json = await res.json();
 
-    setCommentAuthor(currentUser?.name ?? "");
-    setCommentContent("");
+      if (res.status === 401) {
+        setCurrentUser(null);
+        setCommentError("로그인이 필요해요.");
+        return;
+      }
+
+      if (!res.ok || !json.ok) {
+        setCommentError(json.error || "댓글 등록에 실패했어요.");
+        return;
+      }
+
+      setPost((current) =>
+        current
+          ? { ...current, comments: [...current.comments, json.data as Comment] }
+          : current
+      );
+      setCommentContent("");
+    } catch (err) {
+      console.error(err);
+      setCommentError("댓글 등록 중 네트워크 오류가 발생했어요.");
+    } finally {
+      setIsCommentSubmitting(false);
+    }
   };
 
   return (
@@ -169,7 +228,6 @@ export default function PostDetailPage() {
 
         {!loading && !error && post && (
           <>
-            {/* 제목 */}
             <h1
               style={{
                 fontSize: "1.6rem",
@@ -180,7 +238,6 @@ export default function PostDetailPage() {
               {post.title}
             </h1>
 
-            {/* 메타 정보 */}
             <div
               style={{
                 fontSize: "0.85rem",
@@ -216,9 +273,7 @@ export default function PostDetailPage() {
                 {post.universeId && (
                   <>
                     <span>·</span>
-                    <span className="chip">
-                      {getUniverseName(post.universeId)}
-                    </span>
+                    <span className="chip">{getUniverseName(post.universeId)}</span>
                   </>
                 )}
               </div>
@@ -230,7 +285,6 @@ export default function PostDetailPage() {
               </div>
             </div>
 
-            {/* 본문 */}
             <div
               style={{
                 minHeight: "200px",
@@ -242,7 +296,6 @@ export default function PostDetailPage() {
               {post.content}
             </div>
 
-            {/* 상단 버튼 */}
             <div
               style={{
                 marginTop: "24px",
@@ -258,7 +311,6 @@ export default function PostDetailPage() {
               </Link>
             </div>
 
-            {/* 댓글 섹션 */}
             <div
               style={{
                 marginTop: "32px",
@@ -276,16 +328,15 @@ export default function PostDetailPage() {
                 댓글 {post.comments.length > 0 && `(${post.comments.length})`}
               </h2>
 
-              {/* 댓글 목록 */}
               {post.comments.length === 0 && (
                 <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
                   아직 댓글이 없어요. 첫 댓글의 주인공이 되어봐! ✏️
                 </p>
               )}
 
-              {post.comments.map((c) => (
+              {post.comments.map((comment) => (
                 <div
-                  key={c.id}
+                  key={comment.id}
                   style={{
                     padding: "10px 0",
                     borderBottom: "1px solid var(--border)",
@@ -298,7 +349,7 @@ export default function PostDetailPage() {
                       marginBottom: "4px",
                     }}
                   >
-                    {c.author}
+                    {comment.author}
                     <span
                       style={{
                         marginLeft: "8px",
@@ -306,21 +357,15 @@ export default function PostDetailPage() {
                         color: "var(--muted)",
                       }}
                     >
-                      {c.date}
+                      {comment.date}
                     </span>
                   </div>
-                  <div
-                    style={{
-                      fontSize: "0.9rem",
-                      whiteSpace: "pre-wrap",
-                    }}
-                  >
-                    {c.content}
+                  <div style={{ fontSize: "0.9rem", whiteSpace: "pre-wrap" }}>
+                    {comment.content}
                   </div>
                 </div>
               ))}
 
-              {/* 댓글 작성 or 로그인 필요 안내 */}
               <div
                 style={{
                   marginTop: "18px",
@@ -349,7 +394,7 @@ export default function PostDetailPage() {
                       fontSize: "0.95rem",
                     }}
                   >
-                    <p>💬 댓글을 남기려면 로그인을 해야 합니다.</p>
+                    <p>💬 댓글을 남기려면 로그인이 필요해요.</p>
                     <Link
                       href="/login"
                       style={{
@@ -363,28 +408,34 @@ export default function PostDetailPage() {
                   </div>
                 ) : (
                   <>
-                    <div
+                    <p
                       style={{
-                        display: "flex",
-                        gap: "8px",
+                        color: "var(--muted)",
+                        fontSize: "0.82rem",
                         marginBottom: "8px",
                       }}
                     >
-                      <input
-                        className="input"
-                        style={{ maxWidth: "220px" }}
-                        placeholder="닉네임"
-                        value={commentAuthor}
-                        onChange={(e) => setCommentAuthor(e.target.value)}
-                      />
-                    </div>
+                      {currentUser.name} 님으로 댓글 작성
+                    </p>
                     <textarea
                       className="input"
                       style={{ minHeight: "80px", resize: "vertical" }}
                       placeholder="댓글을 입력해 주세요."
                       value={commentContent}
+                      maxLength={3000}
                       onChange={(e) => setCommentContent(e.target.value)}
                     />
+                    {commentError && (
+                      <p
+                        style={{
+                          color: "var(--error)",
+                          fontSize: "0.85rem",
+                          marginTop: "8px",
+                        }}
+                      >
+                        {commentError}
+                      </p>
+                    )}
                     <div
                       style={{
                         display: "flex",
@@ -396,8 +447,9 @@ export default function PostDetailPage() {
                         type="button"
                         className="btn secondary"
                         onClick={handleAddComment}
+                        disabled={isCommentSubmitting}
                       >
-                        댓글 등록
+                        {isCommentSubmitting ? "등록 중..." : "댓글 등록"}
                       </button>
                     </div>
                   </>
