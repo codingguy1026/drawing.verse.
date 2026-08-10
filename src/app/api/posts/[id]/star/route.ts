@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -14,69 +14,86 @@ export async function POST(
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
-            )
+            );
           } catch {
-            // ignore
+            // 쿠키 갱신이 불가능한 컨텍스트에서는 무시.
           }
         },
       },
     }
   );
-  
-  const { data: { user } } = await supabase.auth.getUser();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 1. Check if already starred
-  const { data: existingStar } = await supabase
+  const { data: existingStar, error: lookupError } = await supabase
     .from("post_stars")
     .select("id")
     .eq("post_id", id)
     .eq("user_id", user.id)
     .maybeSingle();
 
+  if (lookupError) {
+    return NextResponse.json({ error: lookupError.message }, { status: 500 });
+  }
+
   let isStarred = false;
 
   if (existingStar) {
-    // 2. Unstar
-    await supabase
+    const { error } = await supabase
       .from("post_stars")
       .delete()
       .eq("id", existingStar.id);
-    
-    isStarred = false;
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   } else {
-    // 3. Star
-    await supabase
-      .from("post_stars")
-      .insert({
-        post_id: id,
-        user_id: user.id
-      });
-    
+    const { error } = await supabase.from("post_stars").insert({
+      post_id: id,
+      user_id: user.id,
+    });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
     isStarred = true;
   }
 
-  // 4. Update like_count in posts table (denormalized for performance)
-  // Note: In a production app, you might want to use a DB trigger instead.
-  const { data: countData } = await supabase
+  const { count, error: countError } = await supabase
     .from("post_stars")
-    .select("id", { count: "exact" })
+    .select("id", { count: "exact", head: true })
     .eq("post_id", id);
-  
-  const count = countData?.length || 0;
 
-  await supabase
+  if (countError) {
+    return NextResponse.json({ error: countError.message }, { status: 500 });
+  }
+
+  const likesCount = count ?? 0;
+  const { error: updateError } = await supabase
     .from("posts")
-    .update({ like_count: count })
+    .update({ likes_count: likesCount })
     .eq("id", id);
 
-  return NextResponse.json({ isStarred, like_count: count });
+  if (updateError) {
+    console.warn("Failed to sync posts.likes_count:", updateError.message);
+  }
+
+  return NextResponse.json({
+    isStarred,
+    likes_count: likesCount,
+    like_count: likesCount,
+  });
 }
