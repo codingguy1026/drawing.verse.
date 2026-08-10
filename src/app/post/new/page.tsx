@@ -2,28 +2,58 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function NewPostPage() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [universeId, setUniverseId] = useState("webtoon");
   const [content, setContent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
-    // 🚧 실제로는 API POST 요청 보내면 됨
-    console.log("NEW POST", {
-      title,
-      universeId,
-      content,
-    });
+    setIsSubmitting(true);
+    setError(null);
 
-    alert("게시물이 임시로 제출되었습니다! (API 연결 전)");
+    try {
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          universeSlug: universeId,
+          content,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      if (!res.ok || !json.ok) {
+        setError(json.error || "게시물 등록에 실패했어요.");
+        return;
+      }
+
+      router.push(`/post/${json.data.id}`);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      setError("게시물 등록 중 네트워크 오류가 발생했어요.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="board">
-      {/* 상단 제목 */}
       <div className="surface" style={{ padding: "2rem" }}>
         <h1
           style={{
@@ -40,9 +70,7 @@ export default function NewPostPage() {
           멋진 그림과 이야기를 커뮤니티에 공유해보세요!
         </p>
 
-        {/* 입력 폼 */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          {/* 제목 */}
           <div>
             <label className="block mb-2 font-semibold text-gray-700">
               제목
@@ -53,11 +81,11 @@ export default function NewPostPage() {
               placeholder="제목을 입력하세요"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              maxLength={160}
               required
             />
           </div>
 
-          {/* 유니버스 선택 */}
           <div>
             <label className="block mb-2 font-semibold text-gray-700">
               유니버스 선택
@@ -76,7 +104,6 @@ export default function NewPostPage() {
             </select>
           </div>
 
-          {/* 내용 */}
           <div>
             <label className="block mb-2 font-semibold text-gray-700">
               내용
@@ -86,15 +113,23 @@ export default function NewPostPage() {
               placeholder="내용을 입력하세요"
               value={content}
               rows={8}
+              maxLength={20000}
               onChange={(e) => setContent(e.target.value)}
               required
             />
           </div>
 
-          {/* 버튼 */}
+          {error && (
+            <p style={{ color: "var(--error)", fontSize: "0.9rem" }}>{error}</p>
+          )}
+
           <div className="flex gap-3 mt-2">
-            <button type="submit" className="btn primary">
-              게시물 등록
+            <button
+              type="submit"
+              className="btn primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "등록 중..." : "게시물 등록"}
             </button>
 
             <Link href="/" className="btn outline">
