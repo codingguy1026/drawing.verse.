@@ -2,10 +2,10 @@ export type UniverseCategory =
   | "전체"
   | "인기"
   | "최신"
-  | "팬아트"
-  | "창작 세계관"
-  | "소설"
-  | "캐릭터"
+  | "게임"
+  | "스포츠"
+  | "일상"
+  | "팬덤"
   | "구독 중";
 
 export interface UniverseItem {
