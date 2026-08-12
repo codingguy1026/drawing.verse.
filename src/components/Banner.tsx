@@ -21,24 +21,23 @@ export default function Banner() {
           <span className="text-4xl md:text-5xl">✨</span>
           <h1 className="text-[#ff4b6b] leading-tight">
             Drawing Verse:{" "}
-            <span className="whitespace-nowrap">당신의 창작 유니버스를</span>{" "}
+            <span className="whitespace-nowrap">당신의 관심사 유니버스를</span>{" "}
             여행하세요
           </h1>
           <span className="hidden md:inline text-4xl md:text-5xl">✨</span>
         </div>
 
         <p className="text-base md:text-lg text-[#9aa4b2] leading-relaxed mt-2">
-          왕초보부터 숙련된 아티스트까지,
+          가볍게 둘러보는 사람부터 깊게 이야기하고 싶은 사람까지,
           <br />
-          각자의 유니버스가 모여 빛나는 곳, Drawing Verse에 오신 것을
-          환영합니다!
+          관심사가 모이고 대화가 이어지는 곳, Drawing Verse에 오신 것을 환영합니다!
         </p>
       </div>
 
       {/* 아래쪽: 버튼 + 작은 설명 */}
       <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
         <Link
-          href="/gallery" // 여기 나중에 유니버스 선택 페이지로 바꾸면 됨
+          href="/universe"
           className="
             inline-flex items-center justify-center
             px-8 py-3 rounded-full
@@ -50,13 +49,13 @@ export default function Banner() {
             transition
           "
         >
-          모든 그림 유니버스 탐험하기 →
+          모든 유니버스 둘러보기 →
         </Link>
 
         <p className="text-sm md:text-base text-[#b0bac6]">
-          웹툰, 일러스트, 팬아트, 스케치…
+          게임, 스포츠, 일상, 팬덤…
           <span className="hidden md:inline">
-            지금, 당신의 세계를 하나의 유니버스로 만들어봐요.
+            지금, 마음 맞는 사람들과 이야기를 시작해보세요.
           </span>
         </p>
       </div>
