@@ -3,7 +3,7 @@ import UniverseClient from "./universe-client";
 
 export const metadata: Metadata = {
   title: "Universe | Drawing Verse 유니버스 탐색",
-  description: "다양한 오리지널 세계관과 팬아트 유니버스를 탐색하고 나만의 공간을 만들어보세요.",
+  description: "관심사별 유니버스를 탐색하고, 같은 관심사를 가진 사람들과 글과 대화를 나눠보세요.",
 };
 
 export default function Page() {
