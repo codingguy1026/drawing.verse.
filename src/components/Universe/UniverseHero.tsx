@@ -58,7 +58,7 @@ export default function UniverseHero({
           className="mb-8 flex items-center gap-2 rounded-full border border-violet-500/10 bg-violet-500/5 px-5 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.05)] dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300 dark:shadow-[0_0_15px_rgba(139,92,246,0.2)]"
         >
           <Sparkles className="h-3.5 w-3.5" />
-          Gateway to Infinite Worlds
+          Communities Across the Verse
         </motion.div>
 
         {/* Title */}
@@ -68,10 +68,10 @@ export default function UniverseHero({
           transition={{ delay: 0.1 }}
           className="mb-8 text-5xl md:text-7xl font-black tracking-tighter text-slate-900 leading-[1.05] dark:text-white"
         >
-          가장 눈부신 <br />
+          관심사가 이어지는 <br />
           <span className="relative inline-block">
             <span className="relative z-10 bg-gradient-to-r from-violet-600 via-slate-800 to-sky-600 bg-clip-text text-transparent dark:from-violet-400 dark:via-white dark:to-sky-400">
-              당신만의 세계관
+              당신의 유니버스
             </span>
             <div className="absolute -bottom-2 inset-x-0 h-4 bg-violet-500/10 blur-xl dark:bg-violet-500/20" />
           </span>
@@ -83,8 +83,8 @@ export default function UniverseHero({
           transition={{ delay: 0.2 }}
           className="mb-12 text-lg md:text-xl text-slate-500 font-medium leading-relaxed dark:text-white/50"
         >
-          수천 개의 유니버스가 당신의 영감을 기다리고 있습니다. <br className="hidden md:block" />
-          상상이 현실이 되는 드로잉 버스의 중심에서 새로운 우주를 탐험하세요.
+          수천 개의 유니버스에서 같은 관심사를 가진 사람들을 만나보세요. <br className="hidden md:block" />
+          지금 뜨는 이야기부터 취향에 맞는 커뮤니티까지 자유롭게 둘러보고 대화에 참여하세요.
         </motion.p>
 
         {/* Search Box */}
@@ -103,7 +103,7 @@ export default function UniverseHero({
               type="text"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="탐험하고 싶은 세계관의 이름을 입력하세요"
+              placeholder="관심 있는 유니버스나 주제를 검색하세요"
               className="h-18 w-full rounded-[2.5rem] border border-slate-200 bg-slate-50 pl-20 pr-10 text-lg text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-violet-500/40 focus:bg-white focus:shadow-[0_0_40px_rgba(139,92,246,0.1)] dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:placeholder:text-white/20 dark:focus:border-violet-500/40 dark:focus:bg-white/[0.05] dark:focus:shadow-[0_0_40px_rgba(139,92,246,0.15)]"
             />
           </div>
