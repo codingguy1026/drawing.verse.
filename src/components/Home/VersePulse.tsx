@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { Activity, ArrowUpRight, Flame, Radio, Sparkles } from "lucide-react";
+import { Activity, Radio, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
 type PulsePost = {
@@ -50,11 +50,40 @@ function getRelativeTime(date: string | null, now: number) {
   return `${Math.floor(hours / 24)}일 전`;
 }
 
+function findHeroPulseTarget() {
+  const labels = Array.from(document.querySelectorAll("p"));
+  const weeklyTrendLabel = labels.find(
+    (node) => node.textContent?.trim().toLowerCase() === "weekly trend"
+  );
+
+  return weeklyTrendLabel?.closest("section")?.parentElement ?? null;
+}
+
 export default function VersePulse() {
   const [posts, setPosts] = useState<PulsePost[]>([]);
   const [universes, setUniverses] = useState<PulseUniverse[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => Date.now());
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const target = findHeroPulseTarget();
+    if (target) {
+      setPortalTarget(target);
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      const nextTarget = findHeroPulseTarget();
+      if (nextTarget) {
+        setPortalTarget(nextTarget);
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   const loadPulse = useCallback(async () => {
     try {
@@ -70,8 +99,11 @@ export default function VersePulse() {
           .limit(40),
       ]);
 
-      if (postsResult.data) setPosts(postsResult.data as PulsePost[]);
-      if (universesResult.data) setUniverses(universesResult.data as PulseUniverse[]);
+      if (postsResult.error) throw postsResult.error;
+      if (universesResult.error) throw universesResult.error;
+
+      setPosts((postsResult.data ?? []) as PulsePost[]);
+      setUniverses((universesResult.data ?? []) as PulseUniverse[]);
     } catch (error) {
       console.error("Failed to load Verse Pulse", error);
     } finally {
@@ -141,265 +173,120 @@ export default function VersePulse() {
     };
   }, [now, posts]);
 
-  const universeSignals = useMemo(() => {
-    const names = new Map(
-      universes.map((universe) => [universe.slug, universe.name || universe.slug || "Universe"])
-    );
-    const totals = new Map<string, number>();
-
-    posts.forEach((post) => {
-      if (!post.universe_slug || !post.created_at) return;
-
-      const ageHours = Math.max(
-        0,
-        (now - new Date(post.created_at).getTime()) / (60 * 60 * 1000)
-      );
-      const recency = Math.max(0, 24 - ageHours) / 24;
-      const value =
-        8 * recency + (post.like_count ?? 0) * 0.4 + (post.comment_count ?? 0) * 0.9;
-
-      totals.set(post.universe_slug, (totals.get(post.universe_slug) ?? 0) + value);
-    });
-
-    const ranked = [...totals.entries()]
-      .map(([slug, score]) => ({
-        slug,
-        name: names.get(slug) || slug,
-        score,
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
-
-    const max = Math.max(1, ...ranked.map((item) => item.score));
-
-    return ranked.map((item) => ({
-      ...item,
-      heat: clamp(Math.round((item.score / max) * 100), 8, 100),
-    }));
-  }, [now, posts, universes]);
-
   const wave = useMemo(() => {
     const intensity = Math.max(0.18, pulse.score / 100);
     return [0.28, 0.46, 0.88, 0.36, 0.58, 1, 0.42, 0.72, 0.32, 0.9, 0.48, 0.66].map(
-      (point) => Math.max(8, Math.round(point * intensity * 54))
+      (point) => Math.max(7, Math.round(point * intensity * 38))
     );
   }, [pulse.score]);
 
-  return (
-    <div className="bg-slate-50 px-4 pt-5 transition-colors duration-700 dark:bg-[#03050a] md:px-6 lg:px-8">
-      <motion.section
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45 }}
-        className="relative mx-auto w-full max-w-7xl overflow-hidden rounded-[32px] border border-violet-200/70 bg-[linear-gradient(120deg,rgba(255,255,255,0.96),rgba(245,243,255,0.88),rgba(239,246,255,0.9))] shadow-[0_22px_55px_rgba(99,102,241,0.12)] backdrop-blur-2xl dark:border-violet-400/15 dark:bg-[linear-gradient(120deg,rgba(10,12,22,0.96),rgba(22,18,44,0.92),rgba(8,19,36,0.94))] dark:shadow-[0_24px_70px_rgba(76,29,149,0.2)]"
-      >
-        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-fuchsia-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-sky-400/20 blur-3xl" />
+  if (!portalTarget) return null;
 
-        <div className="relative grid gap-5 p-5 md:p-6 lg:grid-cols-[1.15fr_0.85fr] lg:p-7">
-          <div className="flex min-w-0 flex-col justify-between gap-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em] text-violet-600 dark:text-violet-300">
-                  <Radio size={14} className="animate-pulse" />
-                  Live network
-                </div>
-                <div className="mt-2 flex items-end gap-3">
-                  <h2 className="text-2xl font-black tracking-tight text-slate-950 dark:text-white md:text-3xl">
-                    Verse Pulse
-                  </h2>
-                  <span className="mb-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-black tracking-wider text-violet-600 dark:border-violet-300/20 dark:bg-violet-300/10 dark:text-violet-200">
-                    {loading ? "CONNECTING" : pulse.level}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  지금 Drawing Verse 전체에서 뛰고 있는 활동 신호예요.
-                </p>
+  const latestPost = posts[0] ?? null;
 
-                <div className="mt-5 grid w-full max-w-2xl grid-cols-1 gap-2 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-white/80 bg-white/55 px-3.5 py-3 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
-                    <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
-                      Network
-                    </div>
-                    <p className="mt-1.5 text-sm font-black text-slate-800 dark:text-slate-100">
-                      {loading ? "연결 중" : "ONLINE"}
-                    </p>
-                  </div>
+  return createPortal(
+    <motion.section
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="relative overflow-hidden rounded-[32px] border border-violet-200/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.88),rgba(245,243,255,0.94),rgba(239,246,255,0.9))] p-5 shadow-[0_16px_38px_rgba(99,102,241,0.13)] backdrop-blur-2xl dark:border-violet-400/15 dark:bg-[linear-gradient(135deg,rgba(17,19,31,0.96),rgba(28,22,51,0.94),rgba(14,24,40,0.94))] dark:shadow-[0_18px_44px_rgba(76,29,149,0.18)]"
+    >
+      <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-sky-300/25 blur-3xl dark:bg-sky-500/10" />
+      <div className="pointer-events-none absolute -bottom-20 -left-12 h-40 w-40 rounded-full bg-fuchsia-300/20 blur-3xl dark:bg-fuchsia-500/10" />
 
-                  <div className="rounded-2xl border border-white/80 bg-white/55 px-3.5 py-3 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
-                    <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
-                      <Sparkles size={11} className="text-violet-500" />
-                      Records
-                    </div>
-                    <p className="mt-1.5 text-sm font-black tabular-nums text-slate-800 dark:text-slate-100">
-                      {posts.length + universes.length}
-                      <span className="ml-1 text-[10px] font-bold text-slate-400">signals</span>
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/80 bg-white/55 px-3.5 py-3 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
-                    <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
-                      <Radio size={11} className="text-sky-500" />
-                      Realtime
-                    </div>
-                    <p className="mt-1.5 text-sm font-black text-slate-800 dark:text-slate-100">
-                      {loading ? "WAIT" : "LISTENING"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Pulse index
-                </p>
-                <div className="mt-1 flex items-baseline justify-end gap-1">
-                  <span className="text-5xl font-black tabular-nums tracking-tighter text-slate-950 dark:text-white">
-                    {loading ? "--" : pulse.score}
-                  </span>
-                  <Activity size={18} className="text-fuchsia-500" />
-                </div>
-              </div>
+      <div className="relative">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-violet-600 dark:text-violet-300">
+              <Radio size={13} className="animate-pulse" />
+              Live network
             </div>
-
-            <div className="flex h-16 items-center gap-1 rounded-2xl border border-white/80 bg-white/65 px-4 shadow-inner dark:border-white/10 dark:bg-white/5">
-              {wave.map((height, index) => (
-                <motion.span
-                  key={index}
-                  animate={{
-                    height: [Math.max(6, height * 0.55), height, Math.max(6, height * 0.7)],
-                    opacity: [0.45, 1, 0.55],
-                  }}
-                  transition={{
-                    duration: 1.15 + (index % 4) * 0.14,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 0.035,
-                  }}
-                  className="block min-w-1 flex-1 rounded-full bg-gradient-to-t from-indigo-500 via-violet-500 to-fuchsia-400"
-                  style={{ maxWidth: 14 }}
-                />
-              ))}
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+              <h3 className="text-2xl font-black tracking-tight text-slate-950 dark:text-white">
+                Verse Pulse
+              </h3>
+              <span className="rounded-full border border-violet-200 bg-white/60 px-2.5 py-1 text-[9px] font-black tracking-wider text-violet-600 dark:border-violet-300/15 dark:bg-white/5 dark:text-violet-200">
+                {loading ? "CONNECTING" : pulse.level}
+              </span>
             </div>
-
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-3 dark:border-white/10 dark:bg-white/5">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">5 min</p>
-                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">
-                  {pulse.fiveMinuteEvents}
-                  <span className="ml-1 text-xs font-medium text-slate-400">events</span>
-                </p>
-              </div>
-              <div className="rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-3 dark:border-white/10 dark:bg-white/5">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">1 hour</p>
-                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">
-                  {pulse.hourEvents}
-                  <span className="ml-1 text-xs font-medium text-slate-400">posts</span>
-                </p>
-              </div>
-              <div className="col-span-2 rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-3 dark:border-white/10 dark:bg-white/5 sm:col-span-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Universes</p>
-                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">
-                  {universes.length}
-                  <span className="ml-1 text-xs font-medium text-slate-400">signals</span>
-                </p>
-              </div>
-            </div>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Drawing Verse의 실시간 활동 신호
+            </p>
           </div>
 
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <div className="rounded-3xl border border-white/80 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={15} className="text-violet-500" />
-                  <p className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                    Latest signals
-                  </p>
-                </div>
-                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.8)]" />
-              </div>
-
-              <div className="space-y-2">
-                {loading ? (
-                  <p className="py-5 text-center text-xs text-slate-400">신호 수신 중...</p>
-                ) : posts.length === 0 ? (
-                  <p className="py-5 text-center text-xs text-slate-400">아직 잡힌 신호가 없어요.</p>
-                ) : (
-                  posts.slice(0, 3).map((post) => {
-                    const content = (
-                      <div className="group flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white/70 px-3.5 py-3 transition hover:border-violet-200 hover:bg-violet-50/60 dark:border-white/5 dark:bg-white/[0.035] dark:hover:border-violet-300/15 dark:hover:bg-violet-300/[0.06]">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">
-                            {post.title || "새 게시글"}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-slate-400">
-                            {post.universe_slug || "Drawing Verse"} · {getRelativeTime(post.created_at, now)}
-                          </p>
-                        </div>
-                        <ArrowUpRight size={15} className="shrink-0 text-slate-300 transition group-hover:text-violet-500" />
-                      </div>
-                    );
-
-                    return post.universe_slug ? (
-                      <Link
-                        key={post.id}
-                        href={`/universe/${post.universe_slug}/${post.id}`}
-                      >
-                        {content}
-                      </Link>
-                    ) : (
-                      <div key={post.id}>{content}</div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-white/80 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-              <div className="mb-3 flex items-center gap-2">
-                <Flame size={15} className="text-orange-500" />
-                <p className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                  Universe signal
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {universeSignals.length === 0 ? (
-                  <p className="py-4 text-center text-xs text-slate-400">
-                    활동 데이터가 쌓이면 여기서 뜨는 유니버스를 보여줄게요.
-                  </p>
-                ) : (
-                  universeSignals.map((universe) => (
-                    <Link
-                      key={universe.slug}
-                      href={`/universe/${universe.slug}`}
-                      className="block"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="w-20 truncate text-xs font-bold text-slate-600 dark:text-slate-300">
-                          {universe.name}
-                        </span>
-                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200/80 dark:bg-white/10">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${universe.heat}%` }}
-                            transition={{ duration: 0.7, ease: "easeOut" }}
-                            className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500"
-                          />
-                        </div>
-                        <span className="w-7 text-right text-[10px] font-black tabular-nums text-slate-400">
-                          {universe.heat}
-                        </span>
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </div>
+          <div className="shrink-0 text-right">
+            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
+              Pulse index
+            </p>
+            <div className="mt-0.5 flex items-baseline justify-end gap-1">
+              <span className="text-4xl font-black tabular-nums tracking-tighter text-slate-950 dark:text-white">
+                {loading ? "--" : pulse.score}
+              </span>
+              <Activity size={15} className="text-fuchsia-500" />
             </div>
           </div>
         </div>
-      </motion.section>
-    </div>
+
+        <div className="mt-4 flex h-12 items-center gap-1 rounded-2xl border border-white/80 bg-white/55 px-3 shadow-inner dark:border-white/10 dark:bg-white/5">
+          {wave.map((height, index) => (
+            <motion.span
+              key={index}
+              animate={{
+                height: [Math.max(5, height * 0.55), height, Math.max(5, height * 0.72)],
+                opacity: [0.45, 1, 0.6],
+              }}
+              transition={{
+                duration: 1.05 + (index % 4) * 0.12,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: index * 0.03,
+              }}
+              className="block min-w-1 flex-1 rounded-full bg-gradient-to-t from-indigo-500 via-violet-500 to-fuchsia-400"
+              style={{ maxWidth: 12 }}
+            />
+          ))}
+        </div>
+
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="rounded-2xl border border-white/75 bg-white/55 px-3 py-2.5 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">5 min</p>
+            <p className="mt-0.5 text-lg font-black tabular-nums text-slate-900 dark:text-white">
+              {pulse.fiveMinuteEvents}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/75 bg-white/55 px-3 py-2.5 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">1 hour</p>
+            <p className="mt-0.5 text-lg font-black tabular-nums text-slate-900 dark:text-white">
+              {pulse.hourEvents}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/75 bg-white/55 px-3 py-2.5 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Universes</p>
+            <p className="mt-0.5 text-lg font-black tabular-nums text-slate-900 dark:text-white">
+              {universes.length}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-white/70 bg-white/45 px-3 py-2.5 text-xs dark:border-white/10 dark:bg-white/[0.035]">
+          <Sparkles size={13} className="shrink-0 text-violet-500" />
+          {loading ? (
+            <span className="text-slate-400">신호 수신 중...</span>
+          ) : latestPost ? (
+            <>
+              <span className="min-w-0 flex-1 truncate font-bold text-slate-700 dark:text-slate-200">
+                {latestPost.title || "새 게시글"}
+              </span>
+              <span className="shrink-0 text-[10px] text-slate-400">
+                {getRelativeTime(latestPost.created_at, now)}
+              </span>
+            </>
+          ) : (
+            <span className="text-slate-400">아직 잡힌 신호가 없어요.</span>
+          )}
+        </div>
+      </div>
+    </motion.section>,
+    portalTarget
   );
 }
