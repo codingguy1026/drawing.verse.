@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import HomeClient from "./home-client";
+import VersePulse from "@/components/Home/VersePulse";
 
 export const metadata: Metadata = {
   title: "Drawing Verse | 너만의 우주를 그리다",
@@ -14,5 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <HomeClient />;
+  return (
+    <>
+      <VersePulse />
+      <HomeClient />
+    </>
+  );
 }
