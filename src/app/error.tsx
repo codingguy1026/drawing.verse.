@@ -127,16 +127,16 @@ function DguyMascot() {
             strokeLinecap="round"
           />
 
-          {/* Original dot eyes. */}
-          <circle cx="226" cy="183" r="5.5" fill="#f5f3ff" />
-          <circle cx="333" cy="188" r="5.5" fill="#f5f3ff" />
+          {/* Tiny dot eyes matched to Dguy's profile expression. */}
+          <circle cx="235" cy="184" r="3.2" fill="#f5f3ff" />
+          <circle cx="320" cy="181" r="3.2" fill="#f5f3ff" />
 
-          {/* Original long smile. */}
+          {/* Small, simple smile matched to the profile avatar. */}
           <path
-            d="M192 218 C214 255 257 270 301 269 C338 269 366 259 381 247"
+            d="M233 214 C248 228 268 233 286 231 C303 229 316 222 325 213"
             fill="none"
             stroke="#f5f3ff"
-            strokeWidth="6"
+            strokeWidth="5"
             strokeLinecap="round"
           />
         </g>
