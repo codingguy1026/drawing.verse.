@@ -68,7 +68,6 @@ function DguyMascot() {
         />
 
         <g transform="rotate(-4 280 200)" filter="url(#dguySoftShadow)">
-          {/* The loose outer line is intentionally preserved from the original Dguy drawing. */}
           <path
             d="M169 105 C132 132 111 179 108 212 C105 241 130 262 158 286 C184 309 205 329 239 339 C264 347 286 348 305 355 C337 345 375 329 402 306 C427 285 451 260 453 239 C454 217 432 162 402 110"
             fill="none"
@@ -79,7 +78,6 @@ function DguyMascot() {
             opacity="0.92"
           />
 
-          {/* Signature top stroke / tuft. */}
           <path
             d="M191 96 C215 101 288 52 327 36 C341 30 350 42 360 56 C375 77 390 99 405 123"
             fill="none"
@@ -89,7 +87,6 @@ function DguyMascot() {
             strokeLinejoin="round"
           />
 
-          {/* Main square body. */}
           <rect
             x="155"
             y="90"
@@ -109,7 +106,6 @@ function DguyMascot() {
             fill="url(#dguyShine)"
           />
 
-          {/* Small edge highlights keep it glossy without turning Dguy into a robot. */}
           <path
             d="M181 108 H366"
             fill="none"
@@ -127,13 +123,13 @@ function DguyMascot() {
             strokeLinecap="round"
           />
 
-          {/* Tiny dot eyes matched to Dguy's profile expression. */}
-          <circle cx="235" cy="184" r="3.2" fill="#f5f3ff" />
-          <circle cx="320" cy="181" r="3.2" fill="#f5f3ff" />
+          {/* Tiny dot eyes stay faithful to Dguy, but sit a touch lower for a tired look. */}
+          <circle cx="238" cy="188" r="3.2" fill="#f5f3ff" />
+          <circle cx="318" cy="186" r="3.2" fill="#f5f3ff" />
 
-          {/* Small, simple smile matched to the profile avatar. */}
+          {/* Error-state expression: a small worried frown instead of the normal smile. */}
           <path
-            d="M233 214 C248 228 268 233 286 231 C303 229 316 222 325 213"
+            d="M236 233 C249 219 269 214 287 216 C302 218 314 224 322 234"
             fill="none"
             stroke="#f5f3ff"
             strokeWidth="5"
@@ -141,7 +137,6 @@ function DguyMascot() {
           />
         </g>
 
-        {/* Tiny system-error ellipses, matching the simple language of the mascot. */}
         <g fill="#a78bfa" opacity="0.78" filter="url(#dguyGlow)">
           <circle cx="92" cy="252" r="7" />
           <circle cx="114" cy="255" r="7" />
