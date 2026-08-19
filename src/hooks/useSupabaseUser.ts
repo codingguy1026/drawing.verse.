@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase/client"; // ✅ 이거 추가!!
+import { supabase } from "@/lib/supabase/client";
 
 type UseSupabaseUserResult = {
   user: User | null;
@@ -24,7 +24,10 @@ export function useSupabaseUser(): UseSupabaseUserResult {
       if (!isMounted) return;
 
       if (error) {
-        console.warn("Failed to get user:", error);
+        // Logged-out visitors are a normal state, not a console-worthy warning.
+        if (error.name !== "AuthSessionMissingError") {
+          console.warn("Failed to get user:", error);
+        }
         setUser(null);
       } else {
         setUser(data.user ?? null);
