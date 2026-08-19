@@ -199,7 +199,7 @@ export default function VersePulse() {
         <div className="relative grid gap-5 p-5 md:p-6 lg:grid-cols-[1.15fr_0.85fr] lg:p-7">
           <div className="flex min-w-0 flex-col justify-between gap-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em] text-violet-600 dark:text-violet-300">
                   <Radio size={14} className="animate-pulse" />
                   Live network
@@ -215,6 +215,39 @@ export default function VersePulse() {
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   지금 Drawing Verse 전체에서 뛰고 있는 활동 신호예요.
                 </p>
+
+                <div className="mt-5 grid w-full max-w-2xl grid-cols-1 gap-2 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-white/80 bg-white/55 px-3.5 py-3 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+                    <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
+                      Network
+                    </div>
+                    <p className="mt-1.5 text-sm font-black text-slate-800 dark:text-slate-100">
+                      {loading ? "연결 중" : "ONLINE"}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/80 bg-white/55 px-3.5 py-3 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+                    <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
+                      <Sparkles size={11} className="text-violet-500" />
+                      Records
+                    </div>
+                    <p className="mt-1.5 text-sm font-black tabular-nums text-slate-800 dark:text-slate-100">
+                      {posts.length + universes.length}
+                      <span className="ml-1 text-[10px] font-bold text-slate-400">signals</span>
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/80 bg-white/55 px-3.5 py-3 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+                    <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
+                      <Radio size={11} className="text-sky-500" />
+                      Realtime
+                    </div>
+                    <p className="mt-1.5 text-sm font-black text-slate-800 dark:text-slate-100">
+                      {loading ? "WAIT" : "LISTENING"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="text-right">
