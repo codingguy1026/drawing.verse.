@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import GalleryClient from "./gallery-client";
+import MonthlyCreators from "./MonthlyCreators";
 
 export const metadata: Metadata = {
   title: "Gallery | Drawing Verse 아트워크 갤러리",
@@ -7,5 +8,17 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <GalleryClient />;
+  return (
+    <>
+      <style>{`
+        .live-gallery-wrapper main > div:last-child > section:last-child {
+          display: none;
+        }
+      `}</style>
+      <div className="live-gallery-wrapper">
+        <GalleryClient />
+      </div>
+      <MonthlyCreators />
+    </>
+  );
 }
