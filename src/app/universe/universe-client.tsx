@@ -7,15 +7,12 @@ import UniverseSidebar from "@/components/Universe/UniverseSidebar";
 import UniverseToolbar from "@/components/Universe/UniverseToolbar";
 import { supabase } from "@/lib/supabase/client";
 import { useEffect } from "react";
-import type { UniverseItem, UniverseCategory } from "@/components/Universe/universe.types";
+import type { UniverseItem, UniverseCategory, UniverseGalaxy } from "@/components/Universe/universe.types";
 
 const UniverseHero = dynamic(() => import("@/components/Universe/UniverseHero"), { ssr: false });
 const CosmicGalaxyExplorer = dynamic(() => import("@/components/Universe/CosmicGalaxyExplorer"), { ssr: false });
 
-import {
-  quickTags,
-  universeCategories,
-} from "@/components/Universe/universe.mock";
+import { universeCategories } from "@/components/Universe/universe.mock";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -33,13 +30,16 @@ export default function UniversePage() {
       try {
         const { data, error } = await supabase
           .from("universes")
-          .select("*")
+          .select("*, galaxy:galaxies(id, slug, name, description)")
           .order("created_at", { ascending: false });
 
         if (error) throw error;
 
         if (data) {
-          const mappedUniverses: UniverseItem[] = data.map((item: any) => ({
+          const mappedUniverses: UniverseItem[] = data.map((item) => {
+            const galaxy = Array.isArray(item.galaxy) ? item.galaxy[0] : item.galaxy;
+
+            return ({
             id: item.id,
             slug: item.slug,
             name: item.name,
@@ -49,7 +49,9 @@ export default function UniversePage() {
             posts: item.post_count || 0,
             updatedAt: "최근", 
             tags: item.tags || [],
-          }));
+            galaxy: (galaxy || null) as UniverseGalaxy | null,
+          });
+          });
           setRealUniverses(mappedUniverses);
         }
       } catch (error) {
@@ -81,6 +83,7 @@ export default function UniversePage() {
           item.name,
           item.description,
           item.category,
+          item.galaxy?.name ?? "",
           ...(item.tags ?? []),
         ]
           .join(" ")
@@ -140,8 +143,6 @@ export default function UniversePage() {
             <UniverseHero
               search={search}
               onSearchChange={setSearch}
-              quickTags={quickTags}
-              onTagClick={(tag) => setSearch(tag)}
             />
           </motion.div>
 

@@ -6,8 +6,6 @@ import { Search, Sparkles } from "lucide-react";
 interface UniverseHeroProps {
   search: string;
   onSearchChange: (value: string) => void;
-  quickTags: string[];
-  onTagClick: (tag: string) => void;
 }
 
 const particles = [
@@ -81,6 +79,8 @@ export default function UniverseHero({
   search,
   onSearchChange,
 }: UniverseHeroProps) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/60 px-5 py-7 shadow-[0_24px_70px_rgba(74,58,130,0.08)] backdrop-blur-3xl transition-colors duration-500 sm:px-7 sm:py-8 lg:px-10 lg:py-9 dark:border-white/10 dark:bg-[#070812]/64 dark:shadow-[0_24px_70px_rgba(0,0,0,0.42)]">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -98,7 +98,7 @@ export default function UniverseHero({
               width: particle.size,
               height: particle.size,
             }}
-            animate={{ opacity: [0.16, 0.82, 0.16], scale: [1, 1.7, 1] }}
+            animate={reduceMotion ? undefined : { opacity: [0.16, 0.82, 0.16], scale: [1, 1.7, 1] }}
             transition={{
               duration: 3.2 + (index % 4) * 0.65,
               repeat: Infinity,
@@ -157,6 +157,7 @@ export default function UniverseHero({
             </span>
             <input
               type="search"
+              aria-label="유니버스 검색"
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder="유니버스 검색"

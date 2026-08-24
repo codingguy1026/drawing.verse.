@@ -8,6 +8,13 @@ export type UniverseCategory =
   | "캐릭터"
   | "구독 중";
 
+export interface UniverseGalaxy {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+}
+
 export interface UniverseItem {
   id: string;
   slug: string;
@@ -20,4 +27,5 @@ export interface UniverseItem {
   isTrending?: boolean;
   isNew?: boolean;
   tags?: string[];
+  galaxy?: UniverseGalaxy | null;
 }

@@ -389,13 +389,11 @@ function MoonCluster({ moons }: { moons: string[] }) {
 }
 
 function PlanetNode({
-  system,
   satellite,
   x,
   y,
   onWarp,
 }: {
-  system: System;
   satellite: Satellite;
   x: string;
   y: string;
@@ -410,7 +408,6 @@ function PlanetNode({
       initial={{ opacity: 0, scale: 0.65 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
-      onMouseEnter={() => undefined}
     >
       <MoonCluster moons={satellite.moons} />
       <button
@@ -436,7 +433,7 @@ function PlanetNode({
 
 function buildSystems(items?: UniverseItem[]) {
   const systems = JSON.parse(JSON.stringify(galaxySystems)) as System[];
-  if (!items || items.length === 0) return systems;
+  if (!items || items.length === 0) return [];
 
   systems.forEach((system) => {
     system.satellites = [];
@@ -445,7 +442,7 @@ function buildSystems(items?: UniverseItem[]) {
 
   items.forEach((item, index) => {
     const hash = hashString(`${item.id}-${item.slug}-${item.name}`);
-    let system = systems.find((candidate) => candidate.category === item.category);
+    let system = systems.find((candidate) => candidate.id === item.galaxy?.slug);
     if (!system) system = systems[index % systems.length];
 
     const satelliteIndex = system.satellites.length;
@@ -545,6 +542,10 @@ export default function CosmicGalaxyExplorer({ items }: { items?: UniverseItem[]
 
   function handleWarp(satellite: Satellite) {
     if (!satellite.slug) return;
+    if (prefersReducedMotion) {
+      router.push(`/universe/${satellite.slug}`);
+      return;
+    }
     setWarpTarget(satellite);
     warpTimerRef.current = window.setTimeout(() => {
       router.push(`/universe/${satellite.slug}`);
@@ -580,10 +581,22 @@ export default function CosmicGalaxyExplorer({ items }: { items?: UniverseItem[]
         .galaxy-nebula { animation: galaxyNebula 18s ease-in-out infinite; }
         .galaxy-system-star { animation: galaxyStarPulse 5.8s ease-in-out infinite; }
         .warp-ray { animation: warpRay .9s cubic-bezier(.15,.75,.2,1) infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .galaxy-star, .galaxy-nebula, .galaxy-system-star, .warp-ray { animation: none !important; }
+        }
       `}} />
 
       <GalaxyBackdrop />
       <StarField />
+
+      {systems.length === 0 && (
+        <div className="absolute inset-0 z-50 grid place-items-center px-6 text-center">
+          <div className="rounded-[1.5rem] border border-white/10 bg-[#080914]/85 px-7 py-5 shadow-2xl backdrop-blur-xl">
+            <p className="text-base font-black text-white/80 sm:text-lg">아직 만들어진 유니버스가 없어요</p>
+            <p className="mt-2 text-xs font-medium text-white/40 sm:text-sm">첫 번째 유니버스를 만들어 새로운 은하를 밝혀보세요.</p>
+          </div>
+        </div>
+      )}
 
       {systems.map((system) => (
         <OrbitRings key={`orbit-${system.id}`} system={system} scale={orbitScale} />
@@ -596,7 +609,6 @@ export default function CosmicGalaxyExplorer({ items }: { items?: UniverseItem[]
       {planets.map(({ system, satellite, x, y }) => (
         <PlanetNode
           key={`${system.id}-${satellite.slug || satellite.name}`}
-          system={system}
           satellite={satellite}
           x={x}
           y={y}
