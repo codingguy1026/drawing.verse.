@@ -1,12 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import {
+  ArrowLeft,
+  Eye,
+  Heart,
+  Loader2,
+  MessageCircle,
+  Send,
+  Star,
+  UserRound,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
 type Comment = {
   id: string;
+  userId?: string | null;
   author: string;
   content: string;
   date: string;
@@ -23,94 +34,63 @@ type Post = {
   tag?: string | null;
   universeId?: string | null;
   likes: number;
+  imageUrl?: string | null;
+  userId?: string | null;
 };
-
-type CurrentUser = {
-  id: string;
-  email: string | null;
-  name: string;
-};
-
-const universes = [
-  { id: "webtoon", name: "웹툰 유니버스" },
-  { id: "illust", name: "일러스트 유니버스" },
-  { id: "character", name: "캐릭터 유니버스" },
-  { id: "sketch", name: "스케치 유니버스" },
-  { id: "free", name: "자유 유니버스" },
-  { id: "fanart", name: "팬아트 유니버스" },
-];
-
-function getUniverseName(id?: string | null) {
-  const universe = universes.find((item) => item.id === id);
-  return universe ? universe.name.replace(" 유니버스", "") : "미분류";
-}
-
-function getUserName(user: {
-  email?: string | null;
-  user_metadata?: Record<string, unknown>;
-}) {
-  const metadata = user.user_metadata ?? {};
-  const candidates = [
-    metadata.display_name,
-    metadata.full_name,
-    metadata.name,
-    metadata.nickname,
-  ];
-
-  const fromMetadata = candidates.find(
-    (value): value is string => typeof value === "string" && value.trim().length > 0
-  );
-
-  if (fromMetadata) return fromMetadata.trim();
-  return user.email?.split("@")[0] || "익명";
-}
 
 export default function PostDetailPage() {
-  const params = useParams();
+  const params = useParams<{ id: string | string[] }>();
   const router = useRouter();
-  const rawId = (params as { id?: string | string[] } | null)?.id;
-  const id = typeof rawId === "string" ? rawId : rawId?.[0];
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [commentContent, setCommentContent] = useState("");
-  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
-  const [commentError, setCommentError] = useState<string | null>(null);
-
-  const isLoggedIn = !!currentUser;
+  const [userId, setUserId] = useState<string | null>(null);
+  const [comment, setComment] = useState("");
+  const [commentSaving, setCommentSaving] = useState(false);
+  const [starred, setStarred] = useState(false);
+  const [starLoading, setStarLoading] = useState(false);
 
   useEffect(() => {
-    if (!id) {
-      setError("해당 글을 찾을 수 없어요.");
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
 
     async function load() {
-      try {
-        setLoading(true);
-        setError(null);
+      if (!id) return;
+      setLoading(true);
+      setError(null);
 
-        const res = await fetch(`/api/posts/${encodeURIComponent(id)}`, {
-          cache: "no-store",
-        });
-        const json = await res.json();
+      try {
+        const [postResponse, authResult] = await Promise.all([
+          fetch(`/api/posts/${encodeURIComponent(id)}`, { cache: "no-store" }),
+          supabase.auth.getUser(),
+        ]);
+        const json = await postResponse.json();
 
         if (cancelled) return;
-
-        if (!res.ok || !json.ok) {
-          setError(json.error || "해당 글을 찾을 수 없어요.");
+        if (!postResponse.ok || !json.ok) {
+          setError(json.error || "게시글을 찾을 수 없어요.");
           return;
         }
 
         setPost(json.data as Post);
+        const currentUser = authResult.data.user;
+        setUserId(currentUser?.id ?? null);
+
+        if (currentUser) {
+          const postId = Number(id);
+          if (Number.isSafeInteger(postId)) {
+            const { data: star } = await supabase
+              .from("post_stars")
+              .select("id")
+              .eq("post_id", postId)
+              .eq("user_id", currentUser.id)
+              .maybeSingle();
+            if (!cancelled) setStarred(Boolean(star));
+          }
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Post load error:", err);
         if (!cancelled) setError("게시글을 불러오지 못했어요.");
       } finally {
         if (!cancelled) setLoading(false);
@@ -118,347 +98,127 @@ export default function PostDetailPage() {
     }
 
     load();
-
     return () => {
       cancelled = true;
     };
   }, [id]);
 
-  useEffect(() => {
-    let mounted = true;
-
-    const applyUser = (user: {
-      id: string;
-      email?: string | null;
-      user_metadata?: Record<string, unknown>;
-    } | null) => {
-      if (!mounted) return;
-
-      if (!user) {
-        setCurrentUser(null);
-      } else {
-        setCurrentUser({
-          id: user.id,
-          email: user.email ?? null,
-          name: getUserName(user),
-        });
-      }
-
-      setAuthLoading(false);
-    };
-
-    supabase.auth
-      .getUser()
-      .then(({ data }) => applyUser(data.user))
-      .catch((err) => {
-        console.error("Supabase auth check failed:", err);
-        applyUser(null);
-      });
-
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      applyUser(session?.user ?? null);
-    });
-
-    return () => {
-      mounted = false;
-      data.subscription.unsubscribe();
-    };
-  }, []);
-
-  const handleAddComment = async () => {
-    if (!post || !id || isCommentSubmitting) return;
-
-    const content = commentContent.trim();
-    if (!content) {
-      setCommentError("댓글 내용을 입력해 주세요.");
+  async function toggleStar() {
+    if (!id || starLoading) return;
+    if (!userId) {
+      router.push("/auth/login");
       return;
     }
 
-    setIsCommentSubmitting(true);
-    setCommentError(null);
-
+    setStarLoading(true);
     try {
-      const res = await fetch(`/api/comments/${encodeURIComponent(id)}`, {
+      const response = await fetch(`/api/posts/${encodeURIComponent(id)}/star`, {
+        method: "POST",
+      });
+      const json = await response.json();
+      if (!response.ok) throw new Error(json.error || "좋아요를 변경하지 못했어요.");
+
+      setStarred(Boolean(json.isStarred));
+      setPost((current) =>
+        current ? { ...current, likes: Number(json.like_count ?? current.likes) } : current
+      );
+    } catch (error) {
+      console.error("Star toggle error:", error);
+    } finally {
+      setStarLoading(false);
+    }
+  }
+
+  async function addComment() {
+    if (!post || !id || commentSaving) return;
+    if (!userId) {
+      router.push("/auth/login");
+      return;
+    }
+
+    const content = comment.trim();
+    if (!content) return;
+
+    setCommentSaving(true);
+    try {
+      const response = await fetch(`/api/comments/${encodeURIComponent(id)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
-      const json = await res.json();
-
-      if (res.status === 401) {
-        setCurrentUser(null);
-        setCommentError("로그인이 필요해요.");
-        return;
-      }
-
-      if (!res.ok || !json.ok) {
-        setCommentError(json.error || "댓글 등록에 실패했어요.");
-        return;
-      }
+      const json = await response.json();
+      if (!response.ok || !json.ok) throw new Error(json.error || "댓글을 저장하지 못했어요.");
 
       setPost((current) =>
         current
           ? { ...current, comments: [...current.comments, json.data as Comment] }
           : current
       );
-      setCommentContent("");
-    } catch (err) {
-      console.error(err);
-      setCommentError("댓글 등록 중 네트워크 오류가 발생했어요.");
+      setComment("");
+    } catch (error) {
+      console.error("Comment save error:", error);
+      setError(error instanceof Error ? error.message : "댓글을 저장하지 못했어요.");
     } finally {
-      setIsCommentSubmitting(false);
+      setCommentSaving(false);
     }
-  };
+  }
+
+  if (loading) {
+    return <main className="grid min-h-[70vh] place-items-center bg-slate-50 dark:bg-[#070711]"><Loader2 className="h-7 w-7 animate-spin text-violet-500" /></main>;
+  }
+
+  if (error && !post) {
+    return (
+      <main className="grid min-h-[70vh] place-items-center bg-slate-50 px-4 dark:bg-[#070711] dark:text-white">
+        <div className="text-center"><p className="text-sm text-rose-500">{error}</p><Link href="/" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white dark:bg-white dark:text-slate-950"><ArrowLeft className="h-4 w-4" /> 홈으로</Link></div>
+      </main>
+    );
+  }
+
+  if (!post) return null;
 
   return (
-    <div className="board">
-      <div className="surface" style={{ padding: "24px 24px 32px" }}>
-        {loading && <p>불러오는 중...</p>}
+    <main className="min-h-screen bg-slate-50 text-slate-950 dark:bg-[#070711] dark:text-white">
+      <div className="mx-auto max-w-4xl px-4 py-7 sm:px-6">
+        <Link href={post.universeId ? `/universe/${post.universeId}` : "/"} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm font-bold text-slate-500 hover:bg-slate-100 dark:text-white/45 dark:hover:bg-white/5"><ArrowLeft className="h-4 w-4" /> {post.universeId ? "유니버스로" : "홈으로"}</Link>
 
-        {!loading && error && (
-          <div>
-            <p style={{ color: "var(--error)", marginBottom: "16px" }}>
-              {error}
-            </p>
-            <button className="btn outline" onClick={() => router.push("/")}>
-              목록으로 돌아가기
-            </button>
+        <article className="mt-4 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0d0d19]">
+          {post.imageUrl && <div className="bg-slate-100 dark:bg-white/5"><img src={post.imageUrl} alt={post.title} className="max-h-[560px] w-full object-contain" /></div>}
+
+          <div className="p-5 sm:p-7">
+            <div className="flex flex-wrap gap-2 text-xs font-black text-violet-600 dark:text-violet-300">{post.tag && <span className="rounded-full bg-violet-50 px-3 py-1.5 dark:bg-violet-400/10">{post.tag}</span>}{post.universeId && <Link href={`/universe/${post.universeId}`} className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-500 dark:bg-white/5 dark:text-white/45">{post.universeId}</Link>}</div>
+            <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{post.title}</h1>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-400"><span className="inline-flex items-center gap-1.5"><UserRound className="h-4 w-4" /> {post.author}</span><span>·</span><span>{post.date}</span></div>
+
+            <div className="mt-7 whitespace-pre-wrap text-[15px] leading-8 text-slate-700 dark:text-white/70 sm:text-base">{post.content}</div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-5 dark:border-white/10">
+              <button type="button" onClick={toggleStar} disabled={starLoading} className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-black ${starred ? "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200" : "bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-white/50"}`}><Star className={`h-4 w-4 ${starred ? "fill-current" : ""}`} /> {post.likes}</button>
+              <span className="inline-flex min-h-11 items-center gap-2 rounded-full bg-slate-100 px-4 text-sm font-bold text-slate-500 dark:bg-white/5 dark:text-white/45"><MessageCircle className="h-4 w-4" /> {post.comments.length}</span>
+              <span className="inline-flex min-h-11 items-center gap-2 rounded-full bg-slate-100 px-4 text-sm font-bold text-slate-500 dark:bg-white/5 dark:text-white/45"><Eye className="h-4 w-4" /> {post.views}</span>
+            </div>
           </div>
-        )}
+        </article>
 
-        {!loading && !error && post && (
-          <>
-            <h1
-              style={{
-                fontSize: "1.6rem",
-                marginBottom: "10px",
-                color: "var(--text)",
-              }}
-            >
-              {post.title}
-            </h1>
+        <section className="mt-5 rounded-[2rem] border border-slate-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-[#0d0d19]">
+          <div className="flex items-center justify-between"><h2 className="text-xl font-black">댓글</h2><span className="text-sm font-bold text-slate-400">{post.comments.length}개</span></div>
 
-            <div
-              style={{
-                fontSize: "0.85rem",
-                color: "var(--muted)",
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "8px",
-                justifyContent: "space-between",
-                borderBottom: "1px solid var(--border)",
-                paddingBottom: "8px",
-                marginBottom: "16px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                <span>{post.author}</span>
-                <span>·</span>
-                <span>{post.date}</span>
+          <div className="mt-4 space-y-3">
+            {post.comments.length ? post.comments.map((item) => (
+              <article key={item.id} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/[0.04]"><p className="text-xs font-bold text-slate-400">{item.author} · {item.date}</p><p className="mt-2 whitespace-pre-wrap text-sm leading-6">{item.content}</p></article>
+            )) : <p className="py-6 text-center text-sm text-slate-400">아직 댓글이 없어요.</p>}
+          </div>
 
-                {post.tag && (
-                  <>
-                    <span>·</span>
-                    <span className="chip">{post.tag}</span>
-                  </>
-                )}
+          {userId ? (
+            <div className="mt-5 flex gap-2 border-t border-slate-100 pt-5 dark:border-white/10"><textarea value={comment} onChange={(event) => setComment(event.target.value)} maxLength={3000} rows={2} placeholder="댓글을 입력하세요" className="min-h-12 flex-1 resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base outline-none focus:border-violet-400 dark:border-white/10 dark:bg-white/5" /><button type="button" onClick={addComment} disabled={commentSaving || !comment.trim()} className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-violet-600 text-white disabled:opacity-35" aria-label="댓글 등록">{commentSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</button></div>
+          ) : (
+            <Link href="/auth/login" className="mt-5 flex min-h-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-sm font-black text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white/60">로그인하고 댓글 쓰기</Link>
+          )}
 
-                {post.universeId && (
-                  <>
-                    <span>·</span>
-                    <span className="chip">{getUniverseName(post.universeId)}</span>
-                  </>
-                )}
-              </div>
-
-              <div style={{ display: "flex", gap: "10px" }}>
-                <span>조회 {post.views}</span>
-                <span>댓글 {post.comments.length}</span>
-                <span>좋아요 {post.likes}</span>
-              </div>
-            </div>
-
-            <div
-              style={{
-                minHeight: "200px",
-                fontSize: "0.95rem",
-                lineHeight: 1.7,
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {post.content}
-            </div>
-
-            <div
-              style={{
-                marginTop: "24px",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <Link href="/" className="btn outline">
-                목록으로
-              </Link>
-              <Link href="/post/new" className="btn primary">
-                새 글 쓰기
-              </Link>
-            </div>
-
-            <div
-              style={{
-                marginTop: "32px",
-                paddingTop: "24px",
-                borderTop: "1px solid var(--border)",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "1.2rem",
-                  marginBottom: "12px",
-                  color: "var(--dream-ink)",
-                }}
-              >
-                댓글 {post.comments.length > 0 && `(${post.comments.length})`}
-              </h2>
-
-              {post.comments.length === 0 && (
-                <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
-                  아직 댓글이 없어요. 첫 댓글의 주인공이 되어봐! ✏️
-                </p>
-              )}
-
-              {post.comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  style={{
-                    padding: "10px 0",
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.9rem",
-                      fontWeight: 600,
-                      marginBottom: "4px",
-                    }}
-                  >
-                    {comment.author}
-                    <span
-                      style={{
-                        marginLeft: "8px",
-                        fontSize: "0.75rem",
-                        color: "var(--muted)",
-                      }}
-                    >
-                      {comment.date}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: "0.9rem", whiteSpace: "pre-wrap" }}>
-                    {comment.content}
-                  </div>
-                </div>
-              ))}
-
-              <div
-                style={{
-                  marginTop: "18px",
-                  padding: "14px 16px",
-                  borderRadius: "12px",
-                  backgroundColor: "rgba(248, 249, 252, 0.9)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                {authLoading ? (
-                  <p
-                    style={{
-                      textAlign: "center",
-                      color: "var(--muted)",
-                      fontSize: "0.9rem",
-                    }}
-                  >
-                    로그인 상태 확인 중...
-                  </p>
-                ) : !isLoggedIn ? (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "20px 10px",
-                      color: "var(--muted)",
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    <p>💬 댓글을 남기려면 로그인이 필요해요.</p>
-                    <Link
-                      href="/login"
-                      style={{
-                        color: "var(--link)",
-                        textDecoration: "underline",
-                        fontWeight: 600,
-                      }}
-                    >
-                      로그인 하러 가기 →
-                    </Link>
-                  </div>
-                ) : (
-                  <>
-                    <p
-                      style={{
-                        color: "var(--muted)",
-                        fontSize: "0.82rem",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      {currentUser.name} 님으로 댓글 작성
-                    </p>
-                    <textarea
-                      className="input"
-                      style={{ minHeight: "80px", resize: "vertical" }}
-                      placeholder="댓글을 입력해 주세요."
-                      value={commentContent}
-                      maxLength={3000}
-                      onChange={(e) => setCommentContent(e.target.value)}
-                    />
-                    {commentError && (
-                      <p
-                        style={{
-                          color: "var(--error)",
-                          fontSize: "0.85rem",
-                          marginTop: "8px",
-                        }}
-                      >
-                        {commentError}
-                      </p>
-                    )}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        marginTop: "10px",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        onClick={handleAddComment}
-                        disabled={isCommentSubmitting}
-                      >
-                        {isCommentSubmitting ? "등록 중..." : "댓글 등록"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </>
-        )}
+          {error && <p className="mt-3 text-sm font-semibold text-rose-500">{error}</p>}
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
