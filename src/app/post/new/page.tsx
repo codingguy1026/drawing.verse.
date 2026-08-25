@@ -1,143 +1,97 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2, PenLine } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
+
+type UniverseOption = { slug: string; name: string };
 
 export default function NewPostPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [universeId, setUniverseId] = useState("webtoon");
+  const [universeSlug, setUniverseSlug] = useState("");
   const [content, setContent] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [universes, setUniverses] = useState<UniverseOption[]>([]);
+  const [loadingUniverses, setLoadingUniverses] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSubmitting) return;
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const { data, error } = await supabase
+        .from("universes")
+        .select("slug,name")
+        .order("name", { ascending: true });
+      if (cancelled) return;
+      if (error) setError("유니버스 목록을 불러오지 못했어요.");
+      else setUniverses((data ?? []) as UniverseOption[]);
+      setLoadingUniverses(false);
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    setIsSubmitting(true);
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting || !title.trim() || !content.trim()) return;
+
+    setSubmitting(true);
     setError(null);
-
     try {
-      const res = await fetch("/api/posts", {
+      const response = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title,
-          universeSlug: universeId,
-          content,
+          title: title.trim(),
+          content: content.trim(),
+          universeSlug: universeSlug || "",
         }),
       });
+      const json = await response.json();
 
-      const json = await res.json();
-
-      if (res.status === 401) {
-        router.push("/login");
+      if (response.status === 401) {
+        router.push("/auth/login");
         return;
       }
-
-      if (!res.ok || !json.ok) {
-        setError(json.error || "게시물 등록에 실패했어요.");
-        return;
+      if (!response.ok || !json.ok) {
+        throw new Error(json.error || "게시물을 등록하지 못했어요.");
       }
 
       router.push(`/post/${json.data.id}`);
       router.refresh();
-    } catch (err) {
-      console.error(err);
-      setError("게시물 등록 중 네트워크 오류가 발생했어요.");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "게시물을 등록하지 못했어요.");
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
-  };
+  }
 
   return (
-    <div className="board">
-      <div className="surface" style={{ padding: "2rem" }}>
-        <h1
-          style={{
-            fontSize: "1.8rem",
-            fontWeight: 800,
-            color: "var(--dream-ink)",
-            marginBottom: "1rem",
-          }}
-        >
-          ✏️ 새 게시물 작성
-        </h1>
+    <main className="min-h-screen bg-slate-50 text-slate-950 dark:bg-[#070711] dark:text-white">
+      <div className="mx-auto max-w-3xl px-4 py-7 sm:px-6">
+        <header className="rounded-[2rem] border border-slate-200 bg-white p-6 dark:border-white/10 dark:bg-[#0d0d19]">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">New post</p>
+          <h1 className="mt-2 flex items-center gap-2 text-3xl font-black"><PenLine className="h-6 w-6" /> 새 게시물 작성</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-white/45">유니버스를 선택하거나 전체 게시글로 올릴 수 있어요.</p>
+        </header>
 
-        <p className="text-gray-600" style={{ marginBottom: "1.5rem" }}>
-          멋진 그림과 이야기를 커뮤니티에 공유해보세요!
-        </p>
+        <form onSubmit={submit} className="mt-5 space-y-4 rounded-[2rem] border border-slate-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-[#0d0d19]">
+          <label className="block"><span className="mb-2 block text-sm font-black">제목</span><input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={160} required className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-base outline-none focus:border-violet-400 dark:border-white/10 dark:bg-white/5" /></label>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div>
-            <label className="block mb-2 font-semibold text-gray-700">
-              제목
-            </label>
-            <input
-              type="text"
-              className="input"
-              placeholder="제목을 입력하세요"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={160}
-              required
-            />
-          </div>
+          <label className="block"><span className="mb-2 block text-sm font-black">유니버스</span><select value={universeSlug} onChange={(e) => setUniverseSlug(e.target.value)} disabled={loadingUniverses} className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-base outline-none dark:border-white/10 dark:bg-white/5"><option value="">전체 / 미분류</option>{universes.map((universe) => <option key={universe.slug} value={universe.slug}>{universe.name}</option>)}</select></label>
 
-          <div>
-            <label className="block mb-2 font-semibold text-gray-700">
-              유니버스 선택
-            </label>
-            <select
-              className="input"
-              value={universeId}
-              onChange={(e) => setUniverseId(e.target.value)}
-            >
-              <option value="webtoon">웹툰</option>
-              <option value="illust">일러스트</option>
-              <option value="character">캐릭터</option>
-              <option value="sketch">스케치</option>
-              <option value="free">자유</option>
-              <option value="fanart">팬아트</option>
-            </select>
-          </div>
+          <label className="block"><span className="mb-2 block text-sm font-black">내용</span><textarea value={content} onChange={(e) => setContent(e.target.value)} maxLength={20000} rows={12} required className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base leading-7 outline-none focus:border-violet-400 dark:border-white/10 dark:bg-white/5" /></label>
 
-          <div>
-            <label className="block mb-2 font-semibold text-gray-700">
-              내용
-            </label>
-            <textarea
-              className="input"
-              placeholder="내용을 입력하세요"
-              value={content}
-              rows={8}
-              maxLength={20000}
-              onChange={(e) => setContent(e.target.value)}
-              required
-            />
-          </div>
+          {error && <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:bg-rose-400/10 dark:text-rose-100">{error}</p>}
 
-          {error && (
-            <p style={{ color: "var(--error)", fontSize: "0.9rem" }}>{error}</p>
-          )}
-
-          <div className="flex gap-3 mt-2">
-            <button
-              type="submit"
-              className="btn primary"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "등록 중..." : "게시물 등록"}
-            </button>
-
-            <Link href="/" className="btn outline">
-              취소
-            </Link>
-          </div>
+          <div className="flex flex-wrap gap-2"><button type="submit" disabled={submitting || !title.trim() || !content.trim()} className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-violet-600 px-5 text-sm font-black text-white disabled:opacity-40">{submitting && <Loader2 className="h-4 w-4 animate-spin" />}{submitting ? "등록 중..." : "게시물 등록"}</button><Link href="/" className="inline-flex min-h-12 items-center rounded-xl border border-slate-200 px-5 text-sm font-black dark:border-white/10">취소</Link></div>
         </form>
       </div>
-    </div>
+    </main>
   );
 }
