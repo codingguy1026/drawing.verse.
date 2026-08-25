@@ -20,6 +20,8 @@ export default function LoginPage() {
     setMsg(null);
     setMsgType(null);
 
+    const cleanEmail = email.trim().toLowerCase();
+
     const kill = window.setTimeout(() => {
       setLoading(false);
       setMsg("로그인이 지연되고 있어요… 새로고침 후 다시 시도해봐요 🥲");
@@ -27,7 +29,7 @@ export default function LoginPage() {
     }, 10000);
 
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: cleanEmail,
       password,
     });
 
@@ -35,6 +37,17 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
+      const code = "code" in error ? error.code : undefined;
+      const isUnconfirmed =
+        code === "email_not_confirmed" ||
+        error.message.toLowerCase().includes("email not confirmed");
+
+      if (isUnconfirmed) {
+        sessionStorage.setItem("dv_pending_verification_email", cleanEmail);
+        window.location.href = "/auth/verify-email?reason=unconfirmed";
+        return;
+      }
+
       let message = error.message;
       if (message.includes("Invalid login credentials")) {
         message = "이메일 또는 비밀번호가 잘못되었습니다.";
@@ -47,7 +60,6 @@ export default function LoginPage() {
     setMsg("로그인 완료! 홈페이지로 이동합니다...");
     setMsgType("success");
 
-    // ✅ 느린 환경에서 세션 반영 기다리다 멈추는 것 방지
     setTimeout(() => {
       window.location.href = "/";
     }, 800);
@@ -55,12 +67,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* 배경 장식 */}
       <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-violet-500/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-slate-900/60 px-8 py-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-white/20">
-        {/* 상단 제목 */}
         <div className="mb-8 text-center">
           <p className="text-[10px] font-bold tracking-[0.3em] text-violet-400 uppercase mb-3 flex justify-center items-center gap-2">
             Drawing Verse <Sparkles size={12} />
@@ -73,9 +83,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* 폼 */}
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
-          {/* 이메일 */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-slate-300 ml-1">
               이메일
@@ -96,7 +104,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* 비밀번호 */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-slate-300 ml-1">
               비밀번호
@@ -125,7 +132,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* 에러/성공 메시지 */}
           {msg && (
             <div
               className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
@@ -139,7 +145,6 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* 로그인 버튼 */}
           <button
             type="submit"
             disabled={loading}
@@ -160,7 +165,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* 하단 링크 */}
         <div className="mt-6 space-y-3 text-sm">
           <div className="flex items-center justify-center gap-2 text-slate-400">
             <div className="h-px flex-1 bg-white/10" />
@@ -179,7 +183,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* 홈 링크 */}
         <div className="mt-4 text-center">
           <Link
             href="/"
