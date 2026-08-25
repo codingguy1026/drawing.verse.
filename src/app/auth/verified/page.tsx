@@ -5,22 +5,46 @@ import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
+  Loader2,
   LogIn,
   MailCheck,
   Sparkles,
+  UserRound,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 
 export default function VerifiedPage() {
   const [failed, setFailed] = useState(false);
+  const [checkingUser, setCheckingUser] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     const params = new URLSearchParams(window.location.search);
     const status = params.get("status");
-    setFailed(status === "error");
+    const isFailed = status === "error";
+    setFailed(isFailed);
 
-    if (status !== "error") {
+    if (!isFailed) {
       sessionStorage.removeItem("dv_pending_verification_email");
     }
+
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setUserId(data.user?.id ?? null);
+        setCheckingUser(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setUserId(null);
+        setCheckingUser(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -54,7 +78,7 @@ export default function VerifiedPage() {
         <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-slate-400">
           {failed
             ? "링크가 만료됐거나 이미 사용된 링크일 수 있어요. 인증 메일을 다시 받아 새 링크로 시도해 주세요."
-            : "이제 Drawing Verse 계정의 이메일 인증이 끝났어요. 로그인해서 네 유니버스로 들어가면 됩니다."}
+            : "Drawing Verse 계정 인증이 끝났어요. 인증 과정에서 로그인 세션도 연결됐으면 바로 내 프로필로 들어갈 수 있어요."}
         </p>
 
         {!failed && (
@@ -70,6 +94,17 @@ export default function VerifiedPage() {
               className="inline-flex min-h-12 items-center justify-center rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-5 text-sm font-black text-white transition hover:brightness-110"
             >
               인증 메일 다시 받기
+            </Link>
+          ) : checkingUser ? (
+            <div className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-violet-500/30 px-5 text-sm font-black text-violet-100">
+              <Loader2 className="h-4 w-4 animate-spin" /> 세션 확인 중...
+            </div>
+          ) : userId ? (
+            <Link
+              href={`/users/${userId}`}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-5 text-sm font-black text-white transition hover:brightness-110"
+            >
+              <UserRound className="h-4 w-4" /> 내 프로필로
             </Link>
           ) : (
             <Link
