@@ -1,296 +1,326 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { 
-  ArrowLeft, 
-  Sparkles, 
-  Send, 
-  Image as ImageIcon, 
-  X, 
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  FileText,
+  Globe2,
+  Image as ImageIcon,
+  Info,
   Loader2,
-  WandSparkles,
-  Rocket,
-  Globe
+  Send,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase/client";
-import { squishyVariants } from "@/lib/animations";
-import { LoadingScreen } from "@/components/Common/LoadingOverlay";
 
-const CATEGORIES = ["정보", "창작", "질문", "공지", "기타"];
+const TITLE_MAX = 160;
+const CONTENT_MAX = 20000;
+
+type AuthState = "checking" | "authenticated" | "signed-out" | "unavailable";
+
+function humanizeSlug(value: string) {
+  const decoded = decodeURIComponent(value);
+  return decoded
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 export default function UniverseWritePage() {
-  const { slug } = useParams();
+  const params = useParams<{ slug: string | string[] }>();
   const router = useRouter();
-  
-  const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  
+
+  const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+  const universeName = useMemo(() => humanizeSlug(slug || "universe"), [slug]);
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("창작");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [authState, setAuthState] = useState<AuthState>("checking");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    setMounted(true);
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
-        alert("로그인이 필요한 서비스야!");
-        router.push("/login");
-      } else {
-        setUser(data.user);
+    let cancelled = false;
+
+    async function checkUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (cancelled) return;
+
+      if (error) {
+        console.warn("Unable to verify auth state:", error);
+        setAuthState("unavailable");
+        return;
       }
-    };
-    checkUser();
-  }, [router]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setAuthState(data.user ? "authenticated" : "signed-out");
     }
-  };
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-  };
+    checkUser();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrorMessage(null);
+
+    const cleanTitle = title.trim();
+    const cleanContent = content.trim();
+
+    if (!cleanTitle || !cleanContent || !slug) return;
+
+    if (authState === "signed-out") {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (authState !== "authenticated") {
+      setErrorMessage("로그인 상태를 확인할 수 없어요. 연결이 복구된 뒤 다시 시도해 주세요.");
+      return;
+    }
 
     setIsSubmitting(true);
-    
+
     try {
-      let imageUrl = null;
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: cleanTitle,
+          content: cleanContent,
+          universeSlug: slug,
+        }),
+      });
 
-      // Image upload logic (placeholder - assumes 'posts' bucket exists)
-      if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${user.id}/${fileName}`;
+      const result = await response.json().catch(() => null);
 
-        const { error: uploadError, data } = await supabase.storage
-          .from('posts')
-          .upload(filePath, imageFile);
-
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('posts')
-            .getPublicUrl(filePath);
-          imageUrl = publicUrl;
-        }
+      if (response.status === 401) {
+        setAuthState("signed-out");
+        router.push("/auth/login");
+        return;
       }
 
-      const { data: post, error } = await supabase
-        .from("posts")
-        .insert({
-          title,
-          content,
-          category,
-          universe_slug: slug,
-          author: user.user_metadata?.full_name || user.email?.split("@")[0] || "Anonymous",
-          image_url: imageUrl,
-          user_id: user.id
-        })
-        .select()
-        .single();
+      if (!response.ok || !result?.ok || !result?.data?.id) {
+        throw new Error(result?.error || "글을 저장하지 못했어요.");
+      }
 
-      if (error) throw error;
-
-      router.push(`/universe/${slug}/${post.id}`);
-    } catch (err: any) {
-      console.error("Post creation error:", err);
-      alert("글을 올리는 중 오류가 발생했어: " + err.message);
+      router.push(`/post/${result.data.id}`);
+      router.refresh();
+    } catch (error) {
+      console.error("Post creation error:", error);
+      setErrorMessage(
+        error instanceof Error ? error.message : "글을 올리는 중 오류가 발생했어요."
+      );
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
-  if (!mounted) return null;
+  const canSubmit = Boolean(title.trim() && content.trim() && slug);
+  const connectionUnavailable = authState === "unavailable";
 
   return (
-    <main className="min-h-screen bg-[#020208] text-white pt-24 pb-20 px-4 overflow-x-hidden">
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-violet-600/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-fuchsia-600/10 blur-[150px] rounded-full" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
-      </div>
-
-      <div className="relative mx-auto max-w-4xl">
-        {/* Header */}
-        <header className="mb-10 flex items-center justify-between">
-          <button 
-            onClick={() => router.back()}
-            className="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+    <main className="min-h-screen bg-slate-50 text-slate-950 dark:bg-[#070711] dark:text-white">
+      <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href={`/universe/${slug || ""}`}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-white/45 dark:hover:bg-white/5 dark:hover:text-white"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 group-hover:bg-white/10 transition-all">
-              <ArrowLeft className="h-5 w-5" />
-            </div>
-            <span className="text-sm font-bold uppercase tracking-widest">Abort Transmission</span>
-          </button>
+            <ArrowLeft className="h-4 w-4" />
+            유니버스로 돌아가기
+          </Link>
 
-          <div className="text-right">
-            <p className="text-[10px] font-black text-violet-400 uppercase tracking-[0.3em] mb-1">New Record</p>
-            <h1 className="text-2xl font-black tracking-tighter">데이터 기록 전송</h1>
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 dark:text-white/30">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            자동 저장은 다음 단계에서 연결
+          </div>
+        </div>
+
+        <header className="mb-6 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-white/10 dark:bg-[#0d0d19]">
+          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-700 dark:bg-violet-400/10 dark:text-violet-200">
+                <Globe2 className="h-3.5 w-3.5" />
+                {universeName}
+              </div>
+              <h1 className="mt-4 text-2xl font-black tracking-tight sm:text-3xl">
+                새 게시글 작성
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-white/45">
+                제목과 본문에 집중할 수 있도록 작성 화면을 단순하게 정리했어요. 미디어와 추가 분류는 데이터 구조가 준비된 뒤 연결합니다.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/40">
+              제목 {title.length}/{TITLE_MAX}
+              <br />
+              본문 {content.length.toLocaleString()}/{CONTENT_MAX.toLocaleString()}
+            </div>
           </div>
         </header>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Main Content Area */}
-          <section className="rounded-[2.5rem] border border-white/10 bg-white/[0.03] backdrop-blur-3xl p-8 shadow-2xl">
-            <div className="space-y-6">
-              {/* Universe Info Banner */}
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-violet-500/10 border border-violet-500/20 mb-8">
-                <Globe className="h-5 w-5 text-violet-400" />
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-violet-400/60">Target Universe</p>
-                  <p className="text-sm font-bold">{decodeURIComponent(slug as string)}</p>
+        {connectionUnavailable && (
+          <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <p className="font-black">현재 로그인 서버 연결을 확인할 수 없어요.</p>
+              <p className="mt-1 text-xs leading-5 opacity-80">
+                레이아웃과 입력은 그대로 테스트할 수 있지만 실제 게시 버튼은 연결이 복구된 뒤 사용할 수 있어요.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+          <section className="min-w-0 space-y-4">
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-white/10 dark:bg-[#0d0d19]">
+              <label htmlFor="post-title" className="text-xs font-black uppercase tracking-[0.14em] text-slate-400 dark:text-white/30">
+                제목
+              </label>
+              <input
+                id="post-title"
+                value={title}
+                maxLength={TITLE_MAX}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="무슨 이야기를 나누고 싶나요?"
+                className="mt-3 w-full border-0 bg-transparent p-0 text-2xl font-black tracking-tight outline-none placeholder:text-slate-300 dark:placeholder:text-white/15 sm:text-3xl"
+              />
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-white/10 dark:bg-[#0d0d19]">
+              <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4 dark:border-white/7">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-violet-600 dark:text-violet-300" />
+                  <span className="text-sm font-black">본문</span>
                 </div>
+                <span className="text-xs font-semibold text-slate-400 dark:text-white/25">
+                  Markdown 편집기는 다음 단계
+                </span>
               </div>
 
-              {/* Title Input */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Transmission Title</label>
-                <input 
-                  autoFocus
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="당신의 발견을 한 문장으로 표현해줘..."
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xl font-black outline-none focus:border-violet-500/50 focus:ring-4 focus:ring-violet-500/10 transition-all placeholder:text-white/20"
-                />
-              </div>
+              <textarea
+                value={content}
+                maxLength={CONTENT_MAX}
+                onChange={(event) => setContent(event.target.value)}
+                placeholder="내용을 자유롭게 작성해 주세요."
+                rows={16}
+                className="mt-4 min-h-[360px] w-full resize-y border-0 bg-transparent p-0 text-[15px] leading-7 text-slate-700 outline-none placeholder:text-slate-300 dark:text-white/70 dark:placeholder:text-white/15 sm:min-h-[430px] sm:text-base"
+              />
+            </div>
 
-              {/* Category & Media Actions */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/5">
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setCategory(cat)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                        category === cat 
-                          ? "bg-white text-black shadow-lg" 
-                          : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+            <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-white/60 p-4 dark:border-white/10 dark:bg-white/[0.02]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-white/40">
+                    <ImageIcon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black">미디어 첨부</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-white/35">
+                      Storage 버킷과 게시글 스키마가 확정되면 여기에 이미지·영상 첨부를 연결할 예정이에요.
+                    </p>
+                  </div>
                 </div>
-
-                <div className="h-10 w-px bg-white/10 mx-2 hidden md:block" />
-
-                <label className="cursor-pointer group flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-                  <ImageIcon className="h-4 w-4 text-fuchsia-400" />
-                  <span className="text-xs font-bold text-slate-300">이미지 첨부</span>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleImageChange}
-                    className="hidden" 
-                  />
-                </label>
+                <button
+                  type="button"
+                  disabled
+                  className="min-h-10 shrink-0 rounded-xl border border-slate-200 bg-slate-100 px-4 text-xs font-black text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-white/25"
+                >
+                  준비 중
+                </button>
               </div>
+            </div>
 
-              {/* Image Preview */}
-              <AnimatePresence>
-                {imagePreview && (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="relative rounded-3xl overflow-hidden border border-white/10 aspect-video group"
-                  >
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button 
-                        type="button"
-                        onClick={removeImage}
-                        className="h-12 w-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow-xl hover:scale-110 transition-transform"
-                      >
-                        <X className="h-6 w-6" />
-                      </button>
-                    </div>
-                  </motion.div>
+            {errorMessage && (
+              <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-100">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <Link
+                href={`/universe/${slug || ""}`}
+                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-black text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/60 dark:hover:bg-white/10"
+              >
+                취소
+              </Link>
+              <button
+                type="submit"
+                disabled={!canSubmit || isSubmitting || authState === "checking" || connectionUnavailable}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-violet-600 px-6 text-sm font-black text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    게시 중...
+                  </>
+                ) : authState === "signed-out" ? (
+                  <>
+                    <Send className="h-4 w-4" />
+                    로그인 후 게시
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    게시하기
+                  </>
                 )}
-              </AnimatePresence>
-
-              {/* Content Editor */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Content Data</label>
-                <textarea 
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="이 유니버스에서 무엇을 보았는지, 어떤 창작을 했는지 기록해줘..."
-                  rows={12}
-                  className="w-full bg-white/5 border border-white/10 rounded-[2rem] px-6 py-6 text-base font-medium leading-relaxed outline-none focus:border-violet-500/50 focus:ring-4 focus:ring-violet-500/10 transition-all placeholder:text-white/20 resize-none"
-                />
-              </div>
+              </button>
             </div>
           </section>
 
-          {/* Submit Footer */}
-          <footer className="flex flex-col md:flex-row items-center justify-between gap-6 px-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600/20 text-violet-400">
-                <Rocket className="h-6 w-6" />
+          <aside className="space-y-4 lg:sticky lg:top-24">
+            <section className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0d0d19]">
+              <div className="mb-4 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                <h2 className="text-sm font-black">게시 전 확인</h2>
               </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Transmission Ready</p>
-                <p className="text-xs text-slate-400">데이터가 유니버스 전역으로 동기화됩니다.</p>
+              <div className="space-y-3 text-sm">
+                <CheckRow label="제목 입력" done={Boolean(title.trim())} />
+                <CheckRow label="본문 입력" done={Boolean(content.trim())} />
+                <CheckRow label="유니버스 지정" done={Boolean(slug)} />
+                <CheckRow label="로그인 확인" done={authState === "authenticated"} />
               </div>
-            </div>
+            </section>
 
-            <motion.button
-              variants={squishyVariants}
-              whileHover="hover"
-              whileTap="tap"
-              disabled={isSubmitting || !title.trim() || !content.trim()}
-              className="flex items-center gap-3 h-16 px-10 rounded-[2rem] bg-white text-black font-black shadow-[0_20px_40px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  전송 중...
-                </>
-              ) : (
-                <>
-                  <Send className="h-5 w-5" />
-                  글 올리기
-                </>
-              )}
-            </motion.button>
-          </footer>
+            <section className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0d0d19]">
+              <div className="mb-3 flex items-center gap-2">
+                <Info className="h-4 w-4 text-violet-600 dark:text-violet-300" />
+                <h2 className="text-sm font-black">작성 가이드</h2>
+              </div>
+              <ul className="space-y-2 text-xs leading-5 text-slate-500 dark:text-white/40">
+                <li>• 유니버스 주제와 관련된 내용을 작성해 주세요.</li>
+                <li>• 다른 창작자와 이용자를 존중해 주세요.</li>
+                <li>• 이미지 첨부는 현재 UI 자리만 마련되어 있어요.</li>
+              </ul>
+            </section>
+          </aside>
         </form>
       </div>
-
-      {isSubmitting && (
-        <LoadingScreen 
-          copy={{
-            eyebrow: "Submitting",
-            title: "Saving to Universe",
-            subtitle: "데이터를 전파 기지에 기록하고 있습니다...",
-            progressLabel: "Syncing",
-            lines: ["우주에 흔적을 남기는 중..."]
-          }}
-          progress={50}
-          mode="dark"
-        />
-      )}
     </main>
+  );
+}
+
+function CheckRow({ label, done }: { label: string; done: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-slate-500 dark:text-white/40">{label}</span>
+      <span
+        className={`rounded-full px-2 py-1 text-[10px] font-black ${
+          done
+            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200"
+            : "bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-white/25"
+        }`}
+      >
+        {done ? "완료" : "대기"}
+      </span>
+    </div>
   );
 }
