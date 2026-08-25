@@ -1,37 +1,11 @@
 export const runtime = "nodejs";
 
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
 };
-
-async function getServerSupabase() {
-  const cookieStore = await cookies();
-
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // 읽기 전용 요청에서는 쿠키 갱신 실패를 무시해도 됨.
-          }
-        },
-      },
-    }
-  );
-}
 
 function formatDate(value: unknown) {
   if (typeof value !== "string" || !value) return "방금 전";
@@ -50,19 +24,20 @@ function formatDate(value: unknown) {
 
 export async function GET(_request: Request, { params }: RouteParams) {
   const { id } = await params;
+  const postId = Number(id);
 
-  if (!id?.trim()) {
+  if (!Number.isSafeInteger(postId) || postId <= 0) {
     return NextResponse.json(
       { ok: false, error: "해당 글을 찾을 수 없어요." },
       { status: 404 }
     );
   }
 
-  const supabase = await getServerSupabase();
+  const supabase = await createServerSupabase();
   const { data: post, error: postError } = await supabase
     .from("posts")
     .select("*")
-    .eq("id", id)
+    .eq("id", postId)
     .maybeSingle();
 
   if (postError) {
@@ -80,22 +55,35 @@ export async function GET(_request: Request, { params }: RouteParams) {
     );
   }
 
-  const { data: comments, error: commentsError } = await supabase
+  let comments: Array<{
+    id: number;
+    post_id: number;
+    user_id: string;
+    author: string;
+    content: string;
+    created_at: string;
+  }> = [];
+
+  const commentsResult = await supabase
     .from("comments")
-    .select("id,post_id,author_id,author,content,created_at")
-    .eq("post_id", String(id))
+    .select("id,post_id,user_id,author,content,created_at")
+    .eq("post_id", postId)
     .order("created_at", { ascending: true });
 
-  if (commentsError) {
-    console.error("GET /api/posts/[id] comments error:", commentsError);
-    return NextResponse.json(
-      {
-        ok: false,
-        error:
-          "댓글 데이터를 불러오지 못했어요. supabase/migrations/20260810_community_comments.sql을 먼저 적용해 주세요.",
-      },
-      { status: 500 }
-    );
+  if (commentsResult.error) {
+    // The migration may not have been applied yet. The post should still open.
+    console.warn("GET /api/posts/[id] comments unavailable:", commentsResult.error.message);
+  } else {
+    comments = (commentsResult.data ?? []) as typeof comments;
+  }
+
+  let viewCount = Number((post as { view_count?: number | null }).view_count ?? 0);
+  const incrementResult = await supabase.rpc("increment_post_view", {
+    target_post_id: postId,
+  });
+
+  if (!incrementResult.error && typeof incrementResult.data === "number") {
+    viewCount = incrementResult.data;
   }
 
   const data = {
@@ -104,16 +92,21 @@ export async function GET(_request: Request, { params }: RouteParams) {
     author: post.author ?? "익명",
     content: post.content ?? "",
     date: formatDate(post.created_at),
-    views: post.views_count ?? post.view_count ?? post.views ?? 0,
-    comments: (comments ?? []).map((comment) => ({
+    createdAt: post.created_at,
+    views: viewCount,
+    comments: comments.map((comment) => ({
       id: String(comment.id),
+      userId: comment.user_id,
       author: comment.author ?? "익명",
       content: comment.content ?? "",
       date: formatDate(comment.created_at),
+      createdAt: comment.created_at,
     })),
-    tag: post.category ?? post.tag ?? null,
-    universeId: post.universe_slug ?? post.universe_id ?? null,
-    likes: post.likes_count ?? post.like_count ?? post.likes ?? 0,
+    tag: post.category ?? null,
+    universeId: post.universe_slug ?? null,
+    likes: post.like_count ?? 0,
+    imageUrl: post.image_url ?? null,
+    userId: post.user_id ?? null,
   };
 
   return NextResponse.json({ ok: true, data });
