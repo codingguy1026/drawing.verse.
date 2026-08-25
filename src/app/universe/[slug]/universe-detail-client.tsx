@@ -9,12 +9,12 @@ import {
   Globe2,
   Info,
   MessageCircle,
-  MoreHorizontal,
   PenLine,
   ShieldCheck,
   Sparkles,
   Star,
   Users,
+  WifiOff,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
@@ -40,6 +40,7 @@ type PostRow = {
   likes_count: number | null;
   comments_count: number | null;
   views_count: number | null;
+  preview?: boolean;
 };
 
 type RelatedUniverse = Pick<
@@ -54,7 +55,67 @@ const tabs: Array<{ key: TabKey; label: string; icon: typeof FileText }> = [
   { key: "about", label: "정보", icon: Info },
 ];
 
-function timeAgo(value: string | null) {
+const PREVIEW_POSTS: PostRow[] = [
+  {
+    id: "preview-1",
+    title: "유니버스 게시글은 이런 형태로 보여요",
+    content: "데이터 연결이 없어도 제목, 작성자, 본문 미리보기와 반응 영역의 배치를 확인할 수 있는 레이아웃 샘플입니다.",
+    author: "Layout Preview",
+    created_at: null,
+    likes_count: 12,
+    comments_count: 4,
+    views_count: 128,
+    preview: true,
+  },
+  {
+    id: "preview-2",
+    title: "창작 공유 카드 예시",
+    content: "긴 글이 들어왔을 때 카드 높이와 줄 간격이 태블릿에서도 편하게 읽히는지 확인하기 위한 샘플이에요.",
+    author: "Layout Preview",
+    created_at: null,
+    likes_count: 8,
+    comments_count: 2,
+    views_count: 76,
+    preview: true,
+  },
+  {
+    id: "preview-3",
+    title: "토론 게시글 카드 예시",
+    content: "실제 Supabase 연결이 복구되면 이 샘플들은 사라지고 해당 유니버스의 실제 게시글이 같은 자리에서 표시됩니다.",
+    author: "Layout Preview",
+    created_at: null,
+    likes_count: 5,
+    comments_count: 7,
+    views_count: 54,
+    preview: true,
+  },
+];
+
+function humanizeSlug(value: string) {
+  const decoded = decodeURIComponent(value);
+  return decoded
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function makePreviewUniverse(slug: string): UniverseRow {
+  return {
+    id: `preview-${slug}`,
+    slug,
+    name: humanizeSlug(slug) || "Universe Preview",
+    description:
+      "현재 데이터 서버에 연결할 수 없어 레이아웃 미리보기로 표시하고 있어요. 연결이 복구되면 실제 유니버스 소개와 게시글로 자동 전환됩니다.",
+    category: "레이아웃 미리보기",
+    subscriber_count: 0,
+    post_count: 0,
+    tags: [],
+  };
+}
+
+function timeAgo(value: string | null, preview = false) {
+  if (preview) return "미리보기";
   if (!value) return "최근";
   const timestamp = new Date(value).getTime();
   if (Number.isNaN(timestamp)) return "최근";
@@ -89,84 +150,116 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
   const [hasSubscriptionTable, setHasSubscriptionTable] = useState(true);
   const [joining, setJoining] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [fatalError, setFatalError] = useState<string | null>(null);
+  const [connectionNotice, setConnectionNotice] = useState<string | null>(null);
+  const [offlinePreview, setOfflinePreview] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
+    function useOfflinePreview(message: string) {
+      if (cancelled) return;
+      setUniverse(makePreviewUniverse(slug));
+      setPosts([]);
+      setRelated([]);
+      setJoined(false);
+      setHasSubscriptionTable(false);
+      setOfflinePreview(true);
+      setConnectionNotice(message);
+      setFatalError(null);
+      setLoading(false);
+    }
+
     async function load() {
       setLoading(true);
-      setError(null);
+      setFatalError(null);
+      setConnectionNotice(null);
+      setOfflinePreview(false);
 
-      const { data: universeData, error: universeError } = await supabase
-        .from("universes")
-        .select(
-          "id,slug,name,description,category,subscriber_count,post_count,tags"
-        )
-        .eq("slug", slug)
-        .maybeSingle();
-
-      if (cancelled) return;
-
-      if (universeError || !universeData) {
-        console.error("Universe load error:", universeError);
-        setError("이 유니버스를 찾을 수 없어요.");
-        setLoading(false);
-        return;
-      }
-
-      const nextUniverse = universeData as UniverseRow;
-      setUniverse(nextUniverse);
-
-      const [postsResult, relatedResult, authResult] = await Promise.all([
-        supabase
-          .from("posts")
-          .select(
-            "id,title,content,author,created_at,likes_count,comments_count,views_count"
-          )
-          .eq("universe_slug", slug)
-          .order("created_at", { ascending: false })
-          .limit(50),
-        supabase
+      try {
+        const { data: universeData, error: universeError } = await supabase
           .from("universes")
-          .select("id,slug,name,description,category,subscriber_count")
-          .neq("slug", slug)
-          .order("subscriber_count", { ascending: false })
-          .limit(4),
-        supabase.auth.getUser(),
-      ]);
-
-      if (cancelled) return;
-
-      if (postsResult.error) {
-        console.warn("Universe posts load error:", postsResult.error);
-      } else {
-        setPosts((postsResult.data ?? []) as PostRow[]);
-      }
-
-      if (!relatedResult.error) {
-        setRelated((relatedResult.data ?? []) as RelatedUniverse[]);
-      }
-
-      const user = authResult.data.user;
-      if (user) {
-        const { data: subscription, error: subscriptionError } = await supabase
-          .from("universe_subscriptions")
-          .select("universe_slug")
-          .eq("user_id", user.id)
-          .eq("universe_slug", slug)
+          .select(
+            "id,slug,name,description,category,subscriber_count,post_count,tags"
+          )
+          .eq("slug", slug)
           .maybeSingle();
 
         if (cancelled) return;
 
-        if (subscriptionError) {
-          setHasSubscriptionTable(false);
-        } else {
-          setJoined(Boolean(subscription));
+        if (universeError) {
+          console.error("Universe load error:", universeError);
+          useOfflinePreview("Supabase 연결을 확인할 수 없어 레이아웃 미리보기 모드로 표시 중이에요.");
+          return;
         }
-      }
 
-      setLoading(false);
+        if (!universeData) {
+          setUniverse(null);
+          setFatalError("이 주소에 해당하는 유니버스가 없어요.");
+          setLoading(false);
+          return;
+        }
+
+        const nextUniverse = universeData as UniverseRow;
+        setUniverse(nextUniverse);
+
+        const [postsResult, relatedResult, authResult] = await Promise.all([
+          supabase
+            .from("posts")
+            .select(
+              "id,title,content,author,created_at,likes_count,comments_count,views_count"
+            )
+            .eq("universe_slug", slug)
+            .order("created_at", { ascending: false })
+            .limit(50),
+          supabase
+            .from("universes")
+            .select("id,slug,name,description,category,subscriber_count")
+            .neq("slug", slug)
+            .order("subscriber_count", { ascending: false })
+            .limit(4),
+          supabase.auth.getUser(),
+        ]);
+
+        if (cancelled) return;
+
+        if (postsResult.error) {
+          console.warn("Universe posts load error:", postsResult.error);
+          setPosts([]);
+          setConnectionNotice("게시글을 불러오지 못했어요. 유니버스 기본 정보만 표시합니다.");
+        } else {
+          setPosts((postsResult.data ?? []) as PostRow[]);
+        }
+
+        if (!relatedResult.error) {
+          setRelated((relatedResult.data ?? []) as RelatedUniverse[]);
+        } else {
+          setRelated([]);
+        }
+
+        const user = authResult.data.user;
+        if (user) {
+          const { data: subscription, error: subscriptionError } = await supabase
+            .from("universe_subscriptions")
+            .select("universe_slug")
+            .eq("user_id", user.id)
+            .eq("universe_slug", slug)
+            .maybeSingle();
+
+          if (cancelled) return;
+
+          if (subscriptionError) {
+            setHasSubscriptionTable(false);
+          } else {
+            setJoined(Boolean(subscription));
+          }
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Universe detail network error:", error);
+        useOfflinePreview("데이터 서버에 연결할 수 없어 레이아웃 미리보기 모드로 표시 중이에요.");
+      }
     }
 
     load();
@@ -175,18 +268,19 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
     };
   }, [slug]);
 
+  const sourcePosts = offlinePreview ? PREVIEW_POSTS : posts;
   const popularPosts = useMemo(
     () =>
-      [...posts].sort(
+      [...sourcePosts].sort(
         (a, b) =>
           (b.likes_count ?? 0) + (b.comments_count ?? 0) * 2 -
           ((a.likes_count ?? 0) + (a.comments_count ?? 0) * 2)
       ),
-    [posts]
+    [sourcePosts]
   );
 
   async function toggleJoin() {
-    if (!universe || joining || !hasSubscriptionTable) return;
+    if (!universe || joining || !hasSubscriptionTable || offlinePreview) return;
 
     const {
       data: { user },
@@ -253,7 +347,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
     );
   }
 
-  if (error || !universe) {
+  if (fatalError || !universe) {
     return (
       <main className="grid min-h-[70vh] place-items-center bg-slate-50 px-4 dark:bg-[#070711]">
         <div className="max-w-md text-center">
@@ -263,7 +357,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
           <h1 className="text-2xl font-black text-slate-950 dark:text-white">
             유니버스를 찾을 수 없어요
           </h1>
-          <p className="mt-2 text-sm text-slate-500 dark:text-white/40">{error}</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-white/40">{fatalError}</p>
           <Link
             href="/universe"
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white dark:bg-white dark:text-slate-950"
@@ -276,18 +370,31 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
     );
   }
 
-  const visiblePosts = activeTab === "popular" ? popularPosts : posts;
+  const visiblePosts = activeTab === "popular" ? popularPosts : sourcePosts;
+  const displayedPostCount = offlinePreview
+    ? 0
+    : Math.max(universe.post_count ?? 0, posts.length);
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950 dark:bg-[#070711] dark:text-white">
       <div className="mx-auto w-full max-w-6xl space-y-5 px-4 py-7 sm:px-6 lg:px-8">
         <Link
           href="/universe"
-          className="inline-flex items-center gap-2 rounded-xl px-2 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-white/45 dark:hover:bg-white/5 dark:hover:text-white"
+          className="inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-white/45 dark:hover:bg-white/5 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           모든 유니버스
         </Link>
+
+        {connectionNotice && (
+          <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
+            <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <p className="font-black">데이터 연결 안내</p>
+              <p className="mt-1 text-xs leading-5 opacity-80">{connectionNotice}</p>
+            </div>
+          </div>
+        )}
 
         <section className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-7 dark:border-white/10 dark:bg-[#0d0d19]">
           <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-violet-400/10 blur-3xl dark:bg-violet-500/15" />
@@ -298,9 +405,17 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
                   <Globe2 className="h-3.5 w-3.5" />
                   {universe.category || "기타"}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  활동 중
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${
+                    offlinePreview
+                      ? "bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-200"
+                      : "bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200"
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${offlinePreview ? "bg-amber-500" : "bg-emerald-500"}`}
+                  />
+                  {offlinePreview ? "레이아웃 미리보기" : "활동 중"}
                 </span>
               </div>
 
@@ -318,7 +433,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <FileText className="h-4 w-4" />
-                  게시글 {compactNumber(Math.max(universe.post_count ?? 0, posts.length))}
+                  게시글 {compactNumber(displayedPostCount)}
                 </span>
               </div>
             </div>
@@ -327,31 +442,29 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
               <button
                 type="button"
                 onClick={toggleJoin}
-                disabled={!hasSubscriptionTable || joining}
-                className={`min-w-28 rounded-xl px-4 py-2.5 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-45 ${
+                disabled={!hasSubscriptionTable || joining || offlinePreview}
+                className={`min-h-11 min-w-28 rounded-xl px-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-45 ${
                   joined
                     ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70"
                     : "bg-slate-950 text-white hover:bg-violet-700 dark:bg-white dark:text-slate-950 dark:hover:bg-violet-100"
                 }`}
               >
-                {joining ? "처리 중..." : joined ? "구독 중" : "구독하기"}
+                {offlinePreview
+                  ? "연결 확인 필요"
+                  : joining
+                    ? "처리 중..."
+                    : joined
+                      ? "구독 중"
+                      : "구독하기"}
               </button>
 
               <Link
                 href={`/universe/${slug}/write`}
-                className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-700"
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-violet-600 px-4 text-sm font-black text-white transition hover:bg-violet-700"
               >
                 <PenLine className="h-4 w-4" />
                 글쓰기
               </Link>
-
-              <button
-                type="button"
-                aria-label="더보기"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-white/45"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
             </div>
           </div>
         </section>
@@ -365,7 +478,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
                   key={key}
                   type="button"
                   onClick={() => setActiveTab(key)}
-                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition ${
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-bold transition ${
                     active
                       ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
                       : "text-slate-600 hover:bg-slate-100 dark:text-white/50 dark:hover:bg-white/5 dark:hover:text-white"
@@ -386,14 +499,22 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
                 <div className="flex items-end justify-between gap-4">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">
-                      {activeTab === "popular" ? "Popular" : "Community feed"}
+                      {offlinePreview
+                        ? "Layout preview"
+                        : activeTab === "popular"
+                          ? "Popular"
+                          : "Community feed"}
                     </p>
                     <h2 className="mt-1 text-xl font-black">
-                      {activeTab === "popular" ? "인기 게시글" : "최근 게시글"}
+                      {offlinePreview
+                        ? "게시글 레이아웃 샘플"
+                        : activeTab === "popular"
+                          ? "인기 게시글"
+                          : "최근 게시글"}
                     </h2>
                   </div>
                   <span className="text-sm font-semibold text-slate-400 dark:text-white/30">
-                    {visiblePosts.length}개
+                    {offlinePreview ? `샘플 ${visiblePosts.length}개` : `${visiblePosts.length}개`}
                   </span>
                 </div>
 
@@ -419,7 +540,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
               <EmptyState
                 icon={GalleryHorizontalEnd}
                 title="유니버스 갤러리"
-                description="이미지 게시물을 한곳에 모아보는 영역이에요. 현재 데이터 구조와 연결되기 전까지는 이 공간을 비워둘게요."
+                description="이미지 게시물을 한곳에 모아보는 영역이에요. 미디어 스키마가 연결되기 전까지는 레이아웃 자리만 유지합니다."
               />
             )}
 
@@ -449,12 +570,12 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
             )}
           </section>
 
-          <aside className="space-y-4">
+          <aside className="space-y-4 lg:sticky lg:top-24">
             <InfoCard title="유니버스 정보" icon={Sparkles}>
               <div className="space-y-3 text-sm">
                 <StatLine label="카테고리" value={universe.category || "기타"} />
                 <StatLine label="멤버" value={compactNumber(universe.subscriber_count)} />
-                <StatLine label="게시글" value={compactNumber(Math.max(universe.post_count ?? 0, posts.length))} />
+                <StatLine label="게시글" value={compactNumber(displayedPostCount)} />
               </div>
             </InfoCard>
 
@@ -495,15 +616,17 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
 }
 
 function PostCard({ post }: { post: PostRow }) {
-  return (
-    <Link
-      href={`/post/${post.id}`}
-      className="block rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:border-violet-300 hover:shadow-md dark:border-white/10 dark:bg-[#0d0d19] dark:hover:border-violet-400/20"
-    >
+  const content = (
+    <>
       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-400 dark:text-white/30">
         <span className="text-slate-600 dark:text-white/55">{post.author || "익명"}</span>
         <span>·</span>
-        <span>{timeAgo(post.created_at)}</span>
+        <span>{timeAgo(post.created_at, post.preview)}</span>
+        {post.preview && (
+          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700 dark:bg-amber-400/10 dark:text-amber-200">
+            레이아웃 샘플
+          </span>
+        )}
       </div>
 
       <h3 className="mt-3 text-lg font-black tracking-tight text-slate-950 dark:text-white">
@@ -524,6 +647,22 @@ function PostCard({ post }: { post: PostRow }) {
         </span>
         <span className="ml-auto">조회 {post.views_count ?? 0}</span>
       </div>
+    </>
+  );
+
+  const className =
+    "block rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition dark:border-white/10 dark:bg-[#0d0d19]";
+
+  if (post.preview) {
+    return <article className={className}>{content}</article>;
+  }
+
+  return (
+    <Link
+      href={`/post/${post.id}`}
+      className={`${className} hover:border-violet-300 hover:shadow-md dark:hover:border-violet-400/20`}
+    >
+      {content}
     </Link>
   );
 }
