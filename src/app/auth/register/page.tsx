@@ -60,10 +60,12 @@ export default function RegisterPage() {
 
     setSubmitting(true);
 
+    const emailRedirectTo = `${window.location.origin}/auth/callback?next=/auth/verified`;
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
       password,
       options: {
+        emailRedirectTo,
         data: {
           nickname: cleanNickname,
           display_name: cleanNickname,
@@ -73,9 +75,7 @@ export default function RegisterPage() {
 
     if (error) {
       let message = error.message;
-      if (message.includes("already registered")) {
-        message = "이미 가입된 이메일입니다.";
-      } else if (message.toLowerCase().includes("password")) {
+      if (message.toLowerCase().includes("password")) {
         message = "비밀번호 보안 수준을 확인해 주세요.";
       }
       setErrorMessage(message);
@@ -83,18 +83,24 @@ export default function RegisterPage() {
       return;
     }
 
-    // The live Supabase project has an auth.users trigger that creates/updates
-    // public.profiles from nickname/display_name metadata.
+    // Confirm email OFF: Supabase returns a session immediately.
     if (data.session) {
       setSuccessMessage("계정과 프로필이 생성됐어요. 내 프로필로 이동합니다.");
       setTimeout(() => {
         router.push(`/users/${data.user?.id}`);
         router.refresh();
-      }, 900);
-    } else {
-      setSuccessMessage("회원가입 완료! 이메일 확인 후 로그인해 주세요.");
-      setTimeout(() => router.push("/auth/login"), 1300);
+      }, 700);
+      setSubmitting(false);
+      return;
     }
+
+    // Confirm email ON: Supabase sent a confirmation email and returns no session.
+    sessionStorage.setItem("dv_pending_verification_email", cleanEmail);
+    setSuccessMessage("인증 메일을 보냈어요. 이메일 확인 페이지로 이동합니다.");
+
+    setTimeout(() => {
+      router.push("/auth/verify-email");
+    }, 600);
 
     setSubmitting(false);
   }
