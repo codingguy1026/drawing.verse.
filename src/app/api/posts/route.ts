@@ -1,31 +1,5 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-
-async function getServerSupabase() {
-  const cookieStore = await cookies();
-
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Server Component/Route 환경에서 쿠키 쓰기가 불가능한 경우 무시.
-          }
-        },
-      },
-    }
-  );
-}
+import { createServerSupabase } from "@/lib/supabase/server";
 
 function getDisplayName(user: {
   email?: string | null;
@@ -48,10 +22,10 @@ function getDisplayName(user: {
 }
 
 export async function GET() {
-  const supabase = await getServerSupabase();
+  const supabase = await createServerSupabase();
   const { data, error } = await supabase
     .from("posts")
-    .select("*")
+    .select("id,title,content,category,universe_slug,author,image_url,user_id,like_count,comment_count,created_at,updated_at")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -63,7 +37,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await getServerSupabase();
+  const supabase = await createServerSupabase();
   const {
     data: { user },
     error: authError,
@@ -81,6 +55,10 @@ export async function POST(req: NextRequest) {
   const content = typeof body?.content === "string" ? body.content.trim() : "";
   const universeSlug =
     typeof body?.universeSlug === "string" ? body.universeSlug.trim() : "";
+  const category =
+    typeof body?.category === "string" && body.category.trim()
+      ? body.category.trim().slice(0, 40)
+      : "기타";
 
   if (!title || !content) {
     return NextResponse.json(
@@ -115,14 +93,14 @@ export async function POST(req: NextRequest) {
     .insert({
       title,
       content,
+      category,
       universe_slug: universeSlug || null,
-      author_id: user.id,
+      user_id: user.id,
       author,
-      likes_count: 0,
-      comments_count: 0,
-      views_count: 0,
+      like_count: 0,
+      comment_count: 0,
     })
-    .select("*")
+    .select("id,title,content,category,universe_slug,author,image_url,user_id,like_count,comment_count,created_at,updated_at")
     .single();
 
   if (error) {
