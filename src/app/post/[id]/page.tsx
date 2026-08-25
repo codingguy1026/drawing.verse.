@@ -6,7 +6,6 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Eye,
-  Heart,
   Loader2,
   MessageCircle,
   Send,
@@ -41,7 +40,7 @@ type Post = {
 export default function PostDetailPage() {
   const params = useParams<{ id: string | string[] }>();
   const router = useRouter();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const id = Array.isArray(params.id) ? (params.id[0] ?? "") : (params.id ?? "");
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +55,12 @@ export default function PostDetailPage() {
     let cancelled = false;
 
     async function load() {
-      if (!id) return;
+      if (!id) {
+        setError("게시글 주소가 올바르지 않아요.");
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
