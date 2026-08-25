@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -10,26 +10,27 @@ export async function GET(req: Request) {
   }
 
   try {
-    const [{ data: universes, error: uErr }, { data: posts, error: pErr }] = await Promise.all([
-      supabaseAdmin
-        .from("universes")
-        .select("id,slug,name,description")
-        .ilike("name", `%${query}%`)
-        .or(`description.ilike.%${query}%`)
-        .limit(50),
-      supabaseAdmin
-        .from("posts")
-        .select("id,universe_slug,title")
-        .ilike("title", `%${query}%`)
-        .limit(50),
-    ]);
+    const supabase = await createServerSupabase();
+    const [{ data: universes, error: uErr }, { data: posts, error: pErr }] =
+      await Promise.all([
+        supabase
+          .from("universes")
+          .select("id,slug,name,description")
+          .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+          .limit(50),
+        supabase
+          .from("posts")
+          .select("id,universe_slug,title")
+          .ilike("title", `%${query}%`)
+          .limit(50),
+      ]);
 
     if (uErr || pErr) {
       console.error("search API error", uErr || pErr);
       return NextResponse.json({ error: "search failed" }, { status: 500 });
     }
 
-    return NextResponse.json({ universes, posts });
+    return NextResponse.json({ universes: universes ?? [], posts: posts ?? [] });
   } catch (err) {
     console.error("search API exception", err);
     return NextResponse.json({ error: "server error" }, { status: 500 });
