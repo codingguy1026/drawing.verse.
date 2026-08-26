@@ -1,16 +1,15 @@
 "use client";
+
 import * as React from "react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { ArrowRight, Orbit, Pencil, Save, Sparkles, X as CloseIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { squishyVariants } from "@/lib/animations";
 import { useWeatherStore } from "@/store/useWeatherStore";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
-import { Pencil, Save, X as CloseIcon } from "lucide-react";
 
-const boards = ["전체", "인기", "창작", "피드백", "팬아트", "세계관"];
-const shortcuts = ["실시간 베스트", "Best", "Hot", "New", "최근 방문"];
 const feedTabs = ["전체", "Best", "Hot", "New", "팔로잉"];
 const noticeRankings = [
   "[공지] 홈 화면 리워크 의견 모아보기",
@@ -26,6 +25,23 @@ type HomeConfig = {
   heroDesc: string;
   tags: string[];
   notices: string[];
+};
+
+type HomePost = {
+  id: string | number;
+  title: string;
+  meta: string;
+  stats: string;
+  universe: string;
+  type: string;
+};
+
+type HomeUniverse = {
+  name: string;
+  description: string;
+  members: number;
+  tags: string[];
+  slug: string;
 };
 
 const defaultHomeConfig: HomeConfig = {
@@ -67,11 +83,7 @@ function parseHomeConfig(value: unknown): HomeConfig | null {
       defaultHomeConfig.heroHighlight,
       80
     ),
-    heroSuffix: readText(
-      candidate.heroSuffix,
-      defaultHomeConfig.heroSuffix,
-      80
-    ),
+    heroSuffix: readText(candidate.heroSuffix, defaultHomeConfig.heroSuffix, 80),
     heroDesc: readText(candidate.heroDesc, defaultHomeConfig.heroDesc, 320),
     tags: readList(candidate.tags, defaultHomeConfig.tags, 10),
     notices: readList(candidate.notices, defaultHomeConfig.notices, 8),
@@ -86,86 +98,11 @@ function formatMembers(value: number) {
   return new Intl.NumberFormat("ko-KR").format(value);
 }
 
-function SidebarCard(props: { title: string; children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      whileHover={{ y: -2 }}
-      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-      className="group relative overflow-hidden rounded-[24px] border border-white/70 bg-white/75 p-3 shadow-[0_10px_30px_rgba(148,163,184,0.14)] backdrop-blur-xl transition-all duration-500 hover:shadow-2xl dark:border-white/12 dark:bg-[#0f111a]/80 dark:shadow-[0_0_20px_rgba(139,92,246,0.05)]"
-    >
-      <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-violet-500/10 blur-xl transition-all group-hover:bg-violet-500/20 dark:bg-violet-500/20" />
-      <p className="bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-sky-400 bg-clip-text px-2 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-transparent">
-        {props.title}
-      </p>
-      <div className="relative z-10">{props.children}</div>
-    </motion.div>
-  );
-}
-
 function StatPill(props: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full bg-slate-100 dark:bg-white/10 px-3 py-1.5 font-semibold text-slate-700 dark:text-slate-300">
+    <span className="rounded-full bg-slate-100 px-3 py-1.5 font-semibold text-slate-700 dark:bg-white/10 dark:text-slate-300">
       {props.children}
     </span>
-  );
-}
-
-function SidebarShell(props: {
-  sidebarExtra: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mx-auto grid w-full max-w-7xl md:grid-cols-[220px_minmax(0,1fr)] gap-6 px-4 py-6 md:px-6 lg:px-8">
-      <aside className="sticky top-24 hidden md:flex h-fit w-[220px] flex-col gap-3 self-start">
-        <SidebarCard title="Boards">
-          <div className="space-y-1">
-            {boards.map((board, index) => (
-              <motion.button
-                key={board}
-                whileHover={{ x: 5 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "w-full rounded-xl px-3 py-2 text-left text-sm font-medium transition",
-                  index === 0
-                    ? "bg-slate-900 text-white dark:bg-white/15"
-                    : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/10"
-                )}
-              >
-                {board}
-              </motion.button>
-            ))}
-          </div>
-        </SidebarCard>
-
-        <SidebarCard title="Shortcuts">
-          <div className="space-y-1">
-            {shortcuts.map((shortcut, index) => (
-              <motion.button
-                key={shortcut}
-                whileHover={{ x: 5 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "w-full rounded-xl px-3 py-2 text-left text-sm transition",
-                  index === 0
-                    ? "bg-slate-100 text-slate-900 dark:bg-white/15 dark:text-white"
-                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/10"
-                )}
-              >
-                {shortcut}
-              </motion.button>
-            ))}
-          </div>
-        </SidebarCard>
-
-        <SidebarCard title="Preview checks">
-          <div className="space-y-2">{props.sidebarExtra}</div>
-        </SidebarCard>
-      </aside>
-
-      <div className="flex min-w-0 flex-col gap-8">{props.children}</div>
-    </div>
   );
 }
 
@@ -182,7 +119,7 @@ function EditableText({
   onChange: (val: string) => void;
   className?: string;
   multiline?: boolean;
-  as?: any;
+  as?: React.ElementType;
 }) {
   if (isEditing) {
     if (multiline) {
@@ -191,78 +128,46 @@ function EditableText({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={cn(
-            "w-full bg-slate-100/50 dark:bg-white/10 border border-violet-500/30 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-slate-900 dark:text-white",
+            "w-full rounded-xl border border-violet-500/30 bg-slate-100/50 p-3 text-slate-900 outline-none focus:ring-2 focus:ring-violet-500/50 dark:bg-white/10 dark:text-white",
             className
           )}
           rows={3}
         />
       );
     }
+
     return (
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          "w-full bg-slate-100/50 dark:bg-white/10 border border-violet-500/30 rounded-xl px-3 py-1 focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-slate-900 dark:text-white",
+          "w-full rounded-xl border border-violet-500/30 bg-slate-100/50 px-3 py-1 text-slate-900 outline-none focus:ring-2 focus:ring-violet-500/50 dark:bg-white/10 dark:text-white",
           className
         )}
       />
     );
   }
+
   return <Component className={className}>{value}</Component>;
 }
 
 export default function HomeClient() {
   const { weather } = useWeatherStore();
   const { user, loading: userLoading } = useSupabaseUser();
-  const [posts, setPosts] = useState<any[]>([]);
-  const [universes, setUniverses] = useState<any[]>([]);
+  const [posts, setPosts] = useState<HomePost[]>([]);
+  const [universes, setUniverses] = useState<HomeUniverse[]>([]);
   const [trendData, setTrendData] = useState({ visits: 0, posts: 0, universes: 0 });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      try {
-        const [postsRes, universesRes] = await Promise.all([
-          fetch("/api/posts").then((res) => res.json()),
-          fetch("/api/universes").then((res) => res.json()),
-        ]);
-        // Use gallery count as a base for visits if no direct visits table exists
-        const galleryRes = await fetch("/api/gallery").then((res) => res.json());
-        
-        setPosts(postsRes || []);
-        setUniverses(universesRes || []);
-        
-        // Consistent trend calculation
-        setTrendData({
-          visits: (galleryRes?.length || 0) * 123 + 456, 
-          posts: postsRes.length,
-          universes: universesRes.length,
-        });
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  // Editable Home State
   const [isEditing, setIsEditing] = useState(false);
   const [heroTitle, setHeroTitle] = useState(defaultHomeConfig.heroTitle);
-  const [heroHighlight, setHeroHighlight] = useState(
-    defaultHomeConfig.heroHighlight
-  );
+  const [heroHighlight, setHeroHighlight] = useState(defaultHomeConfig.heroHighlight);
   const [heroSuffix, setHeroSuffix] = useState(defaultHomeConfig.heroSuffix);
   const [heroDesc, setHeroDesc] = useState(defaultHomeConfig.heroDesc);
   const [tags, setTags] = useState([...defaultHomeConfig.tags]);
   const [notices, setNotices] = useState([...defaultHomeConfig.notices]);
-  const [savedConfig, setSavedConfig] = useState(() =>
-    cloneHomeConfig(defaultHomeConfig)
-  );
+  const [savedConfig, setSavedConfig] = useState(() => cloneHomeConfig(defaultHomeConfig));
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
@@ -291,9 +196,7 @@ export default function HomeClient() {
     let localConfig: HomeConfig | null = null;
 
     try {
-      const savedData =
-        localStorage.getItem(storageKey) ??
-        localStorage.getItem("dv_home_config");
+      const savedData = localStorage.getItem(storageKey) ?? localStorage.getItem("dv_home_config");
       if (savedData) localConfig = parseHomeConfig(JSON.parse(savedData));
     } catch (error) {
       console.error("Failed to load local home config", error);
@@ -313,70 +216,58 @@ export default function HomeClient() {
   useEffect(() => {
     async function loadData() {
       setLoading(true);
+
       try {
-        const { data: p } = await supabase
-          .from("posts")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(10);
+        const [postsResult, universesResult, galleryResult] = await Promise.all([
+          supabase.from("posts").select("*").order("created_at", { ascending: false }).limit(10),
+          supabase.from("universes").select("*").limit(4),
+          supabase.from("gallery").select("id", { count: "exact", head: true }),
+        ]);
 
-        const { data: u } = await supabase
-          .from("universes")
-          .select("*")
-          .limit(4);
+        if (postsResult.error) throw postsResult.error;
+        if (universesResult.error) throw universesResult.error;
 
-        if (p) {
-          setPosts(
-            p.map((item) => ({
-              id: item.id,
-              title: item.title,
-              meta: `${item.author || "익명"} · ${new Date(
-                item.created_at
-              ).toLocaleDateString()}`,
-              stats: `좋아요 ${item.like_count || 0} · 댓글 ${
-                item.comment_count || 0
-              }`,
-              universe: item.universe_slug,
-              type: item.category || "전체",
-            }))
-          );
-        }
+        const mappedPosts: HomePost[] = (postsResult.data ?? []).map((item) => ({
+          id: item.id,
+          title: item.title,
+          meta: `${item.author || "익명"} · ${new Date(item.created_at).toLocaleDateString("ko-KR")}`,
+          stats: `좋아요 ${item.like_count || 0} · 댓글 ${item.comment_count || 0}`,
+          universe: item.universe_slug || "unknown",
+          type: item.category || "전체",
+        }));
 
-        if (u) {
-          setUniverses(
-            u.map((item) => ({
-              name: item.name,
-              description: item.description,
-              members: item.subscriber_count || 0,
-              tags: [item.category].filter(Boolean),
-              slug: item.slug,
-            }))
-          );
-        }
+        const mappedUniverses: HomeUniverse[] = (universesResult.data ?? []).map((item) => ({
+          name: item.name,
+          description: item.description || "아직 소개가 없는 유니버스예요.",
+          members: item.subscriber_count || 0,
+          tags: [item.category].filter(Boolean),
+          slug: item.slug,
+        }));
+
+        setPosts(mappedPosts);
+        setUniverses(mappedUniverses);
+        setTrendData({
+          visits: (galleryResult.count || 0) * 123 + 456,
+          posts: mappedPosts.length,
+          universes: mappedUniverses.length,
+        });
       } catch (error) {
-        console.error("Error loading feed data:", error);
+        console.error("Error loading home data:", error);
       } finally {
         setLoading(false);
       }
     }
+
     loadData();
 
     const postsChannel = supabase
       .channel("realtime-posts-feed")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "posts" },
-        () => loadData()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, () => loadData())
       .subscribe();
 
     const universesChannel = supabase
       .channel("realtime-universes-feed")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "universes" },
-        () => loadData()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "universes" }, () => loadData())
       .subscribe();
 
     return () => {
@@ -388,37 +279,21 @@ export default function HomeClient() {
   const handleSave = async () => {
     if (!user || isSaving) return;
 
-    const nextConfig = parseHomeConfig({
-      heroTitle,
-      heroHighlight,
-      heroSuffix,
-      heroDesc,
-      tags,
-      notices,
-    });
-
+    const nextConfig = parseHomeConfig({ heroTitle, heroHighlight, heroSuffix, heroDesc, tags, notices });
     if (!nextConfig) return;
 
-    if (
-      !nextConfig.heroTitle.trim() ||
-      !nextConfig.heroHighlight.trim() ||
-      !nextConfig.heroDesc.trim()
-    ) {
+    if (!nextConfig.heroTitle.trim() || !nextConfig.heroHighlight.trim() || !nextConfig.heroDesc.trim()) {
       setSaveMessage("제목과 소개 문구는 비워둘 수 없어요.");
       return;
     }
 
     nextConfig.tags = nextConfig.tags.map((tag) => tag.trim()).filter(Boolean);
-    nextConfig.notices = nextConfig.notices
-      .map((notice) => notice.trim())
-      .filter(Boolean);
+    nextConfig.notices = nextConfig.notices.map((notice) => notice.trim()).filter(Boolean);
 
     setIsSaving(true);
     setSaveMessage(null);
 
-    const { error } = await supabase.auth.updateUser({
-      data: { home_config: nextConfig },
-    });
+    const { error } = await supabase.auth.updateUser({ data: { home_config: nextConfig } });
 
     if (error) {
       console.error("Failed to save home config", error);
@@ -427,10 +302,7 @@ export default function HomeClient() {
       return;
     }
 
-    localStorage.setItem(
-      `dv_home_config:${user.id}`,
-      JSON.stringify(nextConfig)
-    );
+    localStorage.setItem(`dv_home_config:${user.id}`, JSON.stringify(nextConfig));
     localStorage.removeItem("dv_home_config");
     applyHomeConfig(nextConfig);
     setSavedConfig(cloneHomeConfig(nextConfig));
@@ -445,542 +317,118 @@ export default function HomeClient() {
     setSaveMessage(null);
   };
 
-  const previewChecks = [
-    { label: "boards", pass: boards.length > 0 },
-    { label: "posts (fetched)", pass: posts.length > 0 },
-    { label: "universes (fetched)", pass: universes.length > 0 },
-    { label: "loading state", pass: !loading },
-  ];
+  const primaryPost = posts[0];
+  const featuredPosts = posts.slice(0, 3);
 
   return (
-    <div className="relative min-h-screen bg-slate-50 transition-colors duration-700 dark:bg-[#03050a]">
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-0 transition-opacity duration-1000 dark:opacity-100">
+    <div className="relative min-h-screen overflow-hidden bg-[#f7f8fc] text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-slate-100">
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-60 dark:opacity-100">
         <div
           className={cn(
-            "absolute left-[10%] top-[5%] h-[500px] w-[500px] rounded-full blur-[120px] transition-colors duration-1000",
-            weather === "sunny"
-              ? "bg-orange-600/10"
-              : weather === "rainy"
-              ? "bg-blue-600/10"
-              : weather === "snowy"
-              ? "bg-sky-400/10"
-              : weather === "cloudy"
-              ? "bg-slate-600/10"
-              : "bg-violet-600/10"
+            "absolute left-[4%] top-[4%] h-[440px] w-[440px] rounded-full blur-[140px]",
+            weather === "sunny" ? "bg-orange-300/20" : weather === "rainy" ? "bg-blue-400/15" : weather === "snowy" ? "bg-sky-200/20" : weather === "cloudy" ? "bg-slate-300/18" : "bg-fuchsia-300/18"
           )}
         />
-        <div
-          className={cn(
-            "absolute right-[5%] top-[15%] h-[400px] w-[400px] rounded-full blur-[100px] transition-colors duration-1000",
-            weather === "sunny"
-              ? "bg-yellow-600/10"
-              : weather === "rainy"
-              ? "bg-slate-600/10"
-              : weather === "snowy"
-              ? "bg-blue-300/10"
-              : weather === "cloudy"
-              ? "bg-gray-600/10"
-              : "bg-indigo-600/10"
-          )}
-        />
-        <div
-          className={cn(
-            "absolute bottom-[10%] left-[20%] h-[600px] w-[600px] rounded-full blur-[150px] transition-colors duration-1000",
-            weather === "sunny"
-              ? "bg-amber-600/5"
-              : weather === "rainy"
-              ? "bg-indigo-600/5"
-              : weather === "snowy"
-              ? "bg-indigo-200/5"
-              : weather === "cloudy"
-              ? "bg-zinc-600/5"
-              : "bg-fuchsia-600/5"
-          )}
-        />
+        <div className="absolute right-[3%] top-[10%] h-[520px] w-[520px] rounded-full bg-sky-300/15 blur-[150px] dark:bg-indigo-500/10" />
+        <div className="absolute bottom-[8%] left-[18%] h-[560px] w-[560px] rounded-full bg-violet-300/10 blur-[170px] dark:bg-violet-600/10" />
       </div>
 
-      <div className="relative z-10 text-slate-900 dark:text-slate-100">
-        <SidebarShell
-          sidebarExtra={previewChecks.map((check) => (
-            <div
-              key={check.label}
-              className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-white/5 px-3 py-2 text-xs"
-            >
-              <span className="font-medium text-slate-600 dark:text-slate-400">
-                {check.label}
-              </span>
-              <span
-                className={
-                  check.pass
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-rose-500 dark:text-rose-400"
-                }
-              >
-                {check.pass ? "OK" : "FAIL"}
-              </span>
-            </div>
-          ))}
-        >
-          <main className="flex flex-col gap-8">
-            <section className="group relative overflow-hidden rounded-[40px] border border-white/80 bg-white/75 p-6 shadow-[0_32px_64px_rgba(148,163,184,0.18)] backdrop-blur-3xl transition-all duration-700 dark:border-white/10 dark:bg-[#0b0e14]/60 dark:shadow-[0_32px_64px_rgba(0,0,0,0.45)] md:p-8 lg:p-12">
-              <div className="pointer-events-none absolute -left-16 top-0 h-44 w-44 rounded-full bg-pink-200/35 dark:bg-pink-600/20 blur-3xl" />
-              <div className="pointer-events-none absolute right-0 top-10 h-40 w-40 rounded-full bg-sky-200/35 dark:bg-sky-600/20 blur-3xl" />
-
-              {/* Edit Controls */}
-              {!userLoading && user && (
-                <div className="absolute right-6 top-6 z-20">
-                  {isEditing ? (
-                    <div className="flex gap-2">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 disabled:cursor-wait disabled:opacity-60"
-                      >
-                        <Save size={16} />
-                        {isSaving ? "저장 중..." : "저장"}
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleCancel}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 rounded-full bg-slate-200 px-4 py-2 text-sm font-bold text-slate-700 shadow-lg dark:bg-white/10 dark:text-white"
-                      >
-                        <CloseIcon size={16} />
-                        취소
-                      </motion.button>
-                    </div>
-                  ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        setSaveMessage(null);
-                        setIsEditing(true);
-                      }}
-                      className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-bold text-slate-700 shadow-lg backdrop-blur-md dark:bg-white/10 dark:text-white"
-                    >
-                      <Pencil size={16} />홈 수정하기
-                    </motion.button>
-                  )}
-                  {saveMessage && (
-                    <p
-                      role="status"
-                      className={cn(
-                        "mt-2 max-w-56 rounded-xl px-3 py-2 text-right text-xs font-semibold backdrop-blur-md",
-                        saveMessage.includes("실패") ||
-                          saveMessage.includes("비워둘")
-                          ? "bg-rose-50/90 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300"
-                          : "bg-emerald-50/90 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300"
-                      )}
-                    >
-                      {saveMessage}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-                <div className="flex flex-col gap-5">
-                  <span className="w-fit rounded-full border border-fuchsia-200/70 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-fuchsia-500 shadow-sm backdrop-blur">
-                    Dreamcore community hub
-                  </span>
-                  <div className="space-y-6">
-                    <h1 className="max-w-4xl text-5xl font-black leading-[1.1] tracking-tighter text-slate-950 dark:text-white md:text-6xl lg:text-7xl">
-                      <EditableText
-                        isEditing={isEditing}
-                        value={heroTitle}
-                        onChange={setHeroTitle}
-                      />
-                      <br />
-                      <span
-                        className={cn(
-                          "bg-clip-text text-transparent transition-all duration-1000",
-                          weather === "sunny"
-                            ? "bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 dark:from-orange-400 dark:via-amber-400 dark:to-yellow-300"
-                            : weather === "rainy"
-                            ? "bg-gradient-to-r from-blue-600 via-slate-500 to-indigo-500 dark:from-blue-400 dark:via-slate-400 dark:to-indigo-400"
-                            : weather === "cloudy"
-                            ? "bg-gradient-to-r from-slate-600 via-gray-500 to-zinc-500 dark:from-slate-400 dark:via-gray-400 dark:to-zinc-400"
-                            : weather === "snowy"
-                            ? "bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-300 dark:from-blue-200 dark:via-cyan-200 dark:to-sky-200"
-                            : "bg-gradient-to-r from-violet-600 via-indigo-500 to-sky-400 dark:from-violet-400 dark:via-indigo-300 dark:to-sky-200"
-                        )}
-                      >
-                        <EditableText
-                          isEditing={isEditing}
-                          value={heroHighlight}
-                          onChange={setHeroHighlight}
-                        />
-                      </span>
-                      <EditableText
-                        isEditing={isEditing}
-                        value={heroSuffix}
-                        onChange={setHeroSuffix}
-                      />
-                    </h1>
-                    <div className="max-w-xl">
-                      <EditableText
-                        isEditing={isEditing}
-                        value={heroDesc}
-                        onChange={setHeroDesc}
-                        multiline
-                        className="text-lg leading-relaxed text-slate-600 dark:text-slate-400"
-                        as="p"
-                      />
-                    </div>
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-16 pt-24 md:px-6 lg:px-8 lg:pt-28">
+        <main>
+          <section className="relative overflow-hidden rounded-[40px] border border-white/90 bg-white/80 shadow-[0_30px_80px_rgba(15,23,42,.08)] backdrop-blur-3xl dark:border-white/10 dark:bg-[#0a0d14]/70">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(244,114,182,.14),transparent_32%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,.16),transparent_34%),radial-gradient(circle_at_55%_100%,rgba(139,92,246,.1),transparent_35%)]" />
+            {!userLoading && user && (
+              <div className="absolute right-5 top-5 z-30 md:right-7 md:top-7">
+                {isEditing ? (
+                  <div className="flex gap-2">
+                    <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-black text-white"><Save size={14}/>{isSaving ? "저장 중..." : "저장"}</button>
+                    <button onClick={handleCancel} className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-black text-slate-600 shadow-sm dark:bg-white/10 dark:text-white"><CloseIcon size={14}/>취소</button>
                   </div>
-
-                  <div className="flex flex-wrap gap-4">
-                    <motion.button
-                      variants={squishyVariants}
-                      whileHover="hover"
-                      whileTap="tap"
-                      className="group relative overflow-hidden rounded-full bg-slate-900 px-8 py-4 text-sm font-bold text-white transition-shadow hover:shadow-xl hover:shadow-violet-500/20 dark:bg-white dark:text-slate-950"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-indigo-600 opacity-0 transition-opacity group-hover:opacity-100" />
-                      <span className="relative z-10">유니버스 둘러보기</span>
-                    </motion.button>
-                    <motion.button
-                      variants={squishyVariants}
-                      whileHover="hover"
-                      whileTap="tap"
-                      className="rounded-full border border-slate-200 bg-white px-8 py-4 text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-                    >
-                      커뮤니티 가기
-                    </motion.button>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <div className="flex w-full flex-wrap items-center gap-2 pb-2 text-xs text-slate-500">
-                      <StatPill>오늘 게시글 993</StatPill>
-                      <StatPill>댓글 2.6K</StatPill>
-                      <StatPill>유니버스 93개</StatPill>
-                    </div>
-                    {tags.map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="group relative rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm"
-                      >
-                        {isEditing ? (
-                          <input
-                            value={tag}
-                            onChange={(e) => {
-                              const newTags = [...tags];
-                              newTags[idx] = e.target.value;
-                              setTags(newTags);
-                            }}
-                            className="w-20 bg-transparent outline-none focus:ring-1 focus:ring-violet-500 rounded"
-                          />
-                        ) : (
-                          `#${tag}`
-                        )}
-                        {isEditing && (
-                          <button
-                            onClick={() =>
-                              setTags(tags.filter((_, i) => i !== idx))
-                            }
-                            className="ml-1 text-rose-500 hover:text-rose-700"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </span>
-                    ))}
-                    {isEditing && (
-                      <button
-                        onClick={() => setTags([...tags, "새 태그"])}
-                        className="rounded-full border border-dashed border-slate-300 dark:border-white/20 px-3 py-1.5 text-xs font-medium text-slate-400 hover:border-violet-500 hover:text-violet-500 transition-colors"
-                      >
-                        + 태그 추가
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid gap-4">
-                  <section className="rounded-3xl border border-white/70 bg-white/72 dark:border-white/10 dark:bg-white/5 p-5 shadow-[0_12px_30px_rgba(148,163,184,0.14)] dark:shadow-none backdrop-blur-xl">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                          실시간 피드
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          커뮤니티 홈에서 바로 훑어보기
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-2.5">
-                      {loading ? (
-                        <p className="py-10 text-center text-xs text-slate-400">
-                          피드 불러오는 중...
-                        </p>
-                      ) : posts.length === 0 ? (
-                        <p className="py-10 text-center text-xs text-slate-400">
-                          아직 올라온 글이 없어요.
-                        </p>
-                      ) : (
-                        posts.slice(0, 4).map((post) => (
-                          <motion.div
-                            key={post.id || post.title}
-                            whileHover={{ scale: 1.02, y: -4 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 400,
-                              damping: 12,
-                            }}
-                          >
-                            <Link
-                              href={`/universe/${post.universe}/${post.id}`}
-                              className="block rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 px-4 py-3 shadow-sm transition-colors hover:bg-slate-50 dark:hover:bg-white/10"
-                            >
-                              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                {post.title}
-                              </p>
-                              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                                {post.universe} · {post.meta}
-                              </p>
-                            </Link>
-                          </motion.div>
-                        ))
-                      )}
-                    </div>
-                  </section>
-
-                  <section className="group relative overflow-hidden rounded-[32px] border border-indigo-900/50 bg-[#0f111a] p-6 shadow-2xl">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-black uppercase tracking-widest text-indigo-400">
-                        Weekly Trend
-                      </p>
-                      <span className="animate-pulse rounded-full bg-indigo-500/20 px-3 py-1 text-[10px] font-bold text-indigo-400 ring-1 ring-indigo-500/30">
-                        HOT NOW
-                      </span>
-                    </div>
-                    <div className="mt-5 grid grid-cols-3 gap-3">
-                      {[
-                        [trendData.visits.toString(), "방문"],
-                        [trendData.posts.toString(), "새 글"],
-                        [trendData.universes.toString(), "유니버스"],
-                      ].map((item) => (
-                        <div
-                          key={item[1]}
-                          className="rounded-2xl bg-white/5 p-4 text-center ring-1 ring-white/5"
-                        >
-                          <p className="text-xl font-black text-white">
-                            {item[0]}
-                          </p>
-                          <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                            {item[1]}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                </div>
+                ) : (
+                  <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-xs font-black text-slate-600 shadow-sm backdrop-blur dark:bg-white/10 dark:text-white"><Pencil size={14}/>홈 수정</button>
+                )}
+                {saveMessage && <p className="mt-2 rounded-xl bg-white/80 px-3 py-2 text-right text-[11px] font-bold text-slate-500 shadow-sm backdrop-blur dark:bg-black/30 dark:text-slate-300">{saveMessage}</p>}
               </div>
-            </section>
+            )}
 
-            <section className="grid items-stretch gap-6 lg:grid-cols-[3fr_2fr]">
-              <section className="rounded-3xl border border-white/70 bg-white/74 dark:border-white/10 dark:bg-white/5 p-6 shadow-[0_12px_30px_rgba(148,163,184,0.14)] dark:shadow-none backdrop-blur-xl md:p-7">
-                <div className="mb-6 flex items-center justify-between gap-4">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                    지금 인기 있는 유니버스
-                  </h2>
+            <div className="relative grid min-h-[430px] lg:grid-cols-[1.08fr_.92fr]">
+              <div className="flex flex-col justify-center px-7 py-10 md:px-12 lg:px-14 lg:py-11">
+                <span className="mb-5 w-fit rounded-full border border-fuchsia-200/80 bg-white/70 px-4 py-1.5 text-[10px] font-black uppercase tracking-[.18em] text-fuchsia-500 shadow-sm backdrop-blur dark:border-fuchsia-500/20 dark:bg-white/5">Dreamcore community hub</span>
+                <h1 className="max-w-[640px] text-[42px] font-black leading-[.98] tracking-[-.055em] text-slate-950 dark:text-white sm:text-[50px] md:text-[58px] lg:text-[62px] xl:text-[68px]">
+                  <EditableText isEditing={isEditing} value={heroTitle} onChange={setHeroTitle} />
+                  <br />
+                  <span className="inline-flex flex-wrap items-baseline gap-x-0">
+                    <span className="whitespace-nowrap bg-gradient-to-r from-violet-600 via-indigo-500 to-sky-400 bg-clip-text text-transparent">
+                      <EditableText isEditing={isEditing} value={heroHighlight} onChange={setHeroHighlight} />
+                    </span>
+                    <span className="whitespace-nowrap">
+                      <EditableText isEditing={isEditing} value={heroSuffix} onChange={setHeroSuffix} />
+                    </span>
+                  </span>
+                </h1>
+                <EditableText isEditing={isEditing} value={heroDesc} onChange={setHeroDesc} multiline as="p" className="mt-7 max-w-xl text-[15px] leading-7 text-slate-500 dark:text-slate-400 md:text-base" />
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link href="/universe" className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950">유니버스 둘러보기 <ArrowRight size={14}/></Link>
+                  <Link href="/community" className="rounded-full border border-slate-200 bg-white/70 px-6 py-3.5 text-sm font-black text-slate-700 transition hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-200">커뮤니티 가기</Link>
                 </div>
-                <div className="grid gap-4 md:auto-rows-fr md:grid-cols-2">
-                  {loading ? (
-                    <p className="col-span-full py-20 text-center text-sm text-slate-400">
-                      유니버스 찾는 중...
-                    </p>
-                  ) : universes.length === 0 ? (
-                    <p className="col-span-full py-20 text-center text-sm text-slate-400">
-                      등록된 유니버스가 없습니다.
-                    </p>
-                  ) : (
-                    universes.map((universe, index) => (
-                      <motion.article
-                        key={universe.slug || universe.name}
-                        variants={squishyVariants}
-                        whileHover="hover"
-                        whileTap="tap"
-                        className="group relative flex h-full min-h-[220px] overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-5 shadow-sm"
-                      >
-                        <div className="relative flex h-full flex-col gap-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                                {universe.name}
-                              </h3>
-                              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
-                                {universe.description}
-                              </p>
-                            </div>
-                            <span className="rounded-full bg-slate-900 dark:bg-white/20 px-3 py-1 text-xs font-semibold text-white">
-                              #{index + 1}
-                            </span>
-                          </div>
-                          <div className="mt-auto flex items-center justify-between pt-2">
-                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-300">
-                              멤버 {formatMembers(universe.members)}명
-                            </p>
-                            <Link
-                              href={`/universe/${universe.slug}`}
-                              className="rounded-full border border-slate-200 dark:border-white/20 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 transition group-hover:bg-slate-900 dark:group-hover:bg-white/20 group-hover:text-white"
-                            >
-                              입장하기
-                            </Link>
-                          </div>
-                        </div>
-                      </motion.article>
-                    ))
-                  )}
-                </div>
-              </section>
-
-              <aside className="flex h-full flex-col gap-6">
-                <section className="relative overflow-hidden rounded-3xl border border-indigo-950/80 bg-[linear-gradient(135deg,#0f172a_0%,#312e81_58%,#1e293b_100%)] p-6 text-white shadow-[0_16px_36px_rgba(49,46,129,0.28)]">
-                  <h2 className="mt-2 text-2xl font-bold">
-                    너의 세계를 열어봐
-                  </h2>
-                  <p className="mt-3 text-sm leading-6 text-white/70">
-                    상상만 하던 설정, 그림, 캐릭터, 문장을 진짜 공간으로
-                    꺼내놓을 시간.
-                  </p>
-                  <button className="mt-5 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5">
-                    지금 시작하기
-                  </button>
-                </section>
-
-                <section className="rounded-3xl border border-white/70 bg-white/72 dark:border-white/10 dark:bg-white/5 p-6 shadow-[0_12px_30px_rgba(148,163,184,0.14)] dark:shadow-none backdrop-blur-xl">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-                    실시간 인기
-                  </p>
-                  <div className="mt-3 space-y-2.5">
-                    {notices.map((notice, index) => (
-                      <div
-                        key={index}
-                        className="group relative flex w-full items-center gap-3 rounded-2xl bg-slate-50 dark:bg-white/5 px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-white/10"
-                      >
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 dark:bg-white/20 text-xs font-bold text-white">
-                          {index + 1}
-                        </span>
-                        {isEditing ? (
-                          <input
-                            value={notice}
-                            onChange={(e) => {
-                              const newNotices = [...notices];
-                              newNotices[index] = e.target.value;
-                              setNotices(newNotices);
-                            }}
-                            className="flex-1 bg-transparent outline-none focus:ring-1 focus:ring-violet-500 rounded"
-                          />
-                        ) : (
-                          <span className="truncate">{notice}</span>
-                        )}
-                        {isEditing && (
-                          <button
-                            onClick={() =>
-                              setNotices(notices.filter((_, i) => i !== index))
-                            }
-                            className="text-rose-500 hover:text-rose-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <CloseIcon size={14} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    {isEditing && (
-                      <button
-                        onClick={() =>
-                          setNotices([
-                            ...notices,
-                            "[새 소식] 내용을 입력하세요",
-                          ])
-                        }
-                        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 dark:border-white/20 py-2.5 text-xs font-medium text-slate-400 hover:border-violet-500 hover:text-violet-500 transition-colors"
-                      >
-                        + 소식 추가
-                      </button>
-                    )}
-                  </div>
-                </section>
-              </aside>
-            </section>
-
-            <section className="rounded-3xl border border-white/70 bg-white/74 dark:border-white/10 dark:bg-white/5 p-6 shadow-[0_12px_30px_rgba(148,163,184,0.14)] dark:shadow-none backdrop-blur-xl md:p-7">
-              <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                  최근 올라온 글
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {feedTabs.map((tab, index) => (
-                    <button
-                      key={tab}
-                      className={cn(
-                        "rounded-full px-4 py-2 text-sm font-medium transition",
-                        index === 0
-                          ? "bg-slate-900 text-white dark:bg-white/20"
-                          : "border border-slate-200 dark:border-white/10 bg-white dark:bg-black/20 text-slate-600 dark:text-slate-300"
-                      )}
-                    >
-                      {tab}
-                    </button>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {tags.map((tag, idx) => (
+                    <span key={idx} className="rounded-full border border-slate-200 bg-white/55 px-3 py-1.5 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">#{tag}</span>
                   ))}
                 </div>
               </div>
-              <div className="overflow-hidden rounded-3xl border border-white/70 dark:border-white/10 bg-white/80 dark:bg-black/40 shadow-sm backdrop-blur-xl">
-                <div>
-                  {loading ? (
-                    <p className="py-20 text-center text-sm text-slate-400">
-                      글 목록 불러오는 중...
-                    </p>
-                  ) : posts.length === 0 ? (
-                    <p className="py-20 text-center text-sm text-slate-400">
-                      최근 작성된 글이 없습니다.
-                    </p>
+
+              <div className="relative flex min-h-[380px] flex-col justify-center border-t border-slate-200/60 bg-[radial-gradient(circle_at_70%_25%,rgba(56,189,248,.12),transparent_36%),linear-gradient(180deg,rgba(248,250,252,.35),rgba(255,255,255,.04))] p-8 dark:border-white/10 lg:min-h-0 lg:border-l lg:border-t-0">
+                <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle,#cbd5e1_1px,transparent_1px)] [background-size:34px_34px] dark:opacity-10" />
+                <div className="relative z-10">
+                  <div className="mb-7 flex items-center justify-between text-[10px] font-black uppercase tracking-[.24em] text-slate-400"><span>Verse signal</span><span>Live ●</span></div>
+                  {primaryPost ? (
+                    <Link href={`/universe/${primaryPost.universe}/${primaryPost.id}`} className="group mx-auto block aspect-[4/3] w-full max-w-[390px] rounded-[30px] bg-slate-950 p-7 text-white shadow-2xl shadow-violet-500/10 transition hover:-translate-y-1 dark:bg-white dark:text-slate-950">
+                      <span className="text-[10px] font-black uppercase tracking-[.2em] text-violet-300 dark:text-violet-600">Featured verse</span>
+                      <div className="mt-16"><h3 className="line-clamp-3 text-3xl font-black leading-tight">{primaryPost.title}</h3><p className="mt-4 text-xs text-white/55 dark:text-slate-500">{primaryPost.meta}</p></div>
+                    </Link>
                   ) : (
-                    posts.map((post, index) => (
-                      <motion.div
-                        key={post.id || post.title}
-                        whileHover={{ x: 10 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 20,
-                        }}
-                      >
-                        <Link
-                          href={`/universe/${post.universe}/${post.id}`}
-                          className={cn(
-                            "grid grid-cols-4 items-center gap-4 px-5 py-3.5 transition-colors",
-                            index !== posts.length - 1 &&
-                              "border-b border-slate-100 dark:border-white/5"
-                          )}
-                        >
-                          <span className="w-fit rounded-full bg-indigo-50 dark:bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-500 dark:text-indigo-300">
-                            {post.type}
-                          </span>
-                          <h3 className="truncate text-sm font-semibold text-slate-900 dark:text-slate-200">
-                            {post.title}
-                          </h3>
-                          <span className="truncate text-sm font-medium text-slate-500 dark:text-slate-400">
-                            {post.universe}
-                          </span>
-                          <span className="truncate text-sm font-medium text-slate-500 dark:text-slate-400">
-                            {post.stats}
-                          </span>
-                        </Link>
-                      </motion.div>
-                    ))
+                    <div className="mx-auto flex aspect-[4/3] w-full max-w-[390px] flex-col items-center justify-center rounded-[30px] border border-dashed border-slate-300/80 bg-white/45 text-center backdrop-blur dark:border-white/15 dark:bg-white/5"><Orbit size={32} className="text-violet-400"/><p className="mt-4 font-black">첫 이야기를 기다리는 중</p><p className="mt-2 text-sm text-slate-400">Verse에 첫 별이 뜨면 여기에 나타나요.</p></div>
                   )}
+                  <div className="mt-7 grid grid-cols-3 gap-2"><div><p className="text-xl font-black">{trendData.posts}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">New posts</p></div><div><p className="text-xl font-black">{trendData.universes}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Universes</p></div><div><p className="text-xl font-black">{trendData.visits}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Pulse</p></div></div>
                 </div>
               </div>
-            </section>
-          </main>
-        </SidebarShell>
+            </div>
+          </section>
+
+          <section className="relative py-12 md:py-14">
+            <div className="mb-7 flex items-end justify-between gap-4"><div><p className="mb-1 text-[11px] font-black uppercase tracking-[0.2em] text-violet-500">Explore the verse</p><h2 className="text-3xl font-black tracking-tight md:text-4xl">우주를 발견해봐</h2></div><Link href="/universe" className="text-sm font-bold text-slate-500 hover:text-violet-600">모든 유니버스 →</Link></div>
+            <div className="relative min-h-[220px] overflow-hidden rounded-[32px] border border-slate-200/60 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,.09),transparent_45%)] dark:border-white/5">
+              <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle,#cbd5e1_1px,transparent_1px)] [background-size:38px_38px] dark:opacity-10" />
+              {loading ? <p className="relative py-28 text-center text-sm text-slate-400">유니버스를 찾는 중...</p> : universes.length === 0 ? <div className="relative flex min-h-[220px] flex-col items-center justify-center"><Orbit size={34} className="text-violet-400"/><p className="mt-3 font-bold">아직 발견된 유니버스가 없어요.</p></div> : (
+                <div className={cn("relative grid min-h-[220px] place-items-center gap-5 p-6", universes.length === 1 ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-4")}>
+                  {universes.map((universe, index) => (
+                    <motion.div key={universe.slug} whileHover={{ y: -7, scale: 1.02 }} className={cn("w-full max-w-[270px]", universes.length === 1 && "max-w-[340px]")}>
+                      <Link href={`/universe/${universe.slug}`} className="group block rounded-[26px] border border-white/90 bg-white/78 p-5 shadow-[0_16px_40px_rgba(15,23,42,.07)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0b0e14]/75"><div className="mb-6 flex items-center justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-sky-400 text-white shadow-lg"><Orbit size={20}/></span><span className="text-xs font-black text-slate-300">0{index+1}</span></div><h3 className="text-xl font-black">{universe.name}</h3><p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{universe.description}</p><div className="mt-5 flex items-center justify-between text-xs font-bold text-slate-400"><span>멤버 {formatMembers(universe.members)}명</span><span className="text-slate-700 group-hover:text-violet-600 dark:text-slate-200">입장 →</span></div></Link>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section className="grid gap-10 border-y border-slate-200/80 py-12 lg:grid-cols-[1.35fr_.65fr] dark:border-white/10">
+            <div>
+              <div className="mb-7 flex items-end justify-between"><div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Today in Drawing Verse</p><h2 className="mt-1 text-3xl font-black">오늘의 이야기 ✨</h2></div><Link href="/community" className="text-sm font-bold text-slate-400">더 둘러보기 →</Link></div>
+              {loading ? <div className="py-20 text-center text-sm text-slate-400">이야기를 모으는 중...</div> : featuredPosts.length === 0 ? <div className="rounded-[26px] border border-dashed border-slate-300 px-6 py-14 text-center dark:border-white/15"><Sparkles size={22} className="mx-auto text-violet-300"/><p className="mt-3 text-sm font-bold text-slate-500 dark:text-slate-300">아직 오늘의 이야기가 없어요.</p><Link href="/community" className="mt-2 inline-block text-xs font-black text-violet-500 hover:text-violet-600">첫 이야기 남기기 →</Link></div> : (
+                <div className="grid gap-4 sm:grid-cols-2">{featuredPosts.slice(0,2).map((post,index)=><Link key={post.id} href={`/universe/${post.universe}/${post.id}`} className={cn("group flex min-h-[230px] flex-col justify-end rounded-[26px] p-6 transition hover:-translate-y-1", index===0 ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "border border-slate-200 bg-white/70 dark:border-white/10 dark:bg-white/5")}><span className={cn("mb-auto text-[10px] font-black uppercase tracking-[.18em]", index===0?"text-violet-300 dark:text-violet-600":"text-violet-500")}>{post.type} · {post.universe}</span><h3 className="line-clamp-3 text-2xl font-black leading-tight">{post.title}</h3><p className={cn("mt-4 text-xs",index===0?"text-white/50 dark:text-slate-500":"text-slate-400")}>{post.meta}</p></Link>)}</div>
+              )}
+            </div>
+            <div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Live ranking</p><h2 className="mt-1 text-3xl font-black">지금 뜨는 것</h2><div className="mt-7 divide-y divide-slate-200 dark:divide-white/10">{notices.map((notice,index)=><div key={`${notice}-${index}`} className="group flex items-start gap-4 py-4"><span className="text-2xl font-black text-slate-200 dark:text-white/15">0{index+1}</span>{isEditing?<input value={notice} onChange={(e)=>{const next=[...notices];next[index]=e.target.value;setNotices(next)}} className="min-w-0 flex-1 bg-transparent pt-1 text-sm font-bold outline-none"/>:<p className="min-w-0 flex-1 pt-1 text-sm font-bold leading-6 text-slate-700 dark:text-slate-300">{notice}</p>}{isEditing&&<button onClick={()=>setNotices(notices.filter((_,i)=>i!==index))} className="text-rose-500"><CloseIcon size={14}/></button>}</div>)}</div></div>
+          </section>
+
+          <section className="py-12">
+            <div className="mb-7 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Fresh feed</p><h2 className="mt-1 text-3xl font-black">최근 올라온 글</h2></div><div className="flex gap-2">{feedTabs.slice(0,3).map((tab,index)=><button key={tab} className={cn("rounded-full px-4 py-2 text-xs font-black",index===0?"bg-slate-950 text-white dark:bg-white dark:text-slate-950":"text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5")}>{tab}</button>)}</div></div>
+            <div className="border-t border-slate-200 dark:border-white/10">{loading?<p className="py-16 text-center text-sm text-slate-400">글 목록 불러오는 중...</p>:posts.length===0?<div className="py-11 text-center"><p className="text-sm font-bold text-slate-500 dark:text-slate-300">아직 최근 글이 없어요.</p><p className="mt-1 text-xs text-slate-400">첫 이야기가 올라오면 이곳에서 바로 만날 수 있어요.</p><Link href="/community" className="mt-3 inline-flex items-center gap-1 text-xs font-black text-violet-500 hover:text-violet-600">첫 글 남기기 <ArrowRight size={12}/></Link></div>:posts.slice(0,7).map((post,index)=><motion.div key={post.id} whileHover={{x:6}}><Link href={`/universe/${post.universe}/${post.id}`} className="grid gap-2 border-b border-slate-200 py-5 sm:grid-cols-[70px_minmax(0,1fr)_160px] sm:items-center dark:border-white/10"><span className="text-xs font-black text-violet-500">{post.type}</span><h3 className="truncate text-base font-bold">{post.title}</h3><span className="truncate text-xs text-slate-400 sm:text-right">{post.universe} · {post.stats}</span></Link></motion.div>)}</div>
+          </section>
+
+          <section className="relative isolate overflow-hidden rounded-[34px] bg-[linear-gradient(115deg,#4338ca_0%,#7c3aed_48%,#0284c7_120%)] px-7 py-12 text-white shadow-[0_24px_60px_rgba(79,70,229,.22)] md:px-12 md:py-16"><div className="pointer-events-none absolute -right-20 -top-28 h-80 w-80 rounded-full border-[42px] border-white/10"/><div className="pointer-events-none absolute bottom-[-90px] right-[28%] h-44 w-44 rounded-full bg-white/10"/><div className="relative z-10 max-w-2xl"><span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-black ring-1 ring-white/20">Create your universe</span><h2 className="mt-5 text-3xl font-black md:text-4xl">너의 세계를 열어봐 🌌</h2><p className="mt-3 max-w-xl text-sm leading-7 text-white/75 md:text-base">상상하던 설정, 그림, 캐릭터와 이야기를 하나의 우주로 묶어보세요. 아이디어 하나가 새로운 Verse의 시작이 됩니다.</p><Link href="/universe/new" className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-black !text-slate-950 shadow-lg transition hover:-translate-y-0.5">Universe 만들기 <ArrowRight size={15}/></Link></div></section>
+        </main>
       </div>
     </div>
   );
