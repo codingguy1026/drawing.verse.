@@ -1,280 +1,386 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
-  ChevronRight,
+  ArrowRight,
+  Bell,
+  BellOff,
   Clock3,
-  Disc3,
-  Headphones,
+  Compass,
+  Flame,
   MessageCircle,
-  Music2,
   Orbit,
   Plus,
-  Radio,
   Sparkles,
-  Star,
   Users,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase/client";
+
+type UniverseRow = {
+  id: number | string;
+  slug: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  subscriber_count: number | null;
+  post_count: number | null;
+};
+
+type PostRow = {
+  id: number | string;
+  title: string;
+  author?: string | null;
+  created_at?: string | null;
+  category?: string | null;
+  like_count?: number | null;
+  comment_count?: number | null;
+  universe_slug?: string | null;
+};
+
+type FeedMode = "latest" | "popular";
+
 function cn(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
 }
 
-type UniverseTheme = "dreamcore" | "space" | "neon";
+function compactNumber(value: number) {
+  return new Intl.NumberFormat("ko-KR", {
+    notation: value >= 10000 ? "compact" : "standard",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
 
-type Universe = {
-  id: string;
-  name: string;
-  subtitle: string;
-  description: string;
-  theme: UniverseTheme;
-  tags: string[];
-  stats: {
-    series: number;
-    tracks: number;
-    members: string;
-  };
-};
+function relativeDate(value?: string | null) {
+  if (!value) return "방금";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "최근";
 
-type SeriesItem = {
-  id: string;
-  title: string;
-  description: string;
-  tracks: number;
-  posts: number;
-  mood: string;
-  updatedAt: string;
-};
+  const diff = Date.now() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
 
-type TrackItem = {
-  id: string;
-  title: string;
-  series: string;
-  mood: string;
-  duration: string;
-};
+  if (minutes < 1) return "방금";
+  if (minutes < 60) return `${minutes}분 전`;
+  if (hours < 24) return `${hours}시간 전`;
+  if (days < 7) return `${days}일 전`;
+  return date.toLocaleDateString("ko-KR");
+}
 
-type SatelliteItem = {
-  id: string;
-  name: string;
-  description: string;
-};
+export default function UniverseDetailClient({ slug }: { slug: string }) {
+  const [universe, setUniverse] = useState<UniverseRow | null>(null);
+  const [posts, setPosts] = useState<PostRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [feedMode, setFeedMode] = useState<FeedMode>("latest");
+  const [subscribed, setSubscribed] = useState(false);
+  const [subscriptionReady, setSubscriptionReady] = useState(true);
+  const [subscriptionBusy, setSubscriptionBusy] = useState(false);
 
-type ActivityItem = {
-  id: string;
-  user: string;
-  action: string;
-  target: string;
-  time: string;
-};
+  useEffect(() => {
+    let ignore = false;
 
-const universes: Record<string, Universe> = {
-  dreamcore: {
-    id: "dreamcore",
-    name: "Dreamcore Universe",
-    subtitle: "흐릿한 꿈과 새벽 감성이 모이는 음악 세계",
-    description:
-      "새벽 2시의 방, 오래된 라디오, 흐릿한 기억을 닮은 음악들이 모이는 유니버스예요. 곡 하나하나가 장면처럼 이어지고, 시리즈는 작은 이야기처럼 쌓여요.",
-    theme: "dreamcore",
-    tags: ["몽환", "새벽", "ambient", "story", "dreamcore"],
-    stats: {
-      series: 12,
-      tracks: 248,
-      members: "1.2K",
-    },
-  },
-  "space-radio": {
-    id: "space-radio",
-    name: "Space Radio",
-    subtitle: "우주 정거장에서 흘러나오는 작은 전파들",
-    description:
-      "멀리 떨어진 행성, 정거장, 무중력의 밤을 닮은 음악들이 모이는 공간이에요. 잔잔한 전자음과 별빛 같은 멜로디가 중심이에요.",
-    theme: "space",
-    tags: ["우주", "radio", "synth", "ambient", "cinematic"],
-    stats: {
-      series: 8,
-      tracks: 134,
-      members: "642",
-    },
-  },
-};
+    async function load() {
+      setLoading(true);
 
-const featuredSeries: SeriesItem[] = [
-  {
-    id: "night-radio",
-    title: "새벽 라디오",
-    description: "잠들지 못한 사람들이 남긴 짧은 음악들",
-    tracks: 12,
-    posts: 34,
-    mood: "dreamy",
-    updatedAt: "오늘",
-  },
-  {
-    id: "cloud-station",
-    title: "구름 정류장",
-    description: "비 오는 창가와 흐린 하늘을 닮은 사운드",
-    tracks: 18,
-    posts: 51,
-    mood: "soft",
-    updatedAt: "어제",
-  },
-  {
-    id: "lost-school",
-    title: "꿈속 학교",
-    description: "복도 끝에서 들려오는 이상하고 예쁜 멜로디",
-    tracks: 9,
-    posts: 22,
-    mood: "liminal",
-    updatedAt: "3일 전",
-  },
-];
+      const [universeResult, postsResult, authResult] = await Promise.all([
+        supabase
+          .from("universes")
+          .select(
+            "id,slug,name,description,category,subscriber_count,post_count"
+          )
+          .eq("slug", slug)
+          .maybeSingle(),
+        supabase
+          .from("posts")
+          .select("*")
+          .eq("universe_slug", slug)
+          .order("created_at", { ascending: false })
+          .limit(30),
+        supabase.auth.getUser(),
+      ]);
 
-const recentTracks: TrackItem[] = [
-  {
-    id: "fading-window",
-    title: "fading window",
-    series: "새벽 라디오",
-    mood: "dreamcore",
-    duration: "1:42",
-  },
-  {
-    id: "cloud-station",
-    title: "cloud station",
-    series: "구름 정류장",
-    mood: "ambient",
-    duration: "2:08",
-  },
-  {
-    id: "after-school-rain",
-    title: "after school rain",
-    series: "꿈속 학교",
-    mood: "piano",
-    duration: "1:16",
-  },
-  {
-    id: "old-cassette-moon",
-    title: "old cassette moon",
-    series: "새벽 라디오",
-    mood: "lo-fi",
-    duration: "1:58",
-  },
-];
+      if (ignore) return;
 
-const satellites: SatelliteItem[] = [
-  {
-    id: "night-radio",
-    name: "새벽 라디오",
-    description: "잠 못 드는 밤의 짧은 음악",
-  },
-  {
-    id: "memory-archive",
-    name: "기억 보관소",
-    description: "희미한 장면과 오래된 감정",
-  },
-  {
-    id: "cloud-stop",
-    name: "구름 정류장",
-    description: "비와 구름, 창문 쪽 분위기",
-  },
-];
+      if (universeResult.error || !universeResult.data) {
+        setUniverse(null);
+        setPosts([]);
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
 
-const activities: ActivityItem[] = [
-  {
-    id: "activity-1",
-    user: "민트구름",
-    action: "새 곡을 추가했어요",
-    target: "fading window",
-    time: "12분 전",
-  },
-  {
-    id: "activity-2",
-    user: "하늘고래",
-    action: "댓글을 남겼어요",
-    target: "cloud station",
-    time: "48분 전",
-  },
-  {
-    id: "activity-3",
-    user: "드가이",
-    action: "새 시리즈를 만들었어요",
-    target: "꿈속 학교",
-    time: "오늘",
-  },
-];
+      setUniverse(universeResult.data as UniverseRow);
+      setPosts((postsResult.data as PostRow[] | null) ?? []);
+      setNotFound(false);
 
-const themeStyles: Record<
-  UniverseTheme,
-  {
-    page: string;
-    heroGlow: string;
-    planet: string;
-    chip: string;
-    border: string;
-    accentText: string;
+      const user = authResult.data.user;
+      if (user) {
+        const { data, error } = await supabase
+          .from("universe_subscriptions")
+          .select("universe_slug")
+          .eq("user_id", user.id)
+          .eq("universe_slug", slug)
+          .maybeSingle();
+
+        if (!ignore) {
+          if (error) {
+            setSubscriptionReady(false);
+          } else {
+            setSubscribed(Boolean(data));
+          }
+        }
+      }
+
+      if (!ignore) setLoading(false);
+    }
+
+    load();
+
+    const channel = supabase
+      .channel(`universe-detail-${slug}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "posts",
+          filter: `universe_slug=eq.${slug}`,
+        },
+        () => load()
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "universes",
+          filter: `slug=eq.${slug}`,
+        },
+        () => load()
+      )
+      .subscribe();
+
+    return () => {
+      ignore = true;
+      supabase.removeChannel(channel);
+    };
+  }, [slug]);
+
+  const sortedPosts = useMemo(() => {
+    if (feedMode === "latest") return posts;
+
+    return [...posts].sort((a, b) => {
+      const aScore = (a.like_count ?? 0) * 2 + (a.comment_count ?? 0);
+      const bScore = (b.like_count ?? 0) * 2 + (b.comment_count ?? 0);
+      return bScore - aScore;
+    });
+  }, [feedMode, posts]);
+
+  const featuredPost = sortedPosts[0] ?? null;
+  const feedPosts = featuredPost ? sortedPosts.slice(1) : sortedPosts;
+
+  async function toggleSubscription() {
+    if (!universe || subscriptionBusy || !subscriptionReady) return;
+
+    const { data } = await supabase.auth.getUser();
+    const user = data.user;
+
+    if (!user) {
+      window.location.href = "/auth/login";
+      return;
+    }
+
+    setSubscriptionBusy(true);
+
+    if (subscribed) {
+      const { error } = await supabase
+        .from("universe_subscriptions")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("universe_slug", universe.slug);
+
+      if (!error) {
+        setSubscribed(false);
+        setUniverse((prev) =>
+          prev
+            ? {
+                ...prev,
+                subscriber_count: Math.max((prev.subscriber_count ?? 1) - 1, 0),
+              }
+            : prev
+        );
+      }
+    } else {
+      const { error } = await supabase
+        .from("universe_subscriptions")
+        .insert({ user_id: user.id, universe_slug: universe.slug });
+
+      if (!error) {
+        setSubscribed(true);
+        setUniverse((prev) =>
+          prev
+            ? {
+                ...prev,
+                subscriber_count: (prev.subscriber_count ?? 0) + 1,
+              }
+            : prev
+        );
+      }
+    }
+
+    setSubscriptionBusy(false);
   }
-> = {
-  dreamcore: {
-    page: "from-[#fbf7ff] via-[#eef4ff] to-[#fff7fb]",
-    heroGlow: "bg-[radial-gradient(circle_at_25%_20%,rgba(216,180,254,0.15),transparent)]",
-    planet: "from-violet-200 via-sky-100 to-pink-100 shadow-[0_18px_60px_rgba(168,85,247,0.2)]",
-    chip: "bg-violet-50 text-violet-700 ring-violet-200/70",
-    border: "border-violet-100",
-    accentText: "text-violet-600",
-  },
-  space: {
-    page: "from-[#03050a] via-[#0b101d] to-[#03050a]",
-    heroGlow: "bg-[radial-gradient(circle_at_75%_30%,rgba(59,130,246,0.15),transparent)]",
-    planet: "from-sky-200 via-indigo-200 to-violet-300 shadow-[0_18px_60px_rgba(59,130,246,0.18)]",
-    chip: "bg-sky-50 text-sky-700 ring-sky-200/70",
-    border: "border-sky-700/30",
-    accentText: "text-sky-400",
-  },
-  neon: {
-    page: "from-[#0a0a0a] via-[#101010] to-[#0a0a0a]",
-    heroGlow: "bg-[radial-gradient(circle_at_50%_50%,rgba(236,72,153,0.15),transparent)]",
-    planet: "from-fuchsia-200 via-cyan-100 to-violet-300 shadow-[0_18px_60px_rgba(236,72,153,0.16)]",
-    chip: "bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-200/70",
-    border: "border-fuchsia-700/30",
-    accentText: "text-fuchsia-400",
-  },
-};
 
-export default async function UniverseDetailPage({ slug }: { slug: string }) {
-  const universe = universes[slug] ?? universes.dreamcore;
-  const theme = themeStyles[universe.theme];
-  const isDark = universe.theme !== "dreamcore";
+  if (loading) return <UniverseSkeleton />;
+
+  if (notFound || !universe) {
+    return (
+      <main className="min-h-screen bg-slate-50 px-4 py-28 text-slate-950 dark:bg-[#03050a] dark:text-white">
+        <section className="mx-auto max-w-3xl text-center">
+          <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
+            <Orbit className="size-7 text-violet-500" />
+          </div>
+          <p className="mt-7 text-xs font-black uppercase tracking-[0.28em] text-violet-500">
+            Lost in the Verse
+          </p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
+            이 유니버스는 아직 없어요.
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-500 dark:text-white/50">
+            주소가 바뀌었거나 아직 만들어지지 않은 세계일 수 있어요. 다른 유니버스를 탐색해볼까요?
+          </p>
+          <Link
+            href="/universe"
+            className="mt-7 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
+          >
+            <Compass className="size-4" />
+            유니버스 탐색하기
+          </Link>
+        </section>
+      </main>
+    );
+  }
 
   return (
-    <main
-      className={cn(
-        "min-h-screen overflow-hidden",
-        isDark ? "bg-[#03050a] text-white" : "bg-white text-slate-950"
-      )}
-    >
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-5 sm:px-6 lg:px-8">
-        <TopBar isDark={isDark} />
+    <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors dark:bg-[#03050a] dark:text-white">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[620px] overflow-hidden">
+        <div className="absolute left-[8%] top-20 size-[360px] rounded-full bg-violet-400/10 blur-[110px] dark:bg-violet-500/15" />
+        <div className="absolute right-[8%] top-10 size-[420px] rounded-full bg-sky-300/12 blur-[120px] dark:bg-sky-500/10" />
+      </div>
 
-        <UniverseHero universe={universe} theme={theme} isDark={isDark} />
+      <div className="relative mx-auto w-full max-w-7xl px-4 pb-24 pt-24 sm:px-6 lg:px-8">
+        <nav className="mb-5 flex items-center justify-between gap-4">
+          <Link
+            href="/universe"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950 dark:text-white/45 dark:hover:text-white"
+          >
+            <ArrowLeft className="size-4" />
+            Universe
+          </Link>
 
-        <section className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)_300px]">
-          <aside className="space-y-6">
-            <UniverseInfoCard
-              universe={universe}
-              theme={theme}
-              isDark={isDark}
-            />
-            <MembersCard theme={theme} isDark={isDark} />
-          </aside>
+          <button
+            onClick={toggleSubscription}
+            disabled={!subscriptionReady || subscriptionBusy}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50",
+              subscribed
+                ? "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-400/20 dark:bg-violet-500/10 dark:text-violet-200"
+                : "border-slate-200 bg-white/80 text-slate-700 hover:border-violet-200 hover:text-violet-600 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:border-violet-400/30 dark:hover:text-violet-200"
+            )}
+          >
+            {subscribed ? <BellOff className="size-4" /> : <Bell className="size-4" />}
+            {subscriptionBusy ? "처리 중..." : subscribed ? "구독 중" : "구독하기"}
+          </button>
+        </nav>
 
-          <div className="space-y-6">
-            <FeaturedSeriesShelf theme={theme} isDark={isDark} />
-            <RecentTracksList theme={theme} isDark={isDark} />
-            <SatelliteMap theme={theme} isDark={isDark} />
+        <Hero universe={universe} featuredPost={featuredPost} />
+
+        <section className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="min-w-0 space-y-12">
+            <section>
+              <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.26em] text-violet-500">
+                    Community Feed
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+                    이 우주의 이야기
+                  </h2>
+                </div>
+
+                <div className="inline-flex rounded-full border border-slate-200 bg-white/80 p-1 shadow-sm dark:border-white/10 dark:bg-white/5">
+                  <button
+                    onClick={() => setFeedMode("latest")}
+                    className={cn(
+                      "rounded-full px-4 py-2 text-xs font-bold transition",
+                      feedMode === "latest"
+                        ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                        : "text-slate-500 dark:text-white/45"
+                    )}
+                  >
+                    최신
+                  </button>
+                  <button
+                    onClick={() => setFeedMode("popular")}
+                    className={cn(
+                      "rounded-full px-4 py-2 text-xs font-bold transition",
+                      feedMode === "popular"
+                        ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                        : "text-slate-500 dark:text-white/45"
+                    )}
+                  >
+                    인기
+                  </button>
+                </div>
+              </div>
+
+              {feedPosts.length === 0 ? (
+                <EmptyFeed slug={universe.slug} hasFeatured={Boolean(featuredPost)} />
+              ) : (
+                <div className="border-y border-slate-200 dark:border-white/10">
+                  {feedPosts.map((post, index) => (
+                    <PostRowItem
+                      key={post.id}
+                      post={post}
+                      slug={universe.slug}
+                      last={index === feedPosts.length - 1}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(120deg,#6d28d9_0%,#4f46e5_48%,#0284c7_100%)] px-6 py-8 text-white shadow-[0_24px_70px_rgba(79,70,229,0.25)] sm:px-8 sm:py-10">
+              <div className="absolute -right-16 -top-20 size-56 rounded-full border border-white/10" />
+              <div className="absolute -right-4 -top-8 size-32 rounded-full border border-white/10" />
+              <div className="relative max-w-2xl">
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-white/60">
+                  Add your signal
+                </p>
+                <h2 className="mt-3 text-3xl font-black tracking-tight">
+                  이 유니버스에 새로운 이야기를 남겨봐
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-white/70">
+                  한 줄의 생각도, 긴 설정도, 그림 한 장도 이 우주의 새로운 궤도가 될 수 있어요.
+                </p>
+                <Link
+                  href="/community"
+                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:-translate-y-0.5"
+                >
+                  <Plus className="size-4" />
+                  이야기 시작하기
+                </Link>
+              </div>
+            </section>
           </div>
 
-          <aside className="space-y-6">
-            <ActivityFeed theme={theme} isDark={isDark} />
-            <CreateInUniverseCTA theme={theme} isDark={isDark} />
+          <aside className="space-y-8 lg:sticky lg:top-24 lg:h-fit">
+            <InfoPanel universe={universe} posts={posts} />
+            <SignalPanel posts={posts} />
           </aside>
         </section>
       </div>
@@ -282,617 +388,260 @@ export default async function UniverseDetailPage({ slug }: { slug: string }) {
   );
 }
 
-function TopBar({ isDark }: { isDark: boolean }) {
-  return (
-    <header className="flex items-center justify-between">
-      <Link
-        href="/universes"
-        className={cn(
-          "group inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition",
-          isDark
-            ? "bg-white/10 text-white/80 ring-1 ring-white/15 hover:bg-white/15 hover:text-white"
-            : "bg-white/70 text-slate-700 ring-1 ring-slate-200 hover:bg-white hover:text-slate-950"
-        )}
-      >
-        <ArrowLeft className="size-4 transition group-hover:-translate-x-0.5" />
-        유니버스로 돌아가기
-      </Link>
-
-      <Link
-        href="/create"
-        className={cn(
-          "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition",
-          isDark
-            ? "bg-white text-slate-950 hover:bg-white/90"
-            : "bg-slate-950 text-white hover:bg-slate-800"
-        )}
-      >
-        <Plus className="size-4" />
-        만들기
-      </Link>
-    </header>
-  );
-}
-
-function UniverseHero({
+function Hero({
   universe,
-  theme,
-  isDark,
+  featuredPost,
 }: {
-  universe: Universe;
-  theme: (typeof themeStyles)[UniverseTheme];
-  isDark: boolean;
+  universe: UniverseRow;
+  featuredPost: PostRow | null;
 }) {
   return (
-    <section
-      className={cn(
-        "relative overflow-hidden rounded-[2rem] border p-6 shadow-2xl sm:p-8 lg:p-10",
-        theme.border,
-        isDark ? "bg-white/[0.07]" : "bg-white/65",
-        "backdrop-blur-2xl"
-      )}
-    >
-      <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/20 px-3 py-1 text-sm backdrop-blur-xl">
-            <Sparkles className="size-4" />
-            Universe Detail
-          </div>
+    <section className="relative overflow-hidden rounded-[2.2rem] border border-white/80 bg-white/72 px-6 py-8 shadow-[0_28px_70px_rgba(148,163,184,0.18)] backdrop-blur-3xl dark:border-white/10 dark:bg-white/[0.045] dark:shadow-[0_28px_70px_rgba(0,0,0,0.35)] sm:px-8 sm:py-10 lg:px-10">
+      <div className="pointer-events-none absolute -left-20 -top-24 size-64 rounded-full bg-violet-300/20 blur-[80px] dark:bg-violet-500/12" />
+      <div className="pointer-events-none absolute -right-16 top-0 size-72 rounded-full bg-sky-200/25 blur-[90px] dark:bg-sky-500/10" />
 
-          <div className="space-y-4">
-            <h1 className="max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
+      <div className="relative grid items-stretch gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
+        <div className="flex min-h-[330px] flex-col justify-between py-2">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border border-violet-200/70 bg-violet-50/80 px-3 py-1.5 text-xs font-black text-violet-600 dark:border-violet-400/15 dark:bg-violet-500/10 dark:text-violet-200">
+                <Orbit className="size-3.5" />
+                UNIVERSE
+              </span>
+              {universe.category && (
+                <span className="rounded-full border border-slate-200 bg-white/70 px-3 py-1.5 text-xs font-bold text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-white/45">
+                  {universe.category}
+                </span>
+              )}
+            </div>
+
+            <h1 className="mt-6 max-w-3xl text-4xl font-black leading-[1.05] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
               {universe.name}
             </h1>
-            <p
-              className={cn(
-                "max-w-2xl text-lg leading-8 sm:text-xl",
-                isDark ? "text-white/72" : "text-slate-600"
-              )}
-            >
-              {universe.subtitle}
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-500 dark:text-white/50 sm:text-lg">
+              {universe.description || "아직 소개가 작성되지 않은 유니버스예요. 첫 이야기가 이 세계의 분위기를 만들어갈 거예요."}
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {universe.tags.map((tag) => (
-              <span
-                key={tag}
-                className={cn(
-                  "rounded-full px-3 py-1 text-sm font-semibold ring-1 backdrop-blur-xl",
-                  theme.chip
-                )}
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="#recent-tracks"
-              className={cn(
-                "inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition",
-                isDark
-                  ? "bg-white text-slate-950 hover:bg-white/90"
-                  : "bg-slate-950 text-white hover:bg-slate-800"
-              )}
-            >
-              <Headphones className="size-4" />
-              음악 둘러보기
-            </Link>
-
-            <Link
-              href="#featured-series"
-              className={cn(
-                "inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold ring-1 transition",
-                isDark
-                  ? "bg-white/10 text-white ring-white/15 hover:bg-white/15"
-                  : "bg-white/70 text-slate-800 ring-slate-200 hover:bg-white"
-              )}
-            >
-              <Radio className="size-4" />
-              대표 시리즈
-            </Link>
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-semibold text-slate-500 dark:text-white/45">
+            <span className="inline-flex items-center gap-2">
+              <Users className="size-4 text-violet-500" />
+              {compactNumber(universe.subscriber_count ?? 0)}명 구독
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <MessageCircle className="size-4 text-sky-500" />
+              {compactNumber(universe.post_count ?? 0)}개 이야기
+            </span>
           </div>
         </div>
 
-        <div className="relative mx-auto flex aspect-square w-full max-w-[320px] items-center justify-center">
-          <div
-            className={cn(
-              "relative size-40 rounded-full bg-gradient-to-br",
-              theme.planet
-            )}
-          >
-            <div className="absolute left-8 top-7 size-8 rounded-full bg-white/40 blur-sm" />
-            <div className="absolute bottom-8 right-7 size-12 rounded-full bg-white/25 blur-md" />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className="relative min-h-[300px] overflow-hidden rounded-[1.8rem] border border-white/70 bg-slate-950 p-6 text-white shadow-2xl dark:border-white/10"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.28),transparent_34%),radial-gradient(circle_at_18%_80%,rgba(14,165,233,0.18),transparent_34%)]" />
+          <div className="absolute right-7 top-7 size-24 rounded-full border border-white/10" />
+          <div className="absolute right-11 top-11 size-16 rounded-full bg-gradient-to-br from-violet-300 via-indigo-300 to-sky-300 shadow-[0_0_50px_rgba(139,92,246,0.35)]" />
 
-function UniverseInfoCard({
-  universe,
-  theme,
-  isDark,
-}: {
-  universe: Universe;
-  theme: (typeof themeStyles)[UniverseTheme];
-  isDark: boolean;
-}) {
-  return (
-    <section
-      className={cn(
-        "rounded-3xl border p-5 backdrop-blur-2xl",
-        theme.border,
-        isDark ? "bg-white/[0.07]" : "bg-white/65"
-      )}
-    >
-      <div className="mb-4 flex items-center gap-2">
-        <Orbit className={cn("size-5", theme.accentText)} />
-        <h2 className="font-black">유니버스 소개</h2>
-      </div>
+          <div className="relative flex h-full min-h-[250px] flex-col justify-between">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
+              Verse Signal
+            </p>
 
-      <p
-        className={cn(
-          "text-sm leading-7",
-          isDark ? "text-white/68" : "text-slate-600"
-        )}
-      >
-        {universe.description}
-      </p>
-
-      <div className="mt-5 grid gap-3">
-        <StatRow
-          icon={<Radio className="size-4" />}
-          label="시리즈"
-          value={`${universe.stats.series}개`}
-        />
-        <StatRow
-          icon={<Music2 className="size-4" />}
-          label="음악"
-          value={`${universe.stats.tracks}개`}
-        />
-        <StatRow
-          icon={<Users className="size-4" />}
-          label="멤버"
-          value={`${universe.stats.members}명`}
-        />
-      </div>
-    </section>
-  );
-}
-
-function StatRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-2xl bg-white/35 px-3 py-3 ring-1 ring-white/20">
-      <div className="flex items-center gap-2 text-sm opacity-80">
-        {icon}
-        {label}
-      </div>
-      <strong className="text-sm">{value}</strong>
-    </div>
-  );
-}
-
-function MembersCard({
-  theme,
-  isDark,
-}: {
-  theme: (typeof themeStyles)[UniverseTheme];
-  isDark: boolean;
-}) {
-  const members = ["드", "구", "별", "몽", "라"];
-
-  return (
-    <section
-      className={cn(
-        "rounded-3xl border p-5 backdrop-blur-2xl",
-        theme.border,
-        isDark ? "bg-white/[0.07]" : "bg-white/65"
-      )}
-    >
-      <div className="mb-4 flex items-center gap-2">
-        <Users className={cn("size-5", theme.accentText)} />
-        <h2 className="font-black">멤버</h2>
-      </div>
-
-      <div className="flex -space-x-2">
-        {members.map((member, index) => (
-          <div
-            key={member}
-            className="grid size-10 place-items-center rounded-full border-2 border-white bg-gradient-to-br from-white/80 to-white/30 text-sm font-black shadow-sm"
-            style={{ zIndex: members.length - index }}
-          >
-            {member}
-          </div>
-        ))}
-      </div>
-
-      <p
-        className={cn(
-          "mt-4 text-sm leading-6",
-          isDark ? "text-white/65" : "text-slate-600"
-        )}
-      >
-        지금 이 유니버스에서 사람들이 음악과 이야기를 쌓고 있어요.
-      </p>
-    </section>
-  );
-}
-
-function FeaturedSeriesShelf({
-  theme,
-  isDark,
-}: {
-  theme: (typeof themeStyles)[UniverseTheme];
-  isDark: boolean;
-}) {
-  return (
-    <section id="featured-series" className="space-y-4">
-      <SectionTitle
-        icon={<Star className="size-5" />}
-        title="대표 시리즈"
-        subtitle="이 유니버스에서 먼저 들어가 보면 좋은 공간들이에요."
-        theme={theme}
-        isDark={isDark}
-      />
-
-      <div className="grid gap-4 md:grid-cols-3">
-        {featuredSeries.map((item) => (
-          <Link
-            key={item.id}
-            href={`/series/${item.id}`}
-            className={cn(
-              "group relative overflow-hidden rounded-3xl border p-5 backdrop-blur-2xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl",
-              theme.border,
-              isDark
-                ? "bg-white/[0.07] hover:bg-white/[0.1]"
-                : "bg-white/70 hover:bg-white"
-            )}
-          >
-            <div className="relative space-y-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="grid size-11 place-items-center rounded-2xl bg-white/45 ring-1 ring-white/30">
-                  <Disc3 className={cn("size-5", theme.accentText)} />
+            {featuredPost ? (
+              <Link href={`/universe/${universe.slug}/${featuredPost.id}`} className="group block">
+                <div className="max-w-sm">
+                  <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-white/65">
+                    {featuredPost.category || "이야기"}
+                  </span>
+                  <h2 className="mt-4 text-2xl font-black leading-tight tracking-tight sm:text-3xl">
+                    {featuredPost.title}
+                  </h2>
+                  <p className="mt-3 text-sm text-white/45">
+                    {featuredPost.author || "익명"} · {relativeDate(featuredPost.created_at)}
+                  </p>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-white/70 transition group-hover:text-white">
+                    이 이야기 보기
+                    <ArrowRight className="size-4 transition group-hover:translate-x-1" />
+                  </span>
                 </div>
-
-                <span className="rounded-full bg-white/35 px-2.5 py-1 text-xs font-bold ring-1 ring-white/25">
-                  {item.mood}
-                </span>
-              </div>
-
+              </Link>
+            ) : (
               <div>
-                <h3 className="text-lg font-black">{item.title}</h3>
-                <p
-                  className={cn(
-                    "mt-2 line-clamp-2 text-sm leading-6",
-                    isDark ? "text-white/65" : "text-slate-600"
-                  )}
-                >
-                  {item.description}
+                <Sparkles className="size-6 text-violet-300" />
+                <h2 className="mt-4 text-2xl font-black">첫 신호를 기다리는 중</h2>
+                <p className="mt-2 max-w-xs text-sm leading-6 text-white/45">
+                  아직 올라온 이야기가 없어요. 이곳의 첫 번째 장면을 만들어보세요.
                 </p>
               </div>
-
-              <div
-                className={cn(
-                  "flex flex-wrap gap-2 text-xs font-semibold",
-                  isDark ? "text-white/60" : "text-slate-500"
-                )}
-              >
-                <span>{item.tracks} tracks</span>
-                <span>·</span>
-                <span>{item.posts} posts</span>
-                <span>·</span>
-                <span>{item.updatedAt}</span>
-              </div>
-
-              <div className="flex items-center gap-1 text-sm font-bold">
-                들어가기
-                <ChevronRight className="size-4 transition group-hover:translate-x-1" />
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function RecentTracksList({
-  theme,
-  isDark,
-}: {
-  theme: (typeof themeStyles)[UniverseTheme];
-  isDark: boolean;
-}) {
-  return (
-    <section
-      id="recent-tracks"
-      className={cn(
-        "rounded-3xl border p-5 backdrop-blur-2xl",
-        theme.border,
-        isDark ? "bg-white/[0.07]" : "bg-white/70"
-      )}
-    >
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <SectionTitle
-          icon={<Music2 className="size-5" />}
-          title="최근 추가된 음악"
-          subtitle="방금 이 유니버스에 떠오른 작은 별들이에요."
-          theme={theme}
-          isDark={isDark}
-          compact
-        />
-
-        <Link
-          href="/tracks"
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-bold transition",
-            isDark
-              ? "bg-white/10 hover:bg-white/15"
-              : "bg-slate-100 hover:bg-slate-200"
-          )}
-        >
-          전체 보기
-          <ChevronRight className="size-4" />
-        </Link>
-      </div>
-
-      <div className="divide-y divide-white/20">
-        {recentTracks.map((track) => (
-          <Link
-            key={track.id}
-            href={`/tracks/${track.id}`}
-            className="group grid gap-3 py-4 transition first:pt-0 last:pb-0 sm:grid-cols-[1fr_130px_90px]"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white/40 ring-1 ring-white/25">
-                <Headphones className={cn("size-5", theme.accentText)} />
-              </div>
-
-              <div className="min-w-0">
-                <h3 className="truncate font-black group-hover:underline">
-                  {track.title}
-                </h3>
-                <p
-                  className={cn(
-                    "text-sm",
-                    isDark ? "text-white/55" : "text-slate-500"
-                  )}
-                >
-                  {track.series}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm opacity-70">
-              <Sparkles className="size-4" />
-              {track.mood}
-            </div>
-
-            <div className="flex items-center gap-2 text-sm opacity-70">
-              <Clock3 className="size-4" />
-              {track.duration}
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function SatelliteMap({
-  theme,
-  isDark,
-}: {
-  theme: (typeof themeStyles)[UniverseTheme];
-  isDark: boolean;
-}) {
-  return (
-    <section
-      className={cn(
-        "relative overflow-hidden rounded-3xl border p-5 backdrop-blur-2xl",
-        theme.border,
-        isDark ? "bg-white/[0.07]" : "bg-white/70"
-      )}
-    >
-      <SectionTitle
-        icon={<Orbit className="size-5" />}
-        title="작은 위성들"
-        subtitle="이 유니버스 안에 있는 세부 공간들이에요."
-        theme={theme}
-        isDark={isDark}
-        compact
-      />
-
-      <div className="relative mt-5 grid gap-3 md:grid-cols-3">
-        {satellites.map((satellite) => (
-          <Link
-            key={satellite.id}
-            href={`/universes/${satellite.id}`}
-            className={cn(
-              "group rounded-3xl border p-4 transition hover:-translate-y-0.5",
-              theme.border,
-              isDark
-                ? "bg-white/[0.06] hover:bg-white/[0.1]"
-                : "bg-white/55 hover:bg-white"
             )}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <div
-                className={cn(
-                  "size-4 rounded-full bg-gradient-to-br",
-                  theme.planet
-                )}
-              />
-              <ChevronRight className="size-4 opacity-45 transition group-hover:translate-x-1 group-hover:opacity-100" />
-            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
 
-            <h3 className="font-black">{satellite.name}</h3>
-            <p
+function PostRowItem({ post, slug, last }: { post: PostRow; slug: string; last: boolean }) {
+  return (
+    <motion.div whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 300, damping: 24 }}>
+      <Link
+        href={`/universe/${slug}/${post.id}`}
+        className={cn(
+          "grid gap-3 py-5 sm:grid-cols-[110px_minmax(0,1fr)_auto] sm:items-center",
+          !last && "border-b border-slate-200 dark:border-white/10"
+        )}
+      >
+        <span className="w-fit rounded-full bg-violet-50 px-3 py-1 text-[11px] font-black text-violet-600 dark:bg-violet-500/10 dark:text-violet-200">
+          {post.category || "전체"}
+        </span>
+
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-bold text-slate-900 dark:text-white/90 sm:text-base">
+            {post.title}
+          </h3>
+          <p className="mt-1 text-xs text-slate-400 dark:text-white/35">
+            {post.author || "익명"} · {relativeDate(post.created_at)}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4 text-xs font-semibold text-slate-400 dark:text-white/35">
+          <span className="inline-flex items-center gap-1.5">
+            <Flame className="size-3.5" />
+            {post.like_count ?? 0}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <MessageCircle className="size-3.5" />
+            {post.comment_count ?? 0}
+          </span>
+          <ArrowRight className="hidden size-4 sm:block" />
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+function EmptyFeed({ slug, hasFeatured }: { slug: string; hasFeatured: boolean }) {
+  return (
+    <div className="rounded-[1.8rem] border border-dashed border-slate-300 px-6 py-12 text-center dark:border-white/15">
+      <MessageCircle className="mx-auto size-6 text-violet-400" />
+      <p className="mt-4 text-sm font-bold text-slate-700 dark:text-white/70">
+        {hasFeatured ? "아직 더 보여줄 이야기가 없어요." : "아직 이 유니버스에 이야기가 없어요."}
+      </p>
+      <p className="mt-2 text-xs leading-6 text-slate-400 dark:text-white/35">
+        새로운 이야기가 올라오면 이곳에서 바로 볼 수 있어요.
+      </p>
+      <Link
+        href="/community"
+        className="mt-5 inline-flex items-center gap-2 text-sm font-black text-violet-600 hover:text-violet-500 dark:text-violet-300"
+      >
+        첫 이야기 남기기
+        <ArrowRight className="size-4" />
+      </Link>
+    </div>
+  );
+}
+
+function InfoPanel({ universe, posts }: { universe: UniverseRow; posts: PostRow[] }) {
+  const totalLikes = posts.reduce((sum, post) => sum + (post.like_count ?? 0), 0);
+  const totalComments = posts.reduce((sum, post) => sum + (post.comment_count ?? 0), 0);
+
+  return (
+    <section>
+      <div className="mb-4 flex items-center gap-2">
+        <Orbit className="size-4 text-violet-500" />
+        <h2 className="text-sm font-black">Universe 정보</h2>
+      </div>
+
+      <div className="divide-y divide-slate-200 border-y border-slate-200 dark:divide-white/10 dark:border-white/10">
+        <InfoLine label="카테고리" value={universe.category || "미분류"} />
+        <InfoLine label="구독자" value={`${compactNumber(universe.subscriber_count ?? 0)}명`} />
+        <InfoLine label="게시물" value={`${posts.length || universe.post_count || 0}개`} />
+        <InfoLine label="좋아요" value={compactNumber(totalLikes)} />
+        <InfoLine label="댓글" value={compactNumber(totalComments)} />
+      </div>
+    </section>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3.5 text-sm">
+      <span className="text-slate-400 dark:text-white/35">{label}</span>
+      <span className="font-bold text-slate-700 dark:text-white/75">{value}</span>
+    </div>
+  );
+}
+
+function SignalPanel({ posts }: { posts: PostRow[] }) {
+  const hottest = useMemo(
+    () =>
+      [...posts]
+        .sort(
+          (a, b) =>
+            (b.like_count ?? 0) * 2 +
+            (b.comment_count ?? 0) -
+            ((a.like_count ?? 0) * 2 + (a.comment_count ?? 0))
+        )
+        .slice(0, 3),
+    [posts]
+  );
+
+  return (
+    <section>
+      <div className="mb-4 flex items-center gap-2">
+        <Flame className="size-4 text-orange-500" />
+        <h2 className="text-sm font-black">지금 뜨는 신호</h2>
+      </div>
+
+      {hottest.length === 0 ? (
+        <div className="border-y border-slate-200 py-8 text-center text-xs text-slate-400 dark:border-white/10 dark:text-white/35">
+          아직 신호가 잡히지 않아요.
+        </div>
+      ) : (
+        <div className="border-y border-slate-200 dark:border-white/10">
+          {hottest.map((post, index) => (
+            <div
+              key={post.id}
               className={cn(
-                "mt-2 text-sm leading-6",
-                isDark ? "text-white/60" : "text-slate-600"
+                "flex gap-3 py-4",
+                index !== hottest.length - 1 && "border-b border-slate-200 dark:border-white/10"
               )}
             >
-              {satellite.description}
-            </p>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ActivityFeed({
-  theme,
-  isDark,
-}: {
-  theme: (typeof themeStyles)[UniverseTheme];
-  isDark: boolean;
-}) {
-  return (
-    <section
-      className={cn(
-        "rounded-3xl border p-5 backdrop-blur-2xl",
-        theme.border,
-        isDark ? "bg-white/[0.07]" : "bg-white/65"
-      )}
-    >
-      <div className="mb-4 flex items-center gap-2">
-        <MessageCircle className={cn("size-5", theme.accentText)} />
-        <h2 className="font-black">활동 피드</h2>
-      </div>
-
-      <div className="space-y-4">
-        {activities.map((activity) => (
-          <div key={activity.id} className="flex gap-3">
-            <div className="mt-1 size-2.5 shrink-0 rounded-full bg-current opacity-60" />
-
-            <div>
-              <p className="text-sm leading-6">
-                <strong>{activity.user}</strong>님이{" "}
-                <span className={isDark ? "text-white/70" : "text-slate-600"}>
-                  {activity.action}
-                </span>
-              </p>
-              <p className={cn("text-sm font-bold", theme.accentText)}>
-                {activity.target}
-              </p>
-              <p
-                className={cn(
-                  "mt-1 text-xs",
-                  isDark ? "text-white/45" : "text-slate-400"
-                )}
-              >
-                {activity.time}
-              </p>
+              <span className="mt-0.5 text-xs font-black text-violet-500">0{index + 1}</span>
+              <div className="min-w-0">
+                <p className="line-clamp-2 text-sm font-bold leading-5 text-slate-700 dark:text-white/75">
+                  {post.title}
+                </p>
+                <p className="mt-1.5 text-[11px] text-slate-400 dark:text-white/30">
+                  좋아요 {post.like_count ?? 0} · 댓글 {post.comment_count ?? 0}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function CreateInUniverseCTA({
-  theme,
-  isDark,
-}: {
-  theme: (typeof themeStyles)[UniverseTheme];
-  isDark: boolean;
-}) {
-  return (
-    <section
-      className={cn(
-        "overflow-hidden rounded-3xl border p-5 backdrop-blur-2xl",
-        theme.border,
-        isDark ? "bg-white/[0.07]" : "bg-white/65"
-      )}
-    >
-      <div
-        className={cn(
-          "mb-4 grid size-12 place-items-center rounded-2xl bg-gradient-to-br",
-          theme.planet
-        )}
-      >
-        <Plus className="size-5 text-slate-950" />
-      </div>
-
-      <h2 className="text-lg font-black">이 유니버스에 추가하기</h2>
-      <p
-        className={cn(
-          "mt-2 text-sm leading-6",
-          isDark ? "text-white/62" : "text-slate-600"
-        )}
-      >
-        새 시리즈나 음악을 올려서 이 세계를 더 크게 만들어봐요.
-      </p>
-
-      <Link
-        href="/create"
-        className={cn(
-          "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition",
-          isDark
-            ? "bg-white text-slate-950 hover:bg-white/90"
-            : "bg-slate-950 text-white hover:bg-slate-800"
-        )}
-      >
-        <Plus className="size-4" />
-        새로 만들기
-      </Link>
-    </section>
-  );
-}
-
-function SectionTitle({
-  icon,
-  title,
-  subtitle,
-  theme,
-  isDark,
-  compact = false,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle: string;
-  theme: (typeof themeStyles)[UniverseTheme];
-  isDark: boolean;
-  compact?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex gap-3",
-        compact ? "items-start" : "items-end justify-between"
-      )}
-    >
-      <div>
-        <div className="flex items-center gap-2">
-          <span className={theme.accentText}>{icon}</span>
-          <h2 className={cn("font-black", compact ? "text-lg" : "text-2xl")}>
-            {title}
-          </h2>
+          ))}
         </div>
-        <p
-          className={cn(
-            "mt-1 text-sm",
-            isDark ? "text-white/58" : "text-slate-500"
-          )}
-        >
-          {subtitle}
-        </p>
+      )}
+    </section>
+  );
+}
+
+function UniverseSkeleton() {
+  return (
+    <main className="min-h-screen bg-slate-50 px-4 pb-24 pt-24 dark:bg-[#03050a]">
+      <div className="mx-auto max-w-7xl animate-pulse">
+        <div className="mb-5 h-9 w-32 rounded-full bg-slate-200 dark:bg-white/10" />
+        <div className="h-[430px] rounded-[2.2rem] bg-white dark:bg-white/5" />
+        <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="space-y-4">
+            <div className="h-8 w-52 rounded bg-slate-200 dark:bg-white/10" />
+            <div className="h-20 rounded-2xl bg-white dark:bg-white/5" />
+            <div className="h-20 rounded-2xl bg-white dark:bg-white/5" />
+          </div>
+          <div className="h-72 rounded-2xl bg-white dark:bg-white/5" />
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
