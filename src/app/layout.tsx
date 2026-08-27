@@ -11,6 +11,7 @@ import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
 import PageAnimatePresence from "@/components/Common/PageAnimatePresence";
 import { FramerMotionProvider } from "@/components/Providers/FramerMotionProvider";
 import AchievementToast from "@/components/Achievements/AchievementToast";
+import ProfileAchievementsMount from "@/components/Achievements/ProfileAchievementsMount";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -73,6 +74,9 @@ export default function RootLayout({
                 {children}
               </div>
             </PageAnimatePresence>
+
+            {/* ✅ /me 프로필의 도전과제 보드 */}
+            <ProfileAchievementsMount />
           </ThemeProvider>
         </FramerMotionProvider>
       </body>
