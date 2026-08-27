@@ -145,16 +145,16 @@ export default function AchievementToast() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-[9999] flex justify-center px-4 sm:px-6">
+    <div className="pointer-events-none fixed right-3 top-[max(0.75rem,env(safe-area-inset-top))] z-[9999] w-[calc(100%-1.5rem)] max-w-sm sm:right-5 sm:w-full">
       <AnimatePresence mode="wait">
         {current ? (
           <motion.div
             key={`${current.code}-${current.earnedAt}`}
-            initial={{ opacity: 0, y: -28, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -18, scale: 0.97 }}
+            initial={{ opacity: 0, x: 28, y: -10, scale: 0.96 }}
+            animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 18, y: -8, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 360, damping: 26 }}
-            className="pointer-events-auto relative w-full max-w-sm overflow-hidden rounded-[1.6rem] border border-violet-300/30 bg-slate-950/95 p-4 text-white shadow-[0_24px_80px_rgba(76,29,149,.35)] backdrop-blur-2xl"
+            className="pointer-events-auto relative w-full overflow-hidden rounded-[1.6rem] border border-violet-300/30 bg-slate-950/95 p-4 text-white shadow-[0_24px_80px_rgba(76,29,149,.35)] backdrop-blur-2xl"
           >
             <div className="pointer-events-none absolute -right-8 -top-10 size-32 rounded-full bg-violet-500/25 blur-3xl" />
             <div className="relative flex items-start gap-4">
