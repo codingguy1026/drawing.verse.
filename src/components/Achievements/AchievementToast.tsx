@@ -145,14 +145,14 @@ export default function AchievementToast() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed right-3 top-[max(0.75rem,env(safe-area-inset-top))] z-[9999] w-[calc(100%-1.5rem)] max-w-sm sm:right-5 sm:w-full">
+    <div className="pointer-events-none fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-3 z-[9999] w-[calc(100%-1.5rem)] max-w-sm sm:bottom-5 sm:right-5 sm:w-full">
       <AnimatePresence mode="wait">
         {current ? (
           <motion.div
             key={`${current.code}-${current.earnedAt}`}
-            initial={{ opacity: 0, x: 28, y: -10, scale: 0.96 }}
+            initial={{ opacity: 0, x: 24, y: 28, scale: 0.96 }}
             animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 18, y: -8, scale: 0.97 }}
+            exit={{ opacity: 0, x: 18, y: 20, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 360, damping: 26 }}
             className="pointer-events-auto relative w-full overflow-hidden rounded-[1.6rem] border border-violet-300/30 bg-slate-950/95 p-4 text-white shadow-[0_24px_80px_rgba(76,29,149,.35)] backdrop-blur-2xl"
           >
