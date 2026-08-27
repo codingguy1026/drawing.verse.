@@ -10,6 +10,7 @@ import CosmicBackground from "@/components/themes/CosmicBackground";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
 import PageAnimatePresence from "@/components/Common/PageAnimatePresence";
 import { FramerMotionProvider } from "@/components/Providers/FramerMotionProvider";
+import AchievementToast from "@/components/Achievements/AchievementToast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -57,6 +58,9 @@ export default function RootLayout({
 
             {/* ✅ New DV Nav */}
             <DVNav />
+
+            {/* ✅ Achievement unlock notification */}
+            <AchievementToast />
 
             {/* ✅ 전역 라우트 이동 감지 */}
             <Suspense fallback={null}>
