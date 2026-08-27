@@ -89,8 +89,6 @@ export default function AchievementToast() {
         setQueue((prev) => [...prev, { ...achievement, earnedAt }]);
       };
 
-      // 시간 제한 없이, 이 브라우저에서 아직 보여주지 않은 모든 획득 업적을 복구한다.
-      // 이메일 인증이나 재로그인 때문에 팝업 시점을 놓쳐도 다음 로그인 때 반드시 표시된다.
       const { data: earned, error } = await supabase
         .from("user_achievements")
         .select("id,achievement_code,earned_at")
@@ -147,14 +145,14 @@ export default function AchievementToast() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-24 z-[120] flex justify-center px-4 sm:justify-end sm:px-6">
+    <div className="pointer-events-none fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-[9999] flex justify-center px-4 sm:px-6">
       <AnimatePresence mode="wait">
         {current ? (
           <motion.div
             key={`${current.code}-${current.earnedAt}`}
-            initial={{ opacity: 0, y: -18, scale: 0.96 }}
+            initial={{ opacity: 0, y: -28, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.97 }}
+            exit={{ opacity: 0, y: -18, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 360, damping: 26 }}
             className="pointer-events-auto relative w-full max-w-sm overflow-hidden rounded-[1.6rem] border border-violet-300/30 bg-slate-950/95 p-4 text-white shadow-[0_24px_80px_rgba(76,29,149,.35)] backdrop-blur-2xl"
           >
