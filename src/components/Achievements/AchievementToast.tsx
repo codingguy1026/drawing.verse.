@@ -37,6 +37,7 @@ export default function AchievementToast() {
   const [queue, setQueue] = useState<ToastItem[]>([]);
   const [current, setCurrent] = useState<ToastItem | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setupRunRef = useRef(0);
 
   useEffect(() => {
     if (current || queue.length === 0) return;
@@ -59,14 +60,16 @@ export default function AchievementToast() {
     let cancelled = false;
 
     async function setup() {
+      const run = ++setupRunRef.current;
       const { data } = await supabase.auth.getUser();
       const user = data.user;
-      if (!user || cancelled) return;
+      if (!user || cancelled || run !== setupRunRef.current) return;
 
       const storageKey = `dv_seen_achievements:${user.id}`;
       let seen = new Set<string>();
       try {
-        seen = new Set(JSON.parse(localStorage.getItem(storageKey) ?? "[]"));
+        const parsed = JSON.parse(localStorage.getItem(storageKey) ?? "[]");
+        if (Array.isArray(parsed)) seen = new Set(parsed.map(String));
       } catch {
         seen = new Set();
       }
@@ -74,31 +77,35 @@ export default function AchievementToast() {
       const markSeen = (id: string) => {
         seen.add(id);
         try {
-          localStorage.setItem(storageKey, JSON.stringify(Array.from(seen).slice(-100)));
+          localStorage.setItem(storageKey, JSON.stringify(Array.from(seen).slice(-500)));
         } catch {}
       };
 
       const enqueue = async (id: string, code: string, earnedAt: string) => {
         if (seen.has(id)) return;
         const achievement = await fetchAchievement(code);
-        if (!achievement || cancelled) return;
+        if (!achievement || cancelled || run !== setupRunRef.current) return;
         markSeen(id);
         setQueue((prev) => [...prev, { ...achievement, earnedAt }]);
       };
 
-      // 가입 직후 이메일 인증/로그인으로 페이지가 바뀌어도 최근 도전과제를 놓치지 않게 복구.
-      const recentSince = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-      const { data: recent } = await supabase
+      // 시간 제한 없이, 이 브라우저에서 아직 보여주지 않은 모든 획득 업적을 복구한다.
+      // 이메일 인증이나 재로그인 때문에 팝업 시점을 놓쳐도 다음 로그인 때 반드시 표시된다.
+      const { data: earned, error } = await supabase
         .from("user_achievements")
         .select("id,achievement_code,earned_at")
         .eq("user_id", user.id)
-        .gte("earned_at", recentSince)
         .order("earned_at", { ascending: true });
 
-      for (const row of recent ?? []) {
-        await enqueue(String(row.id), row.achievement_code, row.earned_at);
+      if (!error) {
+        for (const row of earned ?? []) {
+          await enqueue(String(row.id), row.achievement_code, row.earned_at);
+        }
       }
 
+      if (cancelled || run !== setupRunRef.current) return;
+
+      if (channel) await supabase.removeChannel(channel);
       channel = supabase
         .channel(`achievement-toast-${user.id}`)
         .on(
@@ -124,12 +131,16 @@ export default function AchievementToast() {
     setup();
 
     const { data: authSub } = supabase.auth.onAuthStateChange(() => {
-      if (channel) supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+        channel = null;
+      }
       setup();
     });
 
     return () => {
       cancelled = true;
+      setupRunRef.current += 1;
       authSub.subscription.unsubscribe();
       if (channel) supabase.removeChannel(channel);
     };
