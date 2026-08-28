@@ -1,156 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Home, RefreshCcw } from 'lucide-react';
+import { useEffect } from "react";
+import Link from "next/link";
+import { Home, RotateCcw } from "lucide-react";
+import { motion } from "framer-motion";
+import DguyMascot from "@/components/DguyMascot";
 
-function DguyMascot() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -8, rotate: -2 }}
-      animate={{
-        opacity: 1,
-        y: [0, 7, 0],
-        rotate: [-2.5, -1.2, -2.5],
-      }}
-      transition={{
-        opacity: { duration: 0.45 },
-        y: { duration: 4.2, repeat: Infinity, ease: 'easeInOut' },
-        rotate: { duration: 4.2, repeat: Infinity, ease: 'easeInOut' },
-      }}
-      className="relative mx-auto w-full max-w-[560px]"
-    >
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-52 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/25 blur-[70px]" />
-
-      <svg
-        viewBox="0 0 560 390"
-        role="img"
-        aria-label="쓰러진 드가이 마스코트"
-        className="relative h-auto w-full overflow-visible drop-shadow-[0_22px_44px_rgba(76,29,149,0.38)]"
-      >
-        <defs>
-          <linearGradient id="dguyBody" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#a78bfa" />
-            <stop offset="42%" stopColor="#7c3aed" />
-            <stop offset="100%" stopColor="#5b21b6" />
-          </linearGradient>
-          <linearGradient id="dguyStroke" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#c4b5fd" />
-            <stop offset="55%" stopColor="#8b5cf6" />
-            <stop offset="100%" stopColor="#6d28d9" />
-          </linearGradient>
-          <radialGradient id="dguyShine" cx="35%" cy="20%" r="78%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
-            <stop offset="45%" stopColor="#ffffff" stopOpacity="0.07" />
-            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-          </radialGradient>
-          <filter id="dguyGlow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter id="dguySoftShadow" x="-40%" y="-40%" width="180%" height="180%">
-            <feDropShadow dx="0" dy="18" stdDeviation="17" floodColor="#2e1065" floodOpacity="0.45" />
-          </filter>
-        </defs>
-
-        <ellipse
-          cx="280"
-          cy="330"
-          rx="178"
-          ry="30"
-          fill="#4c1d95"
-          opacity="0.18"
-          filter="url(#dguyGlow)"
-        />
-
-        <g transform="rotate(-4 280 200)" filter="url(#dguySoftShadow)">
-          <path
-            d="M169 105 C132 132 111 179 108 212 C105 241 130 262 158 286 C184 309 205 329 239 339 C264 347 286 348 305 355 C337 345 375 329 402 306 C427 285 451 260 453 239 C454 217 432 162 402 110"
-            fill="none"
-            stroke="url(#dguyStroke)"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity="0.92"
-          />
-
-          <path
-            d="M191 96 C215 101 288 52 327 36 C341 30 350 42 360 56 C375 77 390 99 405 123"
-            fill="none"
-            stroke="url(#dguyStroke)"
-            strokeWidth="7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          <rect
-            x="155"
-            y="90"
-            width="250"
-            height="230"
-            rx="30"
-            fill="url(#dguyBody)"
-            stroke="#9f7aea"
-            strokeWidth="7"
-          />
-          <rect
-            x="164"
-            y="99"
-            width="232"
-            height="212"
-            rx="24"
-            fill="url(#dguyShine)"
-          />
-
-          <path
-            d="M181 108 H366"
-            fill="none"
-            stroke="#ffffff"
-            strokeOpacity="0.24"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-          <path
-            d="M173 126 V274"
-            fill="none"
-            stroke="#ffffff"
-            strokeOpacity="0.12"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-
-          {/* Tiny dot eyes stay faithful to Dguy, but sit a touch lower for a tired look. */}
-          <circle cx="238" cy="188" r="3.2" fill="#f5f3ff" />
-          <circle cx="318" cy="186" r="3.2" fill="#f5f3ff" />
-
-          {/* Error-state expression: a small worried frown instead of the normal smile. */}
-          <path
-            d="M236 233 C249 219 269 214 287 216 C302 218 314 224 322 234"
-            fill="none"
-            stroke="#f5f3ff"
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
-        </g>
-
-        <g fill="#a78bfa" opacity="0.78" filter="url(#dguyGlow)">
-          <circle cx="92" cy="252" r="7" />
-          <circle cx="114" cy="255" r="7" />
-          <circle cx="136" cy="258" r="7" />
-          <circle cx="424" cy="250" r="7" />
-          <circle cx="446" cy="247" r="7" />
-          <circle cx="468" cy="244" r="7" />
-        </g>
-      </svg>
-    </motion.div>
-  );
-}
-
-export default function Error({
+export default function ErrorPage({
   error,
   reset,
 }: {
@@ -162,65 +18,44 @@ export default function Error({
   }, [error]);
 
   return (
-    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050718] px-5 py-14 text-center text-white">
-      <div className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_22%,rgba(109,40,217,0.24),transparent_34%),radial-gradient(circle_at_50%_88%,rgba(14,165,233,0.09),transparent_32%),linear-gradient(180deg,#0b0b20_0%,#050718_54%,#020817_100%)]" />
-      <div className="pointer-events-none absolute left-1/2 top-[28%] -z-10 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-violet-400/[0.055]" />
-      <div className="pointer-events-none absolute left-1/2 top-[28%] -z-10 h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-violet-400/[0.045]" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f7f8fc] px-6 text-slate-950 dark:bg-[#03050a] dark:text-white">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-400/10 blur-[140px]" />
+        <div className="absolute left-[32%] top-[40%] h-44 w-44 rounded-full bg-rose-300/10 blur-[100px]" />
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: 'easeOut' }}
-        className="mx-auto flex w-full max-w-4xl flex-col items-center"
-      >
-        <DguyMascot />
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 flex w-full max-w-lg flex-col items-center text-center">
+        <DguyMascot mode="error" size={220} />
 
-        <div className="-mt-8 md:-mt-12">
-          <p className="mb-4 text-[11px] font-black uppercase tracking-[0.42em] text-violet-300/45 md:text-xs">
-            System interruption
-          </p>
-
-          <h1 className="text-balance text-4xl font-black tracking-[-0.055em] text-white sm:text-5xl md:text-7xl">
-            드가이가 쓰러졌어요
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-xl text-pretty text-base leading-8 text-slate-400 sm:text-lg">
-            예상하지 못한 오류를 온몸으로 받아냈어요.
-            <br className="hidden sm:block" /> 잠시 후 다시 일으켜 주세요.
-          </p>
-
-          <div className="mx-auto mt-6 flex w-fit items-center gap-2 rounded-full border border-violet-300/10 bg-white/[0.035] px-4 py-2 text-[10px] font-black uppercase tracking-[0.24em] text-violet-200/40">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-violet-400/70 shadow-[0_0_12px_rgba(167,139,250,0.85)]" />
-            Verse signal · error
-          </div>
-        </div>
-
-        <div className="mt-10 grid w-full max-w-2xl gap-3 sm:grid-cols-2">
-          <motion.button
-            whileHover={{ y: -2, scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => reset()}
-            className="group flex min-h-20 items-center justify-center gap-3 rounded-2xl border border-violet-300/25 bg-[linear-gradient(135deg,rgba(139,92,246,0.34),rgba(79,70,229,0.14))] px-6 text-base font-black text-white shadow-[0_15px_38px_rgba(76,29,149,0.2)] transition hover:border-violet-300/45 hover:bg-violet-500/25"
-          >
-            <RefreshCcw size={20} className="text-violet-200 transition-transform duration-500 group-hover:rotate-180" />
-            드가이 일으키기
-          </motion.button>
-
-          <motion.div whileHover={{ y: -2, scale: 1.01 }} whileTap={{ scale: 0.98 }}>
-            <Link
-              href="/"
-              className="flex min-h-20 items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] px-6 text-base font-black text-white transition hover:border-white/20 hover:bg-white/[0.075]"
-            >
-              <Home size={20} className="text-slate-300" />
-              홈으로 데려가기
-            </Link>
-          </motion.div>
-        </div>
-
-        <p className="mt-7 text-xs text-violet-200/35">
-          ( ˘▿˘ ) 드가이는 곧 다시 일어날 거예요.
+        <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-rose-500">Verse connection lost</p>
+        <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">드가이가 쓰러졌어요.</h1>
+        <p className="mt-4 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">
+          Verse를 연결하던 중 예상치 못한 문제가 생겼어요.
+          <br />
+          다시 시도하면 대부분 금방 돌아올 거예요.
         </p>
+
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <button type="button" onClick={reset} className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950">
+            <RotateCcw size={15} />
+            다시 시도
+          </button>
+          <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-6 py-3 text-sm font-black text-slate-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/5 dark:text-white">
+            <Home size={15} />
+            홈으로
+          </Link>
+        </div>
+
+        {process.env.NODE_ENV === "development" && (
+          <details className="mt-9 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white/70 text-left shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
+            <summary className="cursor-pointer px-5 py-4 text-xs font-bold text-slate-400">개발자용 오류 정보</summary>
+            <div className="border-t border-slate-200 px-5 py-4 dark:border-white/10">
+              <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-5 text-rose-500">{error.message}</pre>
+              {error.digest && <p className="mt-3 text-[10px] text-slate-400">digest: {error.digest}</p>}
+            </div>
+          </details>
+        )}
       </motion.div>
-    </main>
+    </div>
   );
 }
