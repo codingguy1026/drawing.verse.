@@ -12,6 +12,7 @@ import PageAnimatePresence from "@/components/Common/PageAnimatePresence";
 import { FramerMotionProvider } from "@/components/Providers/FramerMotionProvider";
 import AchievementToast from "@/components/Achievements/AchievementToast";
 import ProfileAchievementsMount from "@/components/Achievements/ProfileAchievementsMount";
+import NotificationCenter from "@/components/Notifications/NotificationCenter";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -59,6 +60,9 @@ export default function RootLayout({
 
             {/* ✅ New DV Nav */}
             <DVNav />
+
+            {/* ✅ Notification center */}
+            <NotificationCenter />
 
             {/* ✅ Achievement unlock notification */}
             <AchievementToast />
