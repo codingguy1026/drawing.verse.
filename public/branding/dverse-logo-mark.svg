@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 104" role="img" aria-labelledby="title desc">
+  <title id="title">Drawing Verse DV logo</title>
+  <desc id="desc">A coral red D and lavender V wrapped by a violet orbit.</desc>
+  <defs>
+    <linearGradient id="dRed" x1="18" y1="12" x2="80" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF7A7A"/>
+      <stop offset="0.48" stop-color="#FF5B5B"/>
+      <stop offset="1" stop-color="#E63D55"/>
+    </linearGradient>
+    <linearGradient id="vLavender" x1="52" y1="26" x2="94" y2="91" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E0D3FF"/>
+      <stop offset="0.46" stop-color="#B89CFF"/>
+      <stop offset="1" stop-color="#8060F1"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="9" y1="67" x2="119" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D7C6FF"/>
+      <stop offset="0.52" stop-color="#B89CFF"/>
+      <stop offset="1" stop-color="#8A67E8"/>
+    </linearGradient>
+    <radialGradient id="planet" cx="0" cy="0" r="1" gradientTransform="translate(109 45) rotate(132) scale(10)">
+      <stop offset="0" stop-color="#F2EAFF"/>
+      <stop offset="0.38" stop-color="#C4AEFF"/>
+      <stop offset="1" stop-color="#7654D8"/>
+    </radialGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#4F2CA8" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <path fill="url(#orbit)" opacity="0.82" d="M9.5 67.8c12.9 9.9 32.2 15.8 53.5 16.1 21.4.3 42-5.1 55.1-14.9-12.5 12.8-33.6 20-56 19.7-22.4-.3-42.2-7.8-52.6-20.9Z"/>
+
+    <path fill="url(#dRed)" fill-rule="evenodd" d="M17 11h36.5c25 0 41.5 15.4 41.5 39.5S78.5 90 53.5 90H17V11Zm18 16v47h17.2C67.5 74 77 65.1 77 50.5S67.5 27 52.2 27H35Z"/>
+
+    <path fill="url(#vLavender)" d="M49 29h18.4l12 34.8L92.1 29H111L87.1 90H69.6L49 29Z"/>
+
+    <path d="M7.5 65.2C26.2 76 48.4 77.8 69.4 73.9 89 70.3 105.1 61.8 117.1 48.7" fill="none" stroke="url(#orbit)" stroke-width="5.2" stroke-linecap="round"/>
+    <circle cx="109.5" cy="46.1" r="7" fill="url(#planet)"/>
+
+    <path d="M92 11.5c1.25 4.8 3.7 7.25 8.5 8.5-4.8 1.25-7.25 3.7-8.5 8.5-1.25-4.8-3.7-7.25-8.5-8.5 4.8-1.25 7.25-3.7 8.5-8.5Z" fill="#EADFFF"/>
+    <path d="M106 22c.65 2.45 1.9 3.7 4.35 4.35-2.45.65-3.7 1.9-4.35 4.35-.65-2.45-1.9-3.7-4.35-4.35 2.45-.65 3.7-1.9 4.35-4.35Z" fill="#B89CFF"/>
+  </g>
+</svg>
