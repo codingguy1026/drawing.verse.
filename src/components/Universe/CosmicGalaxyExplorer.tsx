@@ -4,16 +4,6 @@ import * as React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import {
-  ArrowUpRight,
-  ChevronRight,
-  Globe,
-  MousePointer2,
-  Orbit,
-  Rocket,
-  Star,
-  Users,
-} from "lucide-react";
 import type { UniverseItem } from "./universe.types";
 
 interface Satellite {
@@ -21,8 +11,8 @@ interface Satellite {
   short: string;
   angle: number;
   speed: number;
-  variant: string;
-  tone: string;
+  variant: PlanetVariant;
+  palette: [string, string, string];
   moons: string[];
   slug?: string;
   description?: string;
@@ -36,29 +26,46 @@ interface System {
   y: number;
   orbit: number;
   starSize: number;
-  glow: string;
+  colors: [string, string, string];
   aura: string;
   count: number;
   category: string;
   satellites: Satellite[];
 }
 
-interface SelectedNode {
-  type: string;
-  name: string;
-  path: string[];
-  desc: string;
-  slug?: string;
-}
+type PlanetVariant =
+  | "ring"
+  | "stripe"
+  | "crater"
+  | "double"
+  | "halo"
+  | "core"
+  | "storm"
+  | "ice";
 
-interface PlanetPoint {
-  system: System;
-  satellite: Satellite;
-  x: string;
-  y: string;
-}
+type CSSVars = React.CSSProperties & Record<`--${string}`, string | number>;
 
-type CSSVariables = React.CSSProperties & Record<`--${string}`, string | number>;
+const PLANET_PALETTES: Array<[string, string, string]> = [
+  ["#ffd7a8", "#ff7b72", "#b83280"],
+  ["#b9f5ff", "#5fd6ff", "#5b7cfa"],
+  ["#f8c4ff", "#b58cff", "#6d4aff"],
+  ["#c9ffe5", "#4fe0b6", "#198c7a"],
+  ["#fff1ad", "#ffb45f", "#e46b36"],
+  ["#ffd1df", "#ff759f", "#a83c73"],
+  ["#d9e7ff", "#8bb5ff", "#4856c8"],
+  ["#e9ffd0", "#9de86f", "#4d9d4a"],
+];
+
+const PLANET_VARIANTS: PlanetVariant[] = [
+  "ring",
+  "stripe",
+  "crater",
+  "double",
+  "halo",
+  "core",
+  "storm",
+  "ice",
+];
 
 const galaxySystems: System[] = [
   {
@@ -67,17 +74,17 @@ const galaxySystems: System[] = [
     subtitle: "응원과 승부가 모이는 대표 유니버스",
     x: 50,
     y: 50,
-    orbit: 176,
-    starSize: 106,
-    glow: "from-orange-300 via-rose-400 to-fuchsia-500",
-    aura: "rgba(244,114,182,0.42)",
+    orbit: 188,
+    starSize: 112,
+    colors: ["#fff4c7", "#ff9d57", "#ff4d85"],
+    aura: "rgba(255, 104, 130, .42)",
     count: 12800,
     category: "인기",
     satellites: [
-      { name: "야구 유니버스", short: "야", slug: "baseball", angle: 0, speed: 0.010, variant: "ring", tone: "from-orange-200 to-rose-300", moons: ["KBO", "MLB", "응원석"] },
-      { name: "축구 유니버스", short: "축", slug: "soccer", angle: 90, speed: 0.008, variant: "leaf", tone: "from-emerald-200 to-lime-300", moons: ["K리그", "해외축구", "전술"] },
-      { name: "농구 유니버스", short: "농", slug: "basketball", angle: 180, speed: 0.007, variant: "stripe", tone: "from-amber-200 to-orange-300", moons: ["KBL", "NBA", "하이라이트"] },
-      { name: "e스포츠 유니버스", short: "E", slug: "esports", angle: 270, speed: 0.006, variant: "core", tone: "from-cyan-200 to-blue-300", moons: ["LoL", "발로란트", "대회"] },
+      { name: "야구 유니버스", short: "야", slug: "baseball", angle: 4, speed: 0.009, variant: "ring", palette: PLANET_PALETTES[0], moons: ["KBO", "MLB", "응원석"] },
+      { name: "축구 유니버스", short: "축", slug: "soccer", angle: 92, speed: 0.0078, variant: "storm", palette: PLANET_PALETTES[3], moons: ["K리그", "해외축구", "전술"] },
+      { name: "농구 유니버스", short: "농", slug: "basketball", angle: 184, speed: 0.0068, variant: "stripe", palette: PLANET_PALETTES[4], moons: ["KBL", "NBA", "하이라이트"] },
+      { name: "e스포츠 유니버스", short: "E", slug: "esports", angle: 272, speed: 0.006, variant: "core", palette: PLANET_PALETTES[1], moons: ["LoL", "발로란트", "대회"] },
     ],
   },
   {
@@ -86,16 +93,16 @@ const galaxySystems: System[] = [
     subtitle: "색과 선으로 만든 그림 유니버스",
     x: 22,
     y: 28,
-    orbit: 126,
-    starSize: 86,
-    glow: "from-cyan-200 via-sky-300 to-blue-500",
-    aura: "rgba(103,232,249,0.34)",
+    orbit: 132,
+    starSize: 88,
+    colors: ["#f1fdff", "#65ddff", "#4777ff"],
+    aura: "rgba(85, 204, 255, .35)",
     count: 34100,
     category: "팬아트",
     satellites: [
-      { name: "낙서 유니버스", short: "낙", slug: "doodle", angle: 20, speed: 0.009, variant: "crater", tone: "from-sky-200 to-cyan-300", moons: ["연습장", "손그림"] },
-      { name: "채색 유니버스", short: "채", slug: "coloring", angle: 150, speed: 0.007, variant: "ring", tone: "from-pink-200 to-violet-300", moons: ["빛", "팔레트"] },
-      { name: "OC 유니버스", short: "OC", slug: "original-character", angle: 270, speed: 0.006, variant: "double", tone: "from-violet-200 to-fuchsia-300", moons: ["자캐", "프로필"] },
+      { name: "낙서 유니버스", short: "낙", slug: "doodle", angle: 24, speed: 0.0084, variant: "crater", palette: PLANET_PALETTES[1], moons: ["연습장", "손그림"] },
+      { name: "채색 유니버스", short: "채", slug: "coloring", angle: 154, speed: 0.0068, variant: "ring", palette: PLANET_PALETTES[2], moons: ["빛", "팔레트"] },
+      { name: "OC 유니버스", short: "OC", slug: "original-character", angle: 274, speed: 0.0057, variant: "double", palette: PLANET_PALETTES[6], moons: ["자캐", "프로필"] },
     ],
   },
   {
@@ -104,16 +111,16 @@ const galaxySystems: System[] = [
     subtitle: "컷과 감정이 도는 이야기 유니버스",
     x: 78,
     y: 28,
-    orbit: 126,
-    starSize: 86,
-    glow: "from-violet-200 via-purple-400 to-indigo-600",
-    aura: "rgba(168,85,247,0.36)",
+    orbit: 132,
+    starSize: 88,
+    colors: ["#fff0ff", "#ba7cff", "#6e43d8"],
+    aura: "rgba(181, 124, 255, .35)",
     count: 19500,
     category: "소설",
     satellites: [
-      { name: "스토리 유니버스", short: "스", slug: "story", angle: 10, speed: 0.008, variant: "diamond", tone: "from-purple-200 to-indigo-300", moons: ["플롯", "떡밥"] },
-      { name: "연출 유니버스", short: "연", slug: "directing", angle: 140, speed: 0.006, variant: "stripe", tone: "from-blue-200 to-violet-300", moons: ["컷", "구도"] },
-      { name: "캐릭터 유니버스", short: "캐", slug: "character", angle: 260, speed: 0.005, variant: "halo", tone: "from-rose-200 to-purple-300", moons: ["주인공", "빌런"] },
+      { name: "스토리 유니버스", short: "스", slug: "story", angle: 14, speed: 0.0076, variant: "ice", palette: PLANET_PALETTES[2], moons: ["플롯", "떡밥"] },
+      { name: "연출 유니버스", short: "연", slug: "directing", angle: 144, speed: 0.006, variant: "stripe", palette: PLANET_PALETTES[6], moons: ["컷", "구도"] },
+      { name: "캐릭터 유니버스", short: "캐", slug: "character", angle: 264, speed: 0.0052, variant: "halo", palette: PLANET_PALETTES[5], moons: ["주인공", "빌런"] },
     ],
   },
   {
@@ -122,15 +129,15 @@ const galaxySystems: System[] = [
     subtitle: "소리가 빛나는 음악 유니버스",
     x: 24,
     y: 76,
-    orbit: 114,
-    starSize: 78,
-    glow: "from-emerald-200 via-teal-300 to-cyan-500",
-    aura: "rgba(45,212,191,0.32)",
+    orbit: 120,
+    starSize: 80,
+    colors: ["#eafff7", "#55e7c4", "#17a99f"],
+    aura: "rgba(77, 224, 188, .31)",
     count: 8200,
     category: "최신",
     satellites: [
-      { name: "작곡 유니버스", short: "곡", slug: "compose", angle: 60, speed: 0.008, variant: "wave", tone: "from-emerald-200 to-cyan-300", moons: ["멜로디", "코드"] },
-      { name: "리믹스 유니버스", short: "믹", slug: "remix", angle: 230, speed: 0.006, variant: "core", tone: "from-teal-200 to-blue-300", moons: ["샘플", "루프"] },
+      { name: "작곡 유니버스", short: "곡", slug: "compose", angle: 64, speed: 0.0077, variant: "storm", palette: PLANET_PALETTES[3], moons: ["멜로디", "코드"] },
+      { name: "리믹스 유니버스", short: "믹", slug: "remix", angle: 234, speed: 0.0057, variant: "core", palette: PLANET_PALETTES[1], moons: ["샘플", "루프"] },
     ],
   },
   {
@@ -139,50 +146,59 @@ const galaxySystems: System[] = [
     subtitle: "캐릭터들이 살아가는 설정 유니버스",
     x: 76,
     y: 76,
-    orbit: 114,
-    starSize: 78,
-    glow: "from-pink-200 via-rose-300 to-red-500",
-    aura: "rgba(251,113,133,0.34)",
+    orbit: 120,
+    starSize: 80,
+    colors: ["#fff1f5", "#ff8da7", "#e04d76"],
+    aura: "rgba(255, 112, 146, .31)",
     count: 27400,
     category: "캐릭터",
     satellites: [
-      { name: "설정 유니버스", short: "설", slug: "settings", angle: 40, speed: 0.008, variant: "crater", tone: "from-pink-200 to-rose-300", moons: ["종족", "능력"] },
-      { name: "관계 유니버스", short: "관", slug: "relations", angle: 180, speed: 0.006, variant: "double", tone: "from-red-200 to-fuchsia-300", moons: ["라이벌", "가족"] },
-      { name: "세계관 유니버스", short: "세", slug: "worldview", angle: 300, speed: 0.005, variant: "ring", tone: "from-amber-100 to-pink-300", moons: ["국가", "역사"] },
+      { name: "설정 유니버스", short: "설", slug: "settings", angle: 44, speed: 0.0074, variant: "crater", palette: PLANET_PALETTES[5], moons: ["종족", "능력"] },
+      { name: "관계 유니버스", short: "관", slug: "relations", angle: 184, speed: 0.0058, variant: "double", palette: PLANET_PALETTES[0], moons: ["라이벌", "가족"] },
+      { name: "세계관 유니버스", short: "세", slug: "worldview", angle: 304, speed: 0.0049, variant: "ring", palette: PLANET_PALETTES[4], moons: ["국가", "역사"] },
     ],
   },
 ];
 
-const categoryTabs = ["전체", "인기", "최신", "팬아트", "창작 세계관", "소설", "캐릭터", "구독 중"];
-
-function cn(...items: Array<string | false | null | undefined>) {
-  return items.filter(Boolean).join(" ");
+function hashString(value: string) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+  return hash;
 }
 
 function formatCount(value: number) {
   if (value >= 10000) return `${(value / 1000).toFixed(1)}k`;
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
   return new Intl.NumberFormat().format(value);
 }
 
 function StarField() {
-  const stars = useMemo(() => {
-    return Array.from({ length: 88 }, (_, i) => ({
-      id: i,
-      left: `${(i * 37) % 101}%`,
-      top: `${(i * 61) % 100}%`,
-      size: i % 8 === 0 ? 2 : 1,
-      opacity: 0.18 + ((i * 13) % 45) / 100,
-      delay: `${(i * 0.19) % 3}s`,
-      duration: `${3.2 + (i % 5) * 0.7}s`,
-    }));
-  }, []);
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 170 }, (_, index) => {
+        const seed = (index * 9301 + 49297) % 233280;
+        const size = index % 29 === 0 ? 2.8 : index % 9 === 0 ? 1.8 : 1;
+        return {
+          id: index,
+          left: `${((seed * 37) % 10000) / 100}%`,
+          top: `${((seed * 61 + 17) % 10000) / 100}%`,
+          size,
+          opacity: 0.18 + ((seed % 57) / 100),
+          delay: `${(seed % 400) / 100}s`,
+          duration: `${3.2 + (seed % 44) / 10}s`,
+        };
+      }),
+    []
+  );
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {stars.map((star) => (
         <span
           key={star.id}
-          className="absolute rounded-full bg-white animate-twinkle"
+          className="galaxy-star absolute rounded-full bg-white"
           style={{
             left: star.left,
             top: star.top,
@@ -191,6 +207,10 @@ function StarField() {
             opacity: star.opacity,
             animationDelay: star.delay,
             animationDuration: star.duration,
+            boxShadow:
+              star.size > 2
+                ? "0 0 8px rgba(255,255,255,.8), 0 0 18px rgba(173,216,255,.35)"
+                : undefined,
           }}
         />
       ))}
@@ -198,362 +218,295 @@ function StarField() {
   );
 }
 
-function PlanetSkin({ satellite }: { satellite: Satellite }) {
-  const variant = satellite.variant || "plain";
+function GalaxyBackdrop() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(66,54,150,.14),transparent_34%),radial-gradient(circle_at_20%_22%,rgba(34,211,238,.10),transparent_28%),radial-gradient(circle_at_82%_26%,rgba(168,85,247,.11),transparent_30%),radial-gradient(circle_at_74%_82%,rgba(236,72,153,.08),transparent_28%),linear-gradient(180deg,#03040a_0%,#060918_45%,#020309_100%)]" />
+      <div className="galaxy-nebula absolute -left-[12%] top-[8%] h-[58%] w-[56%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(50,196,255,.15),rgba(93,79,255,.08)_42%,transparent_72%)] blur-[60px]" />
+      <div className="galaxy-nebula absolute -right-[12%] top-[15%] h-[60%] w-[58%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(189,102,255,.14),rgba(239,68,125,.06)_46%,transparent_74%)] blur-[70px] [animation-delay:-7s]" />
+      <div className="absolute inset-0 opacity-[.16] [background-image:radial-gradient(circle_at_center,rgba(255,255,255,.55)_0_.5px,transparent_.7px)] [background-size:11px_11px] [mask-image:radial-gradient(circle_at_center,black,transparent_78%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_42%,rgba(0,0,0,.42)_78%,rgba(0,0,0,.88)_100%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-t from-black/35 to-transparent" />
+    </div>
+  );
+}
+
+function SystemStar({ system, scale }: { system: System; scale: number }) {
+  const size = Math.max(54, system.starSize * Math.max(scale, 0.62));
+  const [core, mid, edge] = system.colors;
+
+  return (
+    <div
+      className="group/system absolute z-30 -translate-x-1/2 -translate-y-1/2"
+      style={{ left: `${system.x}%`, top: `${system.y}%` }}
+    >
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition duration-500 group-hover/system:scale-125"
+        style={{
+          width: size * 1.75,
+          height: size * 1.75,
+          background: `radial-gradient(circle, ${system.aura} 0%, transparent 68%)`,
+        }}
+      />
+      <div
+        className="galaxy-system-star relative rounded-full transition duration-500 group-hover/system:scale-[1.04]"
+        style={{
+          width: size,
+          height: size,
+          background: `radial-gradient(circle at 36% 30%, white 0%, ${core} 14%, ${mid} 48%, ${edge} 78%, rgba(15,8,28,.98) 100%)`,
+          boxShadow: `0 0 ${size * 0.28}px rgba(255,255,255,.55), 0 0 ${size * 0.62}px ${system.aura}, inset -${size * 0.1}px -${size * 0.08}px ${size * 0.22}px rgba(0,0,0,.4)`,
+        }}
+      >
+        <span className="absolute left-[25%] top-[20%] h-[18%] w-[18%] rounded-full bg-white/55 blur-[2px]" />
+        <span className="absolute inset-[8%] rounded-full border border-white/15" />
+      </div>
+      <div className="pointer-events-none absolute left-1/2 top-[calc(100%+10px)] -translate-x-1/2 whitespace-nowrap text-center opacity-75 transition duration-300 group-hover/system:opacity-100">
+        <div className="text-[10px] font-black tracking-[.18em] text-white/88 sm:text-[11px]">
+          {system.title.toUpperCase()}
+        </div>
+        <div className="mt-0.5 text-[9px] font-semibold tracking-wide text-white/35">
+          {formatCount(system.count)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OrbitRings({ system, scale }: { system: System; scale: number }) {
+  const orbit = system.orbit * scale;
+  const height = orbit * 1.06;
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10">
+      <div
+        className="absolute rounded-[50%] border border-white/[.075]"
+        style={{
+          left: `calc(${system.x}% - ${orbit}px)`,
+          top: `calc(${system.y}% - ${height / 2}px)`,
+          width: orbit * 2,
+          height,
+          boxShadow: "0 0 24px rgba(255,255,255,.015), inset 0 0 18px rgba(255,255,255,.018)",
+        }}
+      />
+      <div
+        className="absolute rounded-[50%] border border-dashed border-white/[.035]"
+        style={{
+          left: `calc(${system.x}% - ${orbit * 0.67}px)`,
+          top: `calc(${system.y}% - ${height * 0.335}px)`,
+          width: orbit * 1.34,
+          height: height * 0.67,
+          transform: "rotate(-8deg)",
+        }}
+      />
+    </div>
+  );
+}
+
+function PlanetSkin({ variant }: { variant: PlanetVariant }) {
+  if (variant === "ring") {
+    return (
+      <>
+        <span className="pointer-events-none absolute left-1/2 top-1/2 h-[35%] w-[165%] -translate-x-1/2 -translate-y-1/2 -rotate-[14deg] rounded-full border-[2px] border-white/55 shadow-[0_0_12px_rgba(255,255,255,.28)]" />
+        <span className="pointer-events-none absolute left-1/2 top-1/2 h-[18%] w-[145%] -translate-x-1/2 -translate-y-1/2 -rotate-[14deg] rounded-full border border-black/20" />
+      </>
+    );
+  }
+
+  if (variant === "stripe") {
+    return (
+      <>
+        <span className="absolute left-[8%] right-[8%] top-[32%] h-[8%] rounded-full bg-white/28 blur-[.2px]" />
+        <span className="absolute left-[4%] right-[4%] top-[51%] h-[9%] rounded-full bg-black/16" />
+        <span className="absolute left-[14%] right-[12%] top-[65%] h-[5%] rounded-full bg-white/18" />
+      </>
+    );
+  }
+
+  if (variant === "crater") {
+    return (
+      <>
+        <span className="absolute right-[16%] top-[18%] h-[18%] w-[18%] rounded-full bg-black/18 ring-1 ring-white/16" />
+        <span className="absolute bottom-[18%] left-[17%] h-[13%] w-[13%] rounded-full bg-black/14 ring-1 ring-white/12" />
+        <span className="absolute left-[34%] top-[48%] h-[9%] w-[9%] rounded-full bg-white/14" />
+      </>
+    );
+  }
+
+  if (variant === "double") {
+    return <span className="absolute -right-[18%] -top-[14%] h-[38%] w-[38%] rounded-full border border-white/35 bg-white/55 shadow-[0_0_10px_rgba(255,255,255,.38)]" />;
+  }
+
+  if (variant === "halo") {
+    return <span className="absolute -inset-[18%] rounded-full border border-white/22 shadow-[0_0_18px_rgba(255,255,255,.2),inset_0_0_12px_rgba(255,255,255,.08)]" />;
+  }
+
+  if (variant === "core") {
+    return (
+      <>
+        <span className="absolute inset-[22%] rounded-full border border-white/32" />
+        <span className="absolute left-1/2 top-1/2 h-[14%] w-[14%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_12px_white]" />
+      </>
+    );
+  }
+
+  if (variant === "storm") {
+    return (
+      <>
+        <span className="absolute left-[12%] top-[25%] h-[12%] w-[58%] -rotate-12 rounded-full bg-white/22 blur-[.4px]" />
+        <span className="absolute bottom-[24%] right-[12%] h-[20%] w-[32%] rotate-[18deg] rounded-[50%] bg-black/15" />
+      </>
+    );
+  }
 
   return (
     <>
-      {variant === "ring" && <span className="pointer-events-none absolute left-1/2 top-1/2 h-6 w-20 -translate-x-1/2 -translate-y-1/2 -rotate-12 rounded-full border-[3px] border-white/45 shadow-[0_0_18px_rgba(255,255,255,0.35)]" />}
-      {variant === "stripe" && (
-        <>
-          <span className="pointer-events-none absolute left-1/2 top-[36%] h-1.5 w-10 -translate-x-1/2 rounded-full bg-white/40" />
-          <span className="pointer-events-none absolute left-1/2 top-[55%] h-1 w-8 -translate-x-1/2 rounded-full bg-slate-950/25" />
-        </>
-      )}
-      {variant === "crater" && (
-        <>
-          <span className="pointer-events-none absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-slate-950/25 ring-1 ring-white/25" />
-          <span className="pointer-events-none absolute bottom-2 left-2 h-2 w-2 rounded-full bg-white/30" />
-          <span className="pointer-events-none absolute left-4 top-3 h-1.5 w-1.5 rounded-full bg-slate-950/20" />
-        </>
-      )}
-      {variant === "double" && <span className="pointer-events-none absolute -right-2 -top-2 h-5 w-5 rounded-full border border-white/40 bg-white/45 shadow-[0_0_14px_rgba(255,255,255,0.45)]" />}
-      {variant === "diamond" && <span className="pointer-events-none absolute inset-1 rotate-45 rounded-md border border-white/45 bg-white/10 shadow-[0_0_16px_rgba(255,255,255,0.22)]" />}
-      {variant === "halo" && <span className="pointer-events-none absolute -inset-2 rounded-full border border-fuchsia-100/35 bg-fuchsia-100/[0.04] shadow-[0_0_24px_rgba(244,114,182,0.28)]" />}
-      {variant === "core" && (
-        <>
-          <span className="pointer-events-none absolute inset-2 rounded-full border border-white/40" />
-          <span className="pointer-events-none absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.8)]" />
-        </>
-      )}
-      {variant === "leaf" && (
-        <>
-          <span className="pointer-events-none absolute -right-1 top-1 h-5 w-3 rotate-45 rounded-full bg-lime-100/65 shadow-[0_0_12px_rgba(217,249,157,0.45)]" />
-          <span className="pointer-events-none absolute bottom-2 left-2 h-1 w-8 -rotate-12 rounded-full bg-white/30" />
-        </>
-      )}
-      {variant === "wave" && (
-        <>
-          <span className="pointer-events-none absolute left-1/2 top-3 h-1 w-8 -translate-x-1/2 rotate-12 rounded-full bg-white/45" />
-          <span className="pointer-events-none absolute left-1/2 bottom-3 h-1 w-7 -translate-x-1/2 -rotate-12 rounded-full bg-cyan-950/25" />
-        </>
-      )}
+      <span className="absolute inset-[10%] rounded-full border border-white/18" />
+      <span className="absolute left-[16%] top-[14%] h-[26%] w-[12%] -rotate-[25deg] rounded-full bg-white/20 blur-[1px]" />
     </>
   );
 }
 
-function MoonCluster({ moons, systemTitle, satelliteName, onSelect }: { moons: string[]; systemTitle: string; satelliteName: string; onSelect: (selected: SelectedNode) => void }) {
+function MoonCluster({ moons }: { moons: string[] }) {
   return (
-    <div className="moon-cluster pointer-events-none absolute left-1/2 top-1/2 z-50 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-100/20 bg-cyan-100/[0.035] opacity-0 shadow-[0_0_28px_rgba(165,243,252,0.18)] backdrop-blur-[1px] transition duration-300">
-      {moons.map((moon, index) => {
-        const angle = (360 / moons.length) * index - 90;
-        const radius = 56;
-        const x = Math.cos((angle * Math.PI) / 180) * radius;
-        const y = Math.sin((angle * Math.PI) / 180) * radius;
-
+    <div className="moon-cluster pointer-events-none absolute left-1/2 top-1/2 z-40 h-[118px] w-[118px] -translate-x-1/2 -translate-y-1/2 opacity-0 transition duration-300 group-hover/planet:opacity-100">
+      <span className="absolute inset-0 rounded-full border border-white/[.09]" />
+      {moons.slice(0, 3).map((moon, index) => {
+        const angle = (Math.PI * 2 * index) / Math.max(moons.length, 3) - Math.PI / 2;
+        const radius = 58;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius * 0.62;
         return (
-          <button
-            type="button"
-            key={moon}
-            onClick={(event) => {
-              event.stopPropagation();
-              onSelect({
-                type: "위성 유니버스",
-                name: moon,
-                path: [systemTitle, satelliteName, moon],
-                desc: `${satelliteName} 안에 있는 더 작은 산하 세계예요. 행성에 가까이 가면 위성 궤도가 열려요.`,
-              });
-            }}
-            className="pointer-events-auto absolute left-1/2 top-1/2 grid h-7 w-7 place-items-center rounded-full border border-white/45 bg-cyan-100 text-[8px] font-black text-slate-950 shadow-[0_0_18px_rgba(165,243,252,0.85)] transition hover:scale-125 hover:bg-white"
+          <span
+            key={`${moon}-${index}`}
+            className="absolute left-1/2 top-1/2 h-2 w-2 rounded-full border border-white/35 bg-white/75 shadow-[0_0_10px_rgba(255,255,255,.55)]"
             style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}
             title={moon}
-          >
-            {moon.slice(0, 1)}
-          </button>
+          />
         );
       })}
     </div>
   );
 }
 
-function SystemStar({ system, hovered, scale, onSelect, onHover }: { system: System; hovered: boolean; scale: number; onSelect: (selected: SelectedNode) => void; onHover: (sys: System) => void }) {
-  const size = Math.max(58, system.starSize * Math.max(scale, 0.64));
+function PlanetNode({
+  satellite,
+  x,
+  y,
+  onWarp,
+}: {
+  satellite: Satellite;
+  x: string;
+  y: string;
+  onWarp: (satellite: Satellite) => void;
+}) {
+  const [light, mid, dark] = satellite.palette;
 
-  return (
-    <button
-      type="button"
-      aria-label={`${system.title} 항성계 선택`}
-      onMouseEnter={() => onHover(system)}
-      onFocus={() => onHover(system)}
-      onClick={() =>
-        onSelect({
-          type: "항성계",
-          name: system.title,
-          slug: system.id,
-          path: [system.title],
-          desc: system.subtitle,
-        })
-      }
-      className={cn(
-        "absolute z-40 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br text-white shadow-[0_0_54px_rgba(217,70,239,0.32)] transition duration-300 hover:scale-105",
-        system.glow
-      )}
-      style={{
-        left: `${system.x}%`,
-        top: `${system.y}%`,
-        width: size,
-        height: size,
-        boxShadow: hovered ? `0 0 70px ${system.aura}` : `0 0 42px ${system.aura}`,
-      }}
-    >
-      <span className="absolute inset-0 rounded-full bg-white/20 blur-xl" />
-      <span className="relative flex flex-col items-center text-center drop-shadow-lg">
-        <Star className="mb-1 h-5 w-5 fill-white/75" />
-        <span className="max-w-[82px] truncate text-sm font-black">{system.title}</span>
-        <span className="mt-0.5 text-[9px] font-bold text-white/75">{formatCount(system.count)}</span>
-      </span>
-    </button>
-  );
-}
-
-function OrbitRings({ system, hovered, scale }: { system: System; hovered: boolean; scale: number }) {
-  const orbit = system.orbit * scale;
-
-  return (
-    <div className="pointer-events-none absolute inset-0">
-      <div
-        className="absolute rounded-full border transition duration-300"
-        style={{
-          left: `calc(${system.x}% - ${orbit}px)`,
-          top: `calc(${system.y}% - ${orbit}px)`,
-          width: orbit * 2,
-          height: orbit * 2,
-          borderColor: hovered ? "rgba(165,243,252,0.42)" : "rgba(255,255,255,0.075)",
-          boxShadow: hovered ? "0 0 36px rgba(103,232,249,0.13)" : "none",
-          transform: hovered ? "scale(1.05)" : "scale(1)",
-        }}
-      />
-      <div
-        className="absolute rounded-full border transition duration-300"
-        style={{
-          left: `calc(${system.x}% - ${(orbit * 0.68).toFixed(1)}px)`,
-          top: `calc(${system.y}% - ${(orbit * 0.68).toFixed(1)}px)`,
-          width: orbit * 1.36,
-          height: orbit * 1.36,
-          borderColor: hovered ? "rgba(244,114,182,0.25)" : "rgba(255,255,255,0.045)",
-          transform: hovered ? "scale(0.88) rotate(12deg)" : "scale(1)",
-        }}
-      />
-      {hovered && (
-        <span
-          className="absolute z-50 -translate-x-1/2 rounded-full border border-white/12 bg-slate-950/75 px-3 py-1 text-[10px] font-bold text-white/60 shadow-xl backdrop-blur-xl"
-          style={{ left: `${system.x}%`, top: `calc(${system.y}% + ${Math.max(58, system.starSize * Math.max(scale, 0.64)) / 2 + 12}px)` }}
-        >
-          {system.title} System
-        </span>
-      )}
-    </div>
-  );
-}
-
-function PlanetUniverse({ system, satellite, point, hovered, onHover, onSelect }: { system: System; satellite: Satellite; point: PlanetPoint; hovered: boolean; onHover: (target: { system: System; satellite: Satellite }) => void; onSelect: (selected: SelectedNode) => void }) {
-  return (
-    <motion.button
-      type="button"
-      aria-label={`${satellite.name} 선택`}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.15, duration: 0.45 }}
-      onMouseEnter={() => onHover({ system, satellite })}
-      onFocus={() => onHover({ system, satellite })}
-      onClick={() =>
-        onSelect({
-          type: "행성 유니버스",
-          name: satellite.name,
-          slug: satellite.slug,
-          path: [system.title, satellite.name],
-          desc: satellite.description || `${system.title} 항성계 안에서 공전하는 산하 유니버스예요. 마우스를 올리면 그 아래 위성 유니버스가 보여요. 행성마다 고리, 줄무늬, 크레이터 같은 생김새도 달라요.`,
-        })
-      }
-      className={cn(
-        "planet-button group/satellite absolute z-50 grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-gradient-to-br text-[12px] font-black text-slate-950 shadow-[0_0_24px_rgba(255,255,255,0.18)] transition duration-300 hover:scale-110 hover:border-white/60 hover:shadow-[0_0_32px_rgba(255,255,255,0.28)]",
-        satellite.tone,
-        hovered && "scale-110"
-      )}
-      style={{ left: point.x, top: point.y, transform: "translate(-50%, -50%)" }}
-    >
-      <MoonCluster moons={satellite.moons} systemTitle={system.title} satelliteName={satellite.name} onSelect={onSelect} />
-      <PlanetSkin satellite={satellite} />
-      <span className="relative z-10 drop-shadow-sm">{satellite.short}</span>
-      <span className="pointer-events-none absolute left-1/2 top-[3.35rem] w-max -translate-x-1/2 rounded-full border border-white/12 bg-slate-950/80 px-2.5 py-1 text-[10px] font-bold text-white opacity-0 shadow-xl backdrop-blur-xl transition group-hover/satellite:opacity-100">
-        {satellite.name}
-      </span>
-    </motion.button>
-  );
-}
-
-function SelectionPanel({ selected }: { selected: SelectedNode }) {
   return (
     <motion.div
-      key={`${selected.type}-${selected.name}`}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      aria-live="polite"
-      className="absolute bottom-3 left-1/2 z-[70] w-[calc(100%_-_24px)] -translate-x-1/2 rounded-[1.5rem] border border-white/12 bg-slate-950/78 p-3 text-white shadow-2xl backdrop-blur-2xl sm:bottom-5 sm:w-[min(620px,calc(100%_-_40px))] sm:rounded-[1.8rem] sm:p-4"
+      className="group/planet absolute z-40 h-11 w-11 -translate-x-1/2 -translate-y-1/2 sm:h-12 sm:w-12"
+      style={{ left: x, top: y }}
+      initial={{ opacity: 0, scale: 0.65 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
     >
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100/55">{selected.type}</p>
-          <h3 className="mt-1 text-base font-black tracking-[-0.03em] sm:text-xl">{selected.name}</h3>
-          <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/52 sm:text-sm sm:leading-6">{selected.desc}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-white/50 md:justify-end">
-          {selected.path.map((item, index) => (
-            <React.Fragment key={`${item}-${index}`}>
-              <span className="rounded-full bg-white/[0.07] px-2.5 py-1">{item}</span>
-              {index < selected.path.length - 1 && <ChevronRight className="h-3 w-3 text-white/25" />}
-            </React.Fragment>
-          ))}
-        </div>
+      <MoonCluster moons={satellite.moons} />
+      <button
+        type="button"
+        aria-label={`${satellite.name} 입장`}
+        onClick={() => onWarp(satellite)}
+        className="relative z-50 grid h-full w-full place-items-center rounded-full border border-white/22 text-[10px] font-black text-white shadow-[0_10px_24px_rgba(0,0,0,.28)] transition duration-300 hover:scale-110 hover:border-white/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:text-[11px]"
+        style={{
+          background: `radial-gradient(circle at 30% 24%, rgba(255,255,255,.95) 0%, ${light} 14%, ${mid} 47%, ${dark} 82%, #151225 100%)`,
+          boxShadow: `0 0 18px color-mix(in srgb, ${mid} 45%, transparent), inset -8px -7px 13px rgba(0,0,0,.28), inset 5px 4px 8px rgba(255,255,255,.12)`,
+        }}
+      >
+        <PlanetSkin variant={satellite.variant} />
+        <span className="relative z-10 drop-shadow-[0_1px_3px_rgba(0,0,0,.55)]">{satellite.short}</span>
+      </button>
+
+      <div className="pointer-events-none absolute left-1/2 top-[calc(100%+10px)] z-[60] -translate-x-1/2 whitespace-nowrap rounded-full border border-white/10 bg-[#070913]/85 px-2.5 py-1 text-[9px] font-bold tracking-wide text-white/82 opacity-0 shadow-xl backdrop-blur-xl transition duration-200 group-hover/planet:opacity-100">
+        {satellite.name}
       </div>
     </motion.div>
   );
 }
 
-function HoverHud({ hoveredSystem, hoveredPlanet }: { hoveredSystem: System | null; hoveredPlanet: { system: System; satellite: Satellite } | null }) {
-  const target = hoveredPlanet?.satellite || hoveredSystem;
+function buildSystems(items?: UniverseItem[]) {
+  const systems = JSON.parse(JSON.stringify(galaxySystems)) as System[];
+  if (!items || items.length === 0) return [];
 
-  return (
-    <AnimatePresence mode="wait">
-      {target ? (
-        <motion.div
-          key={hoveredPlanet ? hoveredPlanet.satellite.name : (hoveredSystem ? hoveredSystem.id : "none")}
-          initial={{ opacity: 0, x: 18 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -18 }}
-          transition={{ duration: 0.2 }}
-          className="absolute right-5 top-5 z-[70] hidden w-72 rounded-[1.8rem] border border-white/12 bg-slate-950/62 p-4 text-white shadow-2xl backdrop-blur-2xl lg:block"
-        >
-          <div className="mb-3 flex items-start justify-between gap-2">
-            <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-slate-950">
-              {hoveredPlanet ? "PLANET" : "SYSTEM"}
-            </span>
-            <span className="flex items-center gap-1 text-[11px] font-bold text-violet-200">
-              <Globe size={12} />
-              {hoveredSystem?.orbit || "DV"} AU
-            </span>
-          </div>
-          <h3 className="flex items-center gap-1.5 text-xl font-black tracking-[-0.03em]">
-            {'name' in target ? target.name : target.title}
-            <ArrowUpRight size={15} className="text-white/35" />
-          </h3>
-          <p className="mt-2 text-xs leading-6 text-white/52">
-            {hoveredPlanet
-              ? `${hoveredSystem?.title} 안에서 공전하는 산하 유니버스. 위성: ${hoveredPlanet.satellite.moons.join(" · ")}`
-              : hoveredSystem?.subtitle}
-          </p>
-          <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-xs font-bold text-white/52">
-            <span className="flex items-center gap-1.5">
-              <Users size={13} />
-              {hoveredSystem ? formatCount(hoveredSystem.count) : 0}명
-            </span>
-            <span className="rounded-full bg-white/[0.08] px-3 py-1 text-cyan-100/75">탐색 중</span>
-          </div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
-  );
+  systems.forEach((system) => {
+    system.satellites = [];
+    system.count = 0;
+  });
+
+  items.forEach((item, index) => {
+    const hash = hashString(`${item.id}-${item.slug}-${item.name}`);
+    let system = systems.find((candidate) => candidate.id === item.galaxy?.slug);
+    if (!system) system = systems[index % systems.length];
+
+    const satelliteIndex = system.satellites.length;
+    system.count += item.subscribers || 0;
+    system.satellites.push({
+      name: item.name,
+      short: item.name.slice(0, 2),
+      slug: item.slug,
+      description: item.description,
+      angle: (hash % 360 + satelliteIndex * 79) % 360,
+      speed: 0.0048 + ((hash % 33) / 10000),
+      variant: PLANET_VARIANTS[hash % PLANET_VARIANTS.length],
+      palette: PLANET_PALETTES[hash % PLANET_PALETTES.length],
+      moons: item.tags?.slice(0, 3) || [],
+    });
+  });
+
+  return systems.filter((system) => system.satellites.length > 0);
 }
 
-function GalaxyFilterBar({ activeTab, onTabChange, totalCount }: { activeTab: string; onTabChange: (tab: string) => void; totalCount: number }) {
-  return (
-    <div className="mb-5 flex flex-col gap-3 rounded-[1.8rem] border border-white/10 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/10 backdrop-blur-2xl md:flex-row md:items-center md:justify-between">
-      <div className="flex gap-1.5 overflow-x-auto pb-1 md:pb-0">
-        {categoryTabs.map((tab) => {
-          const active = activeTab === tab;
-          return (
-            <button
-              type="button"
-              aria-pressed={active}
-              key={tab}
-              onClick={() => onTabChange(tab)}
-              className={cn(
-                "shrink-0 rounded-full px-4 py-2 text-sm font-black transition duration-300",
-                active
-                  ? "bg-gradient-to-r from-violet-200 via-white to-cyan-100 text-violet-700 shadow-[0_0_24px_rgba(196,181,253,0.38)]"
-                  : "text-white/48 hover:bg-white/[0.075] hover:text-white/78"
-              )}
-            >
-              {tab}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="flex shrink-0 items-center justify-between gap-3 px-2 text-sm font-bold text-white/48 md:justify-end">
-        <span>
-          <b className="text-violet-200">{totalCount}</b>개의 유니버스
-        </span>
-        <span className="rounded-full border border-white/10 bg-white/[0.055] px-3 py-2 text-white/62">
-          높은 인기순 ↓
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: SelectedNode; onSelect: (node: SelectedNode) => void; activeTab: string; systems: System[] }) {
+export default function CosmicGalaxyExplorer({ items }: { items?: UniverseItem[] }) {
   const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
-  const [time, setTime] = useState(0);
-  const [mapWidth, setMapWidth] = useState(1100);
-  const [isVisible, setIsVisible] = useState(true);
-  const [hoveredSystem, setHoveredSystem] = useState<System | null>(null);
-  const [hoveredPlanet, setHoveredPlanet] = useState<{ system: System; satellite: Satellite } | null>(null);
-  const [warpTarget, setWarpTarget] = useState<SelectedNode | null>(null);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const warpTimerRef = useRef<number | null>(null);
+  const [time, setTime] = useState(0);
+  const [mapWidth, setMapWidth] = useState(1100);
+  const [isVisible, setIsVisible] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const [warpTarget, setWarpTarget] = useState<Satellite | null>(null);
 
-  const orbitScale = Math.min(1, Math.max(0.38, mapWidth / 1080));
+  const systems = useMemo(() => buildSystems(items), [items]);
+  const orbitScale = Math.min(1, Math.max(0.36, mapWidth / 1080));
 
-  const visibleSystems = useMemo(() => {
-    if (activeTab === "전체" || activeTab === "구독 중" || activeTab === "창작 세계관") return systems;
-    return systems.filter((system) => system.category === activeTab || system.title === "Sports");
-  }, [activeTab, systems]);
-
-  const planetPoints = useMemo(() => {
-    const points: PlanetPoint[] = [];
-    for (const system of visibleSystems) {
-      for (const satellite of system.satellites) {
-        const baseAngle = (satellite.angle * Math.PI) / 180;
-        const currentAngle = baseAngle + time * satellite.speed;
+  const planets = useMemo(() => {
+    return systems.flatMap((system) =>
+      system.satellites.map((satellite) => {
+        const angle = (satellite.angle * Math.PI) / 180 + time * satellite.speed;
         const orbit = system.orbit * orbitScale;
-        const x = `calc(${system.x}% + ${Math.cos(currentAngle) * orbit}px)`;
-        const y = `calc(${system.y}% + ${Math.sin(currentAngle) * orbit}px)`;
-        points.push({ system, satellite, x, y });
-      }
-    }
-    return points;
-  }, [orbitScale, time, visibleSystems]);
+        const x = `calc(${system.x}% + ${Math.cos(angle) * orbit}px)`;
+        const y = `calc(${system.y}% + ${Math.sin(angle) * orbit * 0.53}px)`;
+        return { system, satellite, x, y };
+      })
+    );
+  }, [orbitScale, systems, time]);
 
   useEffect(() => {
-    const element = mapRef.current;
-    if (!element) return;
+    const node = mapRef.current;
+    if (!node) return;
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
+    const resizeObserver = new ResizeObserver(([entry]) => {
       if (entry) setMapWidth(entry.contentRect.width);
     });
-    const intersectionObserver = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (entry) setIsVisible(entry.isIntersecting);
-    }, { rootMargin: "180px" });
+    const intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) setIsVisible(entry.isIntersecting);
+      },
+      { rootMargin: "160px" }
+    );
 
-    resizeObserver.observe(element);
-    intersectionObserver.observe(element);
+    resizeObserver.observe(node);
+    intersectionObserver.observe(node);
     return () => {
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
@@ -562,25 +515,24 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
 
   useEffect(() => {
     if (prefersReducedMotion || !isVisible) return;
-    lastFrameRef.current = 0;
 
     const animate = (timestamp: number) => {
-      if (lastFrameRef.current === 0) {
-        lastFrameRef.current = timestamp;
-      } else if (timestamp - lastFrameRef.current >= 50) {
-        const speedMultiplier = hoveredPlanet || hoveredSystem ? 0.22 : 1;
-        const elapsed = Math.min(100, timestamp - lastFrameRef.current);
-        setTime((prev) => prev + elapsed * 0.0064 * speedMultiplier);
+      if (lastFrameRef.current === 0) lastFrameRef.current = timestamp;
+      const elapsed = timestamp - lastFrameRef.current;
+      if (elapsed >= 45) {
+        setTime((value) => value + Math.min(elapsed, 100) * 0.0058 * (hovered ? 0.28 : 1));
         lastFrameRef.current = timestamp;
       }
       frameRef.current = requestAnimationFrame(animate);
     };
+
     frameRef.current = requestAnimationFrame(animate);
     return () => {
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       frameRef.current = null;
+      lastFrameRef.current = 0;
     };
-  }, [hoveredPlanet, hoveredSystem, isVisible, prefersReducedMotion]);
+  }, [hovered, isVisible, prefersReducedMotion]);
 
   useEffect(() => {
     return () => {
@@ -588,243 +540,109 @@ function MainGalaxy({ selected, onSelect, activeTab, systems }: { selected: Sele
     };
   }, []);
 
-  function handleWarp(target: SelectedNode) {
-    if (!target.slug) return;
-    setWarpTarget(target);
+  function handleWarp(satellite: Satellite) {
+    if (!satellite.slug) return;
+    if (prefersReducedMotion) {
+      router.push(`/universe/${satellite.slug}`);
+      return;
+    }
+    setWarpTarget(satellite);
     warpTimerRef.current = window.setTimeout(() => {
-      setWarpTarget(null);
-      router.push(`/universe/${target.slug}`);
-    }, 1400);
+      router.push(`/universe/${satellite.slug}`);
+    }, 900);
   }
 
   return (
     <div
       ref={mapRef}
-      className="relative mx-auto h-[600px] w-full overflow-hidden rounded-[2rem] border border-white/12 bg-black/20 shadow-2xl shadow-black/30 backdrop-blur-xl sm:h-[680px] sm:rounded-[2.5rem] lg:h-[740px] lg:rounded-[3rem]"
-      onMouseLeave={() => {
-        setHoveredSystem(null);
-        setHoveredPlanet(null);
-      }}
+      className="relative mx-auto h-[620px] w-full overflow-hidden rounded-[2rem] border border-white/[.08] bg-[#03040a] shadow-[0_28px_90px_rgba(0,0,0,.38),inset_0_1px_0_rgba(255,255,255,.04)] sm:h-[700px] sm:rounded-[2.5rem] lg:h-[760px] lg:rounded-[3rem]"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(168,85,247,0.18),transparent_38%),radial-gradient(circle_at_50%_50%,rgba(34,211,238,0.1),transparent_48%)] pointer-events-none" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:46px_46px] opacity-20" />
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes galaxyTwinkle {
+          0%, 100% { opacity: .22; transform: scale(.9); }
+          50% { opacity: .88; transform: scale(1.35); }
+        }
+        @keyframes galaxyNebula {
+          0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: .72; }
+          50% { transform: translate3d(2.2%, -1.2%, 0) scale(1.06); opacity: .92; }
+        }
+        @keyframes galaxyStarPulse {
+          0%, 100% { filter: brightness(1) saturate(1); }
+          50% { filter: brightness(1.12) saturate(1.08); }
+        }
+        @keyframes warpRay {
+          0% { transform: rotate(var(--ray-angle)) translateX(18px) scaleX(.05); opacity: 0; }
+          35% { opacity: .9; }
+          100% { transform: rotate(var(--ray-angle)) translateX(460px) scaleX(4.8); opacity: 0; }
+        }
+        .galaxy-star { animation: galaxyTwinkle var(--twinkle-duration, 5s) ease-in-out infinite; }
+        .galaxy-nebula { animation: galaxyNebula 18s ease-in-out infinite; }
+        .galaxy-system-star { animation: galaxyStarPulse 5.8s ease-in-out infinite; }
+        .warp-ray { animation: warpRay .9s cubic-bezier(.15,.75,.2,1) infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .galaxy-star, .galaxy-nebula, .galaxy-system-star, .warp-ray { animation: none !important; }
+        }
+      `}} />
+
+      <GalaxyBackdrop />
       <StarField />
 
-      <div className="absolute left-3 top-3 z-[70] rounded-2xl border border-white/12 bg-slate-950/50 p-3 text-white backdrop-blur-2xl sm:left-5 sm:top-5 sm:rounded-3xl sm:p-4">
-        <p className="text-xs font-black uppercase tracking-[0.22em] text-white/42">interactive galaxy</p>
-        <p className="mt-1 text-sm font-black sm:text-lg">Orbit View</p>
-        <div className="mt-2 hidden items-center gap-2 text-xs font-bold text-cyan-100/70 sm:flex">
-          <MousePointer2 className="h-3.5 w-3.5" />
-          가까이 가면 공전이 느려져요
+      {systems.length === 0 && (
+        <div className="absolute inset-0 z-50 grid place-items-center px-6 text-center">
+          <div className="rounded-[1.5rem] border border-white/10 bg-[#080914]/85 px-7 py-5 shadow-2xl backdrop-blur-xl">
+            <p className="text-base font-black text-white/80 sm:text-lg">아직 만들어진 유니버스가 없어요</p>
+            <p className="mt-2 text-xs font-medium text-white/40 sm:text-sm">첫 번째 유니버스를 만들어 새로운 은하를 밝혀보세요.</p>
+          </div>
         </div>
-      </div>
-
-      {visibleSystems.map((system) => {
-        const isHovered = hoveredSystem?.id === system.id || hoveredPlanet?.system.id === system.id;
-        return <OrbitRings key={`ring-${system.id}`} system={system} hovered={isHovered} scale={orbitScale} />;
-      })}
-
-      {visibleSystems.map((system) => {
-        const isHovered = hoveredSystem?.id === system.id || hoveredPlanet?.system.id === system.id;
-        return (
-          <SystemStar
-            key={system.id}
-            system={system}
-            hovered={isHovered}
-            scale={orbitScale}
-            onHover={(target) => {
-              setHoveredSystem(target);
-              setHoveredPlanet(null);
-            }}
-            onSelect={onSelect}
-          />
-        );
-      })}
-
-      {planetPoints.map((point) => {
-        const isHovered = hoveredPlanet?.satellite.name === point.satellite.name && hoveredPlanet?.system.id === point.system.id;
-        return (
-          <PlanetUniverse
-            key={`${point.system.id}-${point.satellite.name}`}
-            system={point.system}
-            satellite={point.satellite}
-            point={point}
-            hovered={isHovered}
-            onHover={(target) => {
-              setHoveredPlanet(target);
-              setHoveredSystem(target.system);
-            }}
-            onSelect={onSelect}
-          />
-        );
-      })}
-
-      <HoverHud hoveredSystem={hoveredSystem} hoveredPlanet={hoveredPlanet} />
-      <SelectionPanel selected={selected} />
-
-      {selected.slug && (
-        <button
-          type="button"
-          onClick={() => handleWarp(selected)}
-          className="absolute bottom-28 right-3 z-[80] flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[11px] font-black text-slate-950 shadow-[0_0_24px_rgba(255,255,255,0.22)] transition hover:scale-105 sm:bottom-24 sm:right-5 sm:px-4 sm:text-xs"
-        >
-          <Rocket size={14} />
-          입장하기
-        </button>
       )}
+
+      {systems.map((system) => (
+        <OrbitRings key={`orbit-${system.id}`} system={system} scale={orbitScale} />
+      ))}
+
+      {systems.map((system) => (
+        <SystemStar key={system.id} system={system} scale={orbitScale} />
+      ))}
+
+      {planets.map(({ system, satellite, x, y }) => (
+        <PlanetNode
+          key={`${system.id}-${satellite.slug || satellite.name}`}
+          satellite={satellite}
+          x={x}
+          y={y}
+          onWarp={handleWarp}
+        />
+      ))}
 
       <AnimatePresence>
         {warpTarget && (
           <motion.div
+            className="absolute inset-0 z-[200] overflow-hidden bg-[#02030a]/92 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[999] flex flex-col items-center justify-center bg-black/86 backdrop-blur-2xl"
           >
-            <div className="absolute inset-0 overflow-hidden opacity-60">
-              {Array.from({ length: 28 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="absolute left-1/2 top-1/2 h-[2px] w-[220px] origin-left rounded-full bg-gradient-to-r from-transparent via-white to-transparent animate-warp-line"
-                  style={{ "--angle": `${i * 12.85}deg`, animationDelay: `${(i % 7) * 0.05}s` } as CSSVariables}
-                />
-              ))}
-            </div>
+            <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_26px_12px_rgba(255,255,255,.75),0_0_80px_32px_rgba(130,100,255,.45)]" />
+            {Array.from({ length: 36 }, (_, index) => (
+              <span
+                key={index}
+                className="warp-ray absolute left-1/2 top-1/2 h-[1px] w-[180px] origin-left bg-gradient-to-r from-transparent via-white to-transparent"
+                style={{
+                  "--ray-angle": `${index * 10}deg`,
+                  animationDelay: `${(index % 9) * -0.05}s`,
+                } as CSSVars}
+              />
+            ))}
             <motion.div
-              animate={{ scale: [1, 2.4, 13], rotate: [0, 180, 540], opacity: [1, 0.9, 0] }}
-              transition={{ duration: 1.35, ease: "easeInOut" }}
-              className="h-24 w-24 rounded-full bg-gradient-to-r from-violet-300 via-fuchsia-300 to-cyan-200 blur-xl"
+              className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/50"
+              animate={{ scale: [0.4, 2.4, 8], opacity: [0, 1, 0] }}
+              transition={{ duration: 0.85, ease: "easeOut" }}
             />
-            <div className="z-10 mt-7 text-center">
-              <p className="text-xs font-black uppercase tracking-[0.3em] text-violet-300">Warping Dimensions</p>
-              <h3 className="mt-2 text-2xl font-black text-white tracking-tight">{warpTarget.name} 차원으로 진입 중...</h3>
-              <p className="mt-1 text-xs text-white/50">DV 웜홀을 통과하고 있어요.</p>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-export default function CosmicGalaxyExplorer({ items }: { items?: UniverseItem[] }) {
-  const [selected, setSelected] = useState<SelectedNode>({
-    type: "지도 구조",
-    name: "항성계 → 행성 → 위성",
-    path: ["항성계", "산하 유니버스", "세부 유니버스"],
-    desc: "여러 항성계를 비슷한 크기로 보여주고, 각 항성계 안에서 행성 유니버스와 위성 유니버스가 계층적으로 움직여요.",
-  });
-  const [activeTab, setActiveTab] = useState("전체");
-
-  const systems = useMemo(() => {
-    const baseSystems = JSON.parse(JSON.stringify(galaxySystems)) as System[];
-    const sourceData = items && items.length > 0 ? items : [];
-
-    if (sourceData.length > 0) {
-      baseSystems.forEach(s => { s.satellites = []; s.count = 0; });
-      const planetVariants = ["ring", "stripe", "crater", "double", "diamond", "halo", "core", "leaf", "wave"];
-      const planetTones = [
-        "from-orange-200 to-rose-300",
-        "from-cyan-200 to-blue-300",
-        "from-pink-200 to-violet-300",
-        "from-violet-200 to-fuchsia-300",
-        "from-emerald-200 to-teal-300",
-        "from-amber-200 to-orange-300",
-        "from-rose-200 to-purple-300",
-        "from-lime-200 to-emerald-300",
-      ];
-
-      sourceData.forEach((item, idx) => {
-        let system = baseSystems.find(s => s.category === item.category);
-        if (!system) {
-          system = baseSystems[idx % baseSystems.length];
-        }
-
-        system.count += item.subscribers || 0;
-        const moons = item.tags && item.tags.length > 0 ? item.tags.slice(0, 3) : ["게시판", "정보", "활동"];
-        const hash = item.id.length + item.name.length + idx;
-        const variant = planetVariants[hash % planetVariants.length];
-        const tone = planetTones[hash % planetTones.length];
-        const angle = (idx * 110 + 40) % 360;
-        const speed = 0.005 + (0.004 / (system.satellites.length + 1));
-
-        system.satellites.push({
-          name: item.name,
-          short: item.name.slice(0, 2),
-          slug: item.slug,
-          description: item.description,
-          angle,
-          speed,
-          variant,
-          tone,
-          moons,
-        });
-      });
-
-      baseSystems.forEach(s => {
-        if (s.count === 0) s.count = 3500;
-      });
-    }
-
-    return baseSystems;
-  }, [items]);
-
-  const totalCount = useMemo(() => {
-    let count = 0;
-    systems.forEach(s => {
-      count += s.satellites.length;
-    });
-    return count > 0 ? count : 15;
-  }, [systems]);
-
-  return (
-    <section className="relative w-full overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#050515] via-[#090a2a] to-[#16071f] px-3 py-8 text-white shadow-[0_28px_90px_rgba(2,6,23,0.38)] sm:rounded-[2.5rem] sm:px-5 sm:py-10 lg:rounded-[3rem] lg:px-8 lg:py-12">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes twinkle {
-          0%, 100% { transform: scale(1); opacity: .25; }
-          50% { transform: scale(1.6); opacity: .7; }
-        }
-        @keyframes warpLine {
-          0% { transform: rotate(var(--angle, 0deg)) translateX(40px) scaleX(0.1); opacity: 0; }
-          45% { opacity: 1; }
-          100% { transform: rotate(var(--angle, 0deg)) translateX(390px) scaleX(3.8); opacity: 0; }
-        }
-        .animate-twinkle { animation-name: twinkle; animation-iteration-count: infinite; animation-timing-function: ease-in-out; }
-        .planet-button:hover .moon-cluster { opacity: 1; pointer-events: auto; }
-        .animate-warp-line { animation: warpLine 1.1s cubic-bezier(0.1, 0.8, 0.1, 1) infinite; }
-      `}} />
-
-      <div className="pointer-events-none absolute -left-32 top-10 h-96 w-96 rounded-full bg-violet-400/20 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 top-1/3 h-[28rem] w-[28rem] rounded-full bg-cyan-300/10 blur-3xl" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.12),transparent_28%),linear-gradient(to_bottom,transparent,rgba(0,0,0,0.34))]" />
-
-      <div className="relative z-10 mx-auto w-full max-w-[1180px]">
-        <div className="mb-6 flex flex-col justify-between gap-4 sm:mb-8 md:flex-row md:items-end">
-          <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.07] px-4 py-2 text-xs font-bold text-cyan-100/80 backdrop-blur-xl">
-              <Orbit className="h-4 w-4" />
-              Universe Galaxy Map · Interactive Orbit
-            </div>
-            <h2 className="text-3xl font-black tracking-[-0.05em] text-white sm:text-4xl lg:text-5xl">
-              정렬된 목록 말고,
-              <br />
-              살아있는 성계로 탐험해요.
-            </h2>
-          </div>
-          <p className="max-w-md text-sm leading-6 text-white/55 sm:leading-7">
-            마우스가 항성계에 가까워지면 공전이 느려지고, HUD가 열리며, 행성의 위성까지 확인할 수 있어요. 이제 진짜 탐험하는 은하지도에 가까워졌어요.
-          </p>
-        </div>
-
-        <GalaxyFilterBar activeTab={activeTab} onTabChange={setActiveTab} totalCount={totalCount} />
-        <MainGalaxy selected={selected} onSelect={setSelected} activeTab={activeTab} systems={systems} />
-
-        <div className="mx-auto mt-5 flex w-full flex-wrap items-center justify-center gap-2 text-xs font-bold text-white/42">
-          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 backdrop-blur-xl">항성계: 대표 유니버스 묶음</span>
-          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 backdrop-blur-xl">행성: 산하 유니버스</span>
-          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 backdrop-blur-xl">위성: 세부 유니버스</span>
-        </div>
-      </div>
-    </section>
   );
 }
