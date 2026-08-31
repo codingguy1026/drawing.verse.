@@ -1,4 +1,4 @@
-/* Drawing Verse navbar identity: cosmic space + soft dreamcore atmosphere. */
+/* Drawing Verse navbar identity: coral D + lavender V + cosmic orbit. */
 
 .dv-nav-shell {
   isolation: isolate;
@@ -13,13 +13,13 @@
   pointer-events: none;
   border-radius: 38px;
   background:
-    radial-gradient(circle at 7% 38%, rgba(125, 211, 252, 0.72) 0 1px, transparent 2px),
-    radial-gradient(circle at 16% 8%, rgba(196, 181, 253, 0.78) 0 1.5px, transparent 2.5px),
-    radial-gradient(circle at 31% 91%, rgba(244, 114, 182, 0.48) 0 1px, transparent 2px),
+    radial-gradient(circle at 7% 38%, rgba(255, 91, 91, 0.52) 0 1px, transparent 2px),
+    radial-gradient(circle at 16% 8%, rgba(184, 156, 255, 0.82) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 31% 91%, rgba(255, 122, 122, 0.38) 0 1px, transparent 2px),
     radial-gradient(circle at 62% 4%, rgba(255, 255, 255, 0.84) 0 1px, transparent 2px),
-    radial-gradient(circle at 78% 94%, rgba(125, 211, 252, 0.58) 0 1.5px, transparent 2.5px),
-    radial-gradient(circle at 94% 23%, rgba(196, 181, 253, 0.72) 0 1px, transparent 2px);
-  filter: drop-shadow(0 0 7px rgba(139, 92, 246, 0.42));
+    radial-gradient(circle at 78% 94%, rgba(215, 198, 255, 0.72) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 94% 23%, rgba(184, 156, 255, 0.72) 0 1px, transparent 2px);
+  filter: drop-shadow(0 0 7px rgba(184, 156, 255, 0.4));
   opacity: 0.78;
   animation: dverseStarDrift 9s ease-in-out infinite alternate;
 }
@@ -36,10 +36,10 @@
   inset: 0;
   background:
     radial-gradient(circle at 5% 76%, rgba(255, 255, 255, 0.72) 0 1px, transparent 2px),
-    radial-gradient(circle at 24% 22%, rgba(125, 211, 252, 0.72) 0 1px, transparent 2px),
-    radial-gradient(circle at 47% 74%, rgba(196, 181, 253, 0.7) 0 1px, transparent 2px),
+    radial-gradient(circle at 24% 22%, rgba(255, 122, 122, 0.44) 0 1px, transparent 2px),
+    radial-gradient(circle at 47% 74%, rgba(184, 156, 255, 0.7) 0 1px, transparent 2px),
     radial-gradient(circle at 73% 18%, rgba(255, 255, 255, 0.68) 0 1px, transparent 2px),
-    radial-gradient(circle at 91% 68%, rgba(244, 114, 182, 0.48) 0 1px, transparent 2px);
+    radial-gradient(circle at 91% 68%, rgba(215, 198, 255, 0.6) 0 1px, transparent 2px);
   background-size: 210px 90px, 260px 110px, 300px 100px, 240px 100px, 280px 105px;
   opacity: 0.42;
   animation: dverseStarField 18s linear infinite;
@@ -48,16 +48,16 @@
 .dv-nav-shell > div:first-child::after {
   inset: -70% -12%;
   background:
-    radial-gradient(ellipse at 16% 52%, rgba(196, 181, 253, 0.28), transparent 31%),
-    radial-gradient(ellipse at 52% 42%, rgba(125, 211, 252, 0.2), transparent 28%),
-    radial-gradient(ellipse at 86% 58%, rgba(244, 114, 182, 0.17), transparent 27%);
+    radial-gradient(ellipse at 16% 52%, rgba(255, 91, 91, 0.18), transparent 31%),
+    radial-gradient(ellipse at 52% 42%, rgba(184, 156, 255, 0.24), transparent 28%),
+    radial-gradient(ellipse at 86% 58%, rgba(215, 198, 255, 0.2), transparent 27%);
   filter: blur(22px);
   mix-blend-mode: screen;
   opacity: 0.75;
   animation: dverseDreamHaze 12s ease-in-out infinite alternate;
 }
 
-/* Keep the original Drawing Verse text and replace only its icon with the DV mark. */
+/* Keep the original Drawing Verse text and replace only its icon with the official DV mark. */
 .dv-nav-shell > .relative.flex > div:first-child > a {
   width: auto;
   min-width: 0;
@@ -67,74 +67,37 @@
   background: transparent;
 }
 
-/* Crop the transparent logo so only the DV symbol is visible. */
 .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child {
   position: relative;
   display: block !important;
   width: 58px !important;
   min-width: 58px;
   height: 52px !important;
-  overflow: hidden;
+  overflow: visible;
   border: 0 !important;
   border-radius: 0 !important;
-  background: transparent !important;
+  background: url("/branding/dverse-logo-mark.svg") center / contain no-repeat !important;
   box-shadow: none !important;
   isolation: isolate;
+  filter:
+    drop-shadow(0 5px 10px rgba(230, 61, 85, 0.12))
+    drop-shadow(0 5px 14px rgba(128, 96, 241, 0.18));
+  transform-origin: center;
+  animation: dverseLogoFloat 5.8s ease-in-out infinite;
+  transition: filter 180ms ease, transform 180ms ease;
 }
 
 .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child > * {
   display: none !important;
 }
 
-.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::before,
-.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: currentColor;
-  -webkit-mask-image: url("/branding/dverse-logo-transparent.png");
-  mask-image: url("/branding/dverse-logo-transparent.png");
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: left center;
-  mask-position: left center;
-  -webkit-mask-size: auto 52px;
-  mask-size: auto 52px;
-  transform-origin: center;
-  animation: dverseLogoFloat 5.8s ease-in-out infinite;
-}
-
-/* D: red/coral. */
-.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::before {
-  z-index: 2;
-  color: #ef233c;
-  background: linear-gradient(150deg, #ff5a6f 5%, #ef233c 52%, #be123c 100%);
-  clip-path: inset(0 48% 0 0);
-  filter: drop-shadow(0 0 8px rgba(239, 35, 60, 0.34));
-}
-
-/* V and orbit: blue to violet. */
-.dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::after {
-  z-index: 1;
-  color: #2563eb;
-  background: linear-gradient(135deg, #2563eb 4%, #0ea5e9 42%, #8b5cf6 100%);
-  clip-path: inset(0 0 0 46%);
+.dv-nav-shell > .relative.flex > div:first-child > a:hover > div:first-child {
   filter:
-    drop-shadow(0 0 8px rgba(37, 99, 235, 0.34))
-    drop-shadow(0 0 14px rgba(139, 92, 246, 0.22));
+    drop-shadow(0 0 10px rgba(255, 91, 91, 0.3))
+    drop-shadow(0 0 16px rgba(184, 156, 255, 0.38));
 }
 
-.dv-nav-shell > .relative.flex > div:first-child > a:hover > div:first-child::before {
-  filter: drop-shadow(0 0 11px rgba(255, 70, 90, 0.52));
-}
-
-.dv-nav-shell > .relative.flex > div:first-child > a:hover > div:first-child::after {
-  filter:
-    drop-shadow(0 0 11px rgba(56, 189, 248, 0.48))
-    drop-shadow(0 0 20px rgba(139, 92, 246, 0.34));
-}
-
-/* Restore and enhance the original Drawing Verse wordmark. */
+/* Brand wordmark uses the same coral-to-lavender palette as the symbol. */
 .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child {
   position: relative;
 }
@@ -142,36 +105,24 @@
 .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:first-child {
   position: relative;
   width: max-content;
-  background: linear-gradient(
-    92deg,
-    #312e81 0%,
-    #6d28d9 34%,
-    #2563eb 68%,
-    #0891b2 100%
-  );
+  background: linear-gradient(92deg, #ef4c5f 0%, #ff5b5b 34%, #a883ff 72%, #8060f1 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent !important;
   letter-spacing: 0.015em;
   text-shadow:
-    0 0 14px rgba(139, 92, 246, 0.18),
-    0 0 24px rgba(14, 165, 233, 0.1);
+    0 0 14px rgba(255, 91, 91, 0.12),
+    0 0 24px rgba(184, 156, 255, 0.12);
 }
 
 .dark .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:first-child {
-  background: linear-gradient(
-    92deg,
-    #f5f3ff 0%,
-    #c4b5fd 34%,
-    #7dd3fc 72%,
-    #67e8f9 100%
-  );
+  background: linear-gradient(92deg, #ff9292 0%, #ff6b72 34%, #d7c6ff 68%, #b89cff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent !important;
   text-shadow:
-    0 0 15px rgba(196, 181, 253, 0.26),
-    0 0 28px rgba(103, 232, 249, 0.16);
+    0 0 15px rgba(255, 91, 91, 0.2),
+    0 0 28px rgba(184, 156, 255, 0.22);
 }
 
 .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:first-child::after {
@@ -179,18 +130,18 @@
   position: absolute;
   right: -14px;
   top: -7px;
-  color: #7dd3fc;
+  color: #b89cff;
   font-size: 8px;
   text-shadow:
-    0 0 7px rgba(125, 211, 252, 0.95),
-    0 0 13px rgba(167, 139, 250, 0.7);
+    0 0 7px rgba(184, 156, 255, 0.95),
+    0 0 13px rgba(234, 223, 255, 0.78);
   animation: dverseTwinkle 2.8s ease-in-out infinite;
 }
 
 .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:last-child {
   letter-spacing: 0.08em;
   color: rgba(71, 85, 105, 0.76) !important;
-  text-shadow: 0 0 12px rgba(125, 211, 252, 0.12);
+  text-shadow: 0 0 12px rgba(184, 156, 255, 0.12);
 }
 
 .dark .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:last-child {
@@ -202,12 +153,6 @@
     width: 52px !important;
     min-width: 52px;
     height: 48px !important;
-  }
-
-  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::before,
-  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::after {
-    -webkit-mask-size: auto 48px;
-    mask-size: auto 48px;
   }
 }
 
@@ -273,8 +218,7 @@
   .dv-nav-shell::before,
   .dv-nav-shell > div:first-child::before,
   .dv-nav-shell > div:first-child::after,
-  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::before,
-  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child::after,
+  .dv-nav-shell > .relative.flex > div:first-child > a > div:first-child,
   .dv-nav-shell > .relative.flex > div:first-child > a > div:last-child > p:first-child::after {
     animation: none !important;
   }
