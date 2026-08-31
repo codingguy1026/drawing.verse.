@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="16" y1="8" x2="112" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22104D"/>
+      <stop offset="0.55" stop-color="#11092E"/>
+      <stop offset="1" stop-color="#09051B"/>
+    </linearGradient>
+    <linearGradient id="dRed" x1="22" y1="24" x2="78" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF7A7A"/>
+      <stop offset="0.48" stop-color="#FF5B5B"/>
+      <stop offset="1" stop-color="#E63D55"/>
+    </linearGradient>
+    <linearGradient id="vLavender" x1="52" y1="38" x2="94" y2="101" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E0D3FF"/>
+      <stop offset="0.46" stop-color="#B89CFF"/>
+      <stop offset="1" stop-color="#8060F1"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="12" y1="79" x2="118" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D7C6FF"/>
+      <stop offset="0.52" stop-color="#B89CFF"/>
+      <stop offset="1" stop-color="#8A67E8"/>
+    </linearGradient>
+    <radialGradient id="planet" cx="0" cy="0" r="1" gradientTransform="translate(108 58) rotate(132) scale(10)">
+      <stop stop-color="#F2EAFF"/>
+      <stop offset="0.38" stop-color="#C4AEFF"/>
+      <stop offset="1" stop-color="#7654D8"/>
+    </radialGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+  <circle cx="99" cy="25" r="1.5" fill="#D7C6FF" opacity=".65"/>
+  <circle cx="26" cy="98" r="1" fill="#FF7A7A" opacity=".5"/>
+  <path fill="url(#dRed)" fill-rule="evenodd" d="M21 24h33c22.5 0 37 13.9 37 35.5S76.5 95 54 95H21V24Zm16 14.5v42h15.3c13.7 0 22.2-8 22.2-21s-8.5-21-22.2-21H37Z"/>
+  <path fill="url(#vLavender)" d="M48 40h16.8l10.7 31.3L87 40h17.2L82.6 95H66.8L48 40Z"/>
+  <path d="M13 77C30 86.8 50.2 88.6 69.4 85c17.8-3.3 32.4-10.9 43.3-22.9" fill="none" stroke="url(#orbit)" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="106.2" cy="59.5" r="6.5" fill="url(#planet)"/>
+  <path d="M95 22c1.2 4.5 3.5 6.8 8 8-4.5 1.2-6.8 3.5-8 8-1.2-4.5-3.5-6.8-8-8 4.5-1.2 6.8-3.5 8-8Z" fill="#EADFFF"/>
+  <path d="M109 31c.55 2.1 1.65 3.2 3.75 3.75-2.1.55-3.2 1.65-3.75 3.75-.55-2.1-1.65-3.2-3.75-3.75 2.1-.55 3.2-1.65 3.75-3.75Z" fill="#B89CFF"/>
+</svg>
