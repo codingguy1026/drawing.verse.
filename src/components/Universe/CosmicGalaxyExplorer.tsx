@@ -357,26 +357,35 @@ function OrbitRings({ system, hovered, scale }: { system: System; hovered: boole
 }
 
 function PlanetUniverse({ system, satellite, point, hovered, onHover, onSelect }: { system: System; satellite: Satellite; point: PlanetPoint; hovered: boolean; onHover: (target: { system: System; satellite: Satellite }) => void; onSelect: (selected: SelectedNode) => void }) {
+  const selectPlanet = () => {
+    onSelect({
+      type: "행성 유니버스",
+      name: satellite.name,
+      slug: satellite.slug,
+      path: [system.title, satellite.name],
+      desc: satellite.description || `${system.title} 항성계 안에서 공전하는 산하 유니버스예요. 마우스를 올리면 그 아래 위성 유니버스가 보여요. 행성마다 고리, 줄무늬, 크레이터 같은 생김새도 달라요.`,
+    });
+  };
+
   return (
-    <motion.button
-      type="button"
+    <motion.div
+      role="button"
+      tabIndex={0}
       aria-label={`${satellite.name} 선택`}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.15, duration: 0.45 }}
       onMouseEnter={() => onHover({ system, satellite })}
       onFocus={() => onHover({ system, satellite })}
-      onClick={() =>
-        onSelect({
-          type: "행성 유니버스",
-          name: satellite.name,
-          slug: satellite.slug,
-          path: [system.title, satellite.name],
-          desc: satellite.description || `${system.title} 항성계 안에서 공전하는 산하 유니버스예요. 마우스를 올리면 그 아래 위성 유니버스가 보여요. 행성마다 고리, 줄무늬, 크레이터 같은 생김새도 달라요.`,
-        })
-      }
+      onClick={selectPlanet}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectPlanet();
+        }
+      }}
       className={cn(
-        "planet-button group/satellite absolute z-50 grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-gradient-to-br text-[12px] font-black text-slate-950 shadow-[0_0_24px_rgba(255,255,255,0.18)] transition duration-300 hover:scale-110 hover:border-white/60 hover:shadow-[0_0_32px_rgba(255,255,255,0.28)]",
+        "planet-button group/satellite absolute z-50 grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-white/25 bg-gradient-to-br text-[12px] font-black text-slate-950 shadow-[0_0_24px_rgba(255,255,255,0.18)] transition duration-300 hover:scale-110 hover:border-white/60 hover:shadow-[0_0_32px_rgba(255,255,255,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80",
         satellite.tone,
         hovered && "scale-110"
       )}
@@ -388,7 +397,7 @@ function PlanetUniverse({ system, satellite, point, hovered, onHover, onSelect }
       <span className="pointer-events-none absolute left-1/2 top-[3.35rem] w-max -translate-x-1/2 rounded-full border border-white/12 bg-slate-950/80 px-2.5 py-1 text-[10px] font-bold text-white opacity-0 shadow-xl backdrop-blur-xl transition group-hover/satellite:opacity-100">
         {satellite.name}
       </span>
-    </motion.button>
+    </motion.div>
   );
 }
 
