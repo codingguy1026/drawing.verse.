@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { makeLoadingHref } from "./LoadingOverlay";
 
 export default function GlobalRouteLoader() {
-  const router = useRouter();
-
   useEffect(() => {
     function shouldLoad(anchor: HTMLAnchorElement): boolean {
       const href = anchor.getAttribute("href");
@@ -17,35 +14,56 @@ export default function GlobalRouteLoader() {
       try {
         const next = new URL(anchor.href, window.location.origin);
         const curr = new URL(window.location.href);
-        // Skip same page navigations
+
+        // Never wrap the loading page itself in another loading page.
+        if (next.pathname.startsWith("/loading")) return false;
+
+        // Skip same-page navigations.
         if (next.pathname === curr.pathname && next.search === curr.search) return false;
       } catch {
         return false;
       }
+
       return true;
     }
 
-    function handleClick(e: MouseEvent) {
-      // Skip middle click, cmd/ctrl+click
-      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+    function handleClick(event: MouseEvent) {
+      // Skip middle click and modifier-key navigation.
+      if (
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.shiftKey
+      ) {
+        return;
+      }
 
-      const anchor = (e.target as HTMLElement)?.closest("a") as HTMLAnchorElement | null;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const anchor = target.closest("a") as HTMLAnchorElement | null;
       if (!anchor || !shouldLoad(anchor)) return;
 
-      e.preventDefault();
-      
+      event.preventDefault();
+      event.stopPropagation();
+
       const url = new URL(anchor.href, window.location.origin);
       const targetHref = url.pathname + url.search + url.hash;
       const loadingUrl = makeLoadingHref({ to: targetHref });
-      
-      router.push(loadingUrl);
+
+      // Use a real document navigation here instead of router.push().
+      // This guarantees that /loading is rendered as an actual page before
+      // the loading bridge redirects to the final destination.
+      window.location.assign(loadingUrl);
     }
 
     document.addEventListener("click", handleClick, true);
+
     return () => {
       document.removeEventListener("click", handleClick, true);
     };
-  }, [router]);
+  }, []);
 
   return null;
 }
