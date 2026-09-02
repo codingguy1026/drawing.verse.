@@ -7,6 +7,7 @@ import "./dverse-brand.css";
 import DVNav from "@/components/Common/DVNav";
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import CosmicBackground from "@/components/themes/CosmicBackground";
+import WeatherAtmosphereSync from "@/components/themes/WeatherAtmosphereSync";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
 import PageAnimatePresence from "@/components/Common/PageAnimatePresence";
 import { FramerMotionProvider } from "@/components/Providers/FramerMotionProvider";
@@ -55,6 +56,9 @@ export default function RootLayout({
       >
         <FramerMotionProvider>
           <ThemeProvider>
+            {/* 🌦️ Verse Atmosphere: 현재 위치를 기상청 날씨와 동기화 */}
+            <WeatherAtmosphereSync />
+
             {/* ✅ Global Background */}
             <CosmicBackground />
 
