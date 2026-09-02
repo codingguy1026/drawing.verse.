@@ -1,316 +1,176 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Home,
-  Images,
   MessageCircle,
-  Orbit,
+  Users,
   Play,
+  Sparkles,
 } from "lucide-react";
-import {
-  getBrowserVisualMode,
-  getLoadingRouteState,
-  LOADING_PRESETS,
-  normalizeProgress,
-  shouldAutoRedirect,
-} from "@/components/Common/LoadingOverlay";
 
-const versePoints = [
-  { label: "HOME", Icon: Home, position: "left-[5%] top-[57%]", delay: 0 },
-  { label: "UNIVERSE", Icon: Orbit, position: "left-[22%] top-[25%]", delay: 0.14 },
-  { label: "TALK", Icon: MessageCircle, position: "left-1/2 top-[16%] -translate-x-1/2", delay: 0.28 },
-  { label: "GALLERY", Icon: Images, position: "right-[22%] top-[25%]", delay: 0.42 },
-  { label: "TV", Icon: Play, position: "right-[5%] top-[57%]", delay: 0.56 },
-];
+const icons = [Home, MessageCircle, Users, Play, Sparkles];
 
-const stars = [
-  ["left-[8%] top-[18%]", 0.2, "h-1 w-1"],
-  ["left-[16%] top-[76%]", 0.9, "h-1.5 w-1.5"],
-  ["left-[31%] top-[11%]", 1.4, "h-1 w-1"],
-  ["left-[40%] top-[79%]", 0.5, "h-1 w-1"],
-  ["left-[59%] top-[12%]", 1.1, "h-1.5 w-1.5"],
-  ["left-[69%] top-[82%]", 1.7, "h-1 w-1"],
-  ["left-[84%] top-[15%]", 0.7, "h-1 w-1"],
-  ["left-[91%] top-[73%]", 1.9, "h-1.5 w-1.5"],
-] as const;
+// 배경에 무작위로 반짝이는 별 입자 데이터
+const stars = Array.from({ length: 24 }, (_, i) => ({
+  id: i,
+  top: `${Math.random() * 100}%`,
+  left: `${Math.random() * 100}%`,
+  size: Math.random() * 3 + 1,
+  duration: Math.random() * 2 + 1.5,
+  delay: Math.random() * 2,
+}));
 
-export default function Page() {
-  const [progress, setProgress] = useState(0);
-  const [search, setSearch] = useState("");
-  const [mode, setMode] = useState<"light" | "dark">("light");
-
-  const routeState = useMemo(() => getLoadingRouteState(search), [search]);
-  const preset = LOADING_PRESETS[routeState.presetKey] ?? LOADING_PRESETS.default;
-  const copy = {
-    ...preset,
-    title: routeState.title || preset.title,
-    subtitle: routeState.subtitle || preset.subtitle,
-    progressLabel: routeState.label || preset.progressLabel,
-  };
+export default function Loading() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const nextSearch = window.location.search;
-    const nextRoute = getLoadingRouteState(nextSearch);
+    // 로딩이 끝나면 리다이렉트
+    const timer = setTimeout(() => {
+      const targetPath = searchParams.get("to") || "/";
+      router.push(targetPath);
+    }, 3000); // 3초 후 이동 (필요시 조정)
 
-    setSearch(nextSearch);
-    setMode(getBrowserVisualMode(nextRoute.themeOverride));
-
-    const updateTheme = () => setMode(getBrowserVisualMode(nextRoute.themeOverride));
-    const observer = new MutationObserver(updateTheme);
-    const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class", "data-theme"],
-    });
-    mediaQuery?.addEventListener?.("change", updateTheme);
-    window.addEventListener("storage", updateTheme);
-
-    return () => {
-      observer.disconnect();
-      mediaQuery?.removeEventListener?.("change", updateTheme);
-      window.removeEventListener("storage", updateTheme);
-    };
-  }, []);
-
-  useEffect(() => {
-    setProgress(0);
-    const interval = window.setInterval(() => {
-      setProgress((current) => {
-        if (current >= 100) return 100;
-        const step = current < 58 ? 8 : current < 86 ? 5 : 2;
-        return normalizeProgress(current + step);
-      });
-    }, 115);
-
-    return () => window.clearInterval(interval);
-  }, [routeState.targetHref]);
-
-  useEffect(() => {
-    if (progress < 100) return;
-    if (!shouldAutoRedirect(window.location.search, window.location.hostname)) return;
-
-    const timeout = window.setTimeout(() => {
-      window.location.replace(routeState.targetHref);
-    }, 360);
-
-    return () => window.clearTimeout(timeout);
-  }, [progress, routeState.targetHref]);
-
-  const isLight = mode === "light";
+    return () => clearTimeout(timer);
+  }, [router, searchParams]);
 
   return (
-    <main
-      className={`fixed inset-0 z-[9999] overflow-hidden ${
-        isLight ? "bg-[#fafbff] text-slate-950" : "bg-[#03050b] text-white"
-      }`}
-      role="status"
-      aria-live="polite"
-      aria-label={`${copy.title} loading`}
-    >
-      <div
-        className={`pointer-events-none absolute inset-0 ${
-          isLight
-            ? "bg-[radial-gradient(circle_at_50%_46%,rgba(139,92,246,0.09),transparent_30%),radial-gradient(circle_at_14%_18%,rgba(56,189,248,0.08),transparent_24%),radial-gradient(circle_at_86%_78%,rgba(244,114,182,0.07),transparent_24%)]"
-            : "bg-[radial-gradient(circle_at_50%_46%,rgba(124,58,237,0.13),transparent_31%),radial-gradient(circle_at_14%_18%,rgba(56,189,248,0.075),transparent_24%),radial-gradient(circle_at_86%_78%,rgba(236,72,153,0.065),transparent_24%)]"
-        }`}
-      />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#03030c] text-white">
+      {/* 1. 우주 배경: 성운 오로라 효과 */}
+      <div className="pointer-events-none absolute -left-20 -top-20 h-[500px] w-[500px] rounded-full bg-indigo-600/15 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-20 -right-20 h-[500px] w-[500px] rounded-full bg-purple-600/15 blur-[140px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 blur-[160px]" />
 
-      <div
-        className={`pointer-events-none absolute inset-0 opacity-[0.22] ${
-          isLight
-            ? "bg-[linear-gradient(rgba(99,102,241,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.035)_1px,transparent_1px)]"
-            : "bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]"
-        } bg-[size:96px_96px] [mask-image:radial-gradient(circle_at_center,black,transparent_72%)]`}
-      />
+      {/* 2. 배경에 반짝이는 작은 별들 */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {stars.map((star) => (
+          <motion.div
+            key={star.id}
+            initial={{ opacity: 0.1, scale: 0.8 }}
+            animate={{ opacity: [0.1, 0.9, 0.1], scale: [0.8, 1.2, 0.8] }}
+            transition={{
+              duration: star.duration,
+              repeat: Infinity,
+              delay: star.delay,
+              ease: "easeInOut",
+            }}
+            className="absolute rounded-full bg-white"
+            style={{
+              top: star.top,
+              left: star.left,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              boxShadow: "0 0 8px rgba(255,255,255,0.8)",
+            }}
+          />
+        ))}
+      </div>
 
-      {stars.map(([position, delay, size]) => (
-        <motion.span
-          key={`${position}-${delay}`}
-          className={`pointer-events-none absolute rounded-full ${size} ${
-            isLight
-              ? "bg-violet-400/55 shadow-[0_0_18px_rgba(139,92,246,0.28)]"
-              : "bg-white/60 shadow-[0_0_18px_rgba(255,255,255,0.42)]"
-          } ${position}`}
-          animate={{ opacity: [0.12, 0.75, 0.12], scale: [0.7, 1.15, 0.7] }}
-          transition={{ duration: 3.2, delay, repeat: Infinity, ease: "easeInOut" }}
-        />
-      ))}
-
-      <section className="relative mx-auto flex h-full w-full max-w-[1180px] items-center justify-center px-6">
-        <div className="absolute left-1/2 top-[18%] h-[38%] w-[86%] -translate-x-1/2 sm:top-[17%] sm:h-[42%] sm:w-[82%]">
-          <svg
-            viewBox="0 0 1000 360"
-            preserveAspectRatio="none"
-            className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-            aria-hidden="true"
-          >
-            <motion.path
-              d="M65 270 C175 110 280 80 500 55 C720 80 825 110 935 270"
-              fill="none"
-              stroke={isLight ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.085)"}
-              strokeWidth="1.3"
-              strokeDasharray="5 11"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ duration: 1.45, ease: "easeInOut" }}
-            />
-            <motion.path
-              d="M65 270 C250 315 750 315 935 270"
-              fill="none"
-              stroke={isLight ? "rgba(14,165,233,0.11)" : "rgba(125,211,252,0.07)"}
-              strokeWidth="1"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ duration: 1.7, delay: 0.15, ease: "easeInOut" }}
-            />
-          </svg>
-
-          {versePoints.map(({ label, Icon, position, delay }, index) => (
+      <div className="relative flex flex-col items-center z-10">
+        {/* 3. 아이콘 라인 & 행성 궤도 글로우 */}
+        <div className="flex items-center gap-6 sm:gap-9">
+          {icons.map((Icon, index) => (
             <motion.div
-              key={label}
-              className={`absolute flex flex-col items-center gap-2 ${position}`}
-              initial={{ opacity: 0, y: 8, scale: 0.94 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.55, delay: 0.18 + delay, ease: "easeOut" }}
+              key={index}
+              initial={{ opacity: 0, y: 12, scale: 0.9 }}
+              animate={{
+                opacity: [0.4, 1, 0.4],
+                y: [0, -6, 0],
+                scale: [0.95, 1.05, 0.95],
+              }}
+              transition={{
+                duration: 3,
+                delay: index * 0.2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="group relative flex items-center justify-center p-3"
             >
-              <motion.div
-                className={`relative flex h-11 w-11 items-center justify-center rounded-2xl border backdrop-blur-md sm:h-12 sm:w-12 ${
-                  isLight
-                    ? "border-white/90 bg-white/72 text-violet-500 shadow-[0_10px_35px_rgba(76,29,149,0.08)]"
-                    : "border-white/10 bg-white/[0.035] text-white/62 shadow-[0_12px_40px_rgba(0,0,0,0.2)]"
-                }`}
-                animate={{
-                  opacity: [0.72, 1, 0.72],
-                  boxShadow: isLight
-                    ? [
-                        "0 10px 35px rgba(76,29,149,0.06)",
-                        "0 10px 42px rgba(139,92,246,0.14)",
-                        "0 10px 35px rgba(76,29,149,0.06)",
-                      ]
-                    : [
-                        "0 12px 40px rgba(0,0,0,0.18)",
-                        "0 12px 48px rgba(124,58,237,0.14)",
-                        "0 12px 40px rgba(0,0,0,0.18)",
-                      ],
-                }}
-                transition={{ duration: 2.8, delay: index * 0.22, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.6} />
-                <motion.span
-                  className="absolute inset-0 rounded-2xl border border-violet-400/0"
-                  animate={{ scale: [1, 1.45], opacity: [0.28, 0] }}
-                  transition={{ duration: 2.6, delay: index * 0.25, repeat: Infinity, ease: "easeOut" }}
-                />
-              </motion.div>
+              {/* 행성 테두리 링 (Orbital Ring) */}
+              <div className="absolute inset-0 rounded-full border border-violet-500/30 bg-violet-950/20 backdrop-blur-md transition-all group-hover:border-violet-400/60" />
 
-              <span
-                className={`hidden text-[8px] font-bold tracking-[0.22em] sm:block ${
-                  isLight ? "text-slate-400" : "text-white/24"
-                }`}
-              >
-                {label}
-              </span>
+              {/* 뒷배경 펄스 글로우 */}
+              <motion.div
+                animate={{
+                  opacity: [0.2, 0.6, 0.2],
+                  scale: [0.8, 1.3, 0.8],
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  delay: index * 0.2,
+                }}
+                className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-600/30 to-fuchsia-600/30 blur-md"
+              />
+
+              <Icon
+                strokeWidth={1.8}
+                className="relative h-6 w-6 text-violet-200 drop-shadow-[0_0_8px_rgba(167,139,250,0.6)]"
+              />
             </motion.div>
           ))}
         </div>
 
+        {/* 4. 브랜딩 및 텍스트 영역 */}
         <motion.div
-          className="relative z-10 mt-[14vh] flex w-full max-w-[520px] flex-col items-center text-center sm:mt-[16vh]"
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.22, ease: "easeOut" }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="mt-10 text-center"
         >
-          <div className="mb-5 flex items-center gap-3">
-            <span
-              className={`h-px w-8 ${isLight ? "bg-violet-300/70" : "bg-white/14"}`}
-            />
-            <p
-              className={`text-[9px] font-black uppercase tracking-[0.42em] ${
-                isLight ? "text-violet-500/75" : "text-violet-300/56"
-              }`}
-            >
-              Drawing Verse
-            </p>
-            <span
-              className={`h-px w-8 ${isLight ? "bg-violet-300/70" : "bg-white/14"}`}
-            />
-          </div>
-
-          <h1 className="text-[28px] font-black tracking-[-0.045em] sm:text-[34px]">
-            {copy.title}
-          </h1>
-
-          <p
-            className={`mt-3 max-w-[360px] text-[13px] leading-6 ${
-              isLight ? "text-slate-500" : "text-white/43"
-            }`}
-          >
-            {copy.subtitle}
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-violet-400 drop-shadow-[0_0_10px_rgba(167,139,250,0.5)]">
+            Drawing Verse
           </p>
 
-          <div className="mt-9 w-full max-w-[300px]">
-            <div
-              className={`mb-3 flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.18em] ${
-                isLight ? "text-slate-400" : "text-white/26"
-              }`}
-            >
-              <span>{copy.progressLabel}</span>
-              <span>{normalizeProgress(progress).toString().padStart(2, "0")}%</span>
-            </div>
+          <h2 className="mt-3 text-xl font-bold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(255,255,255,0.3)]">
+            새로운 우주를 여는 중
+            <LoadingDots />
+          </h2>
 
-            <div
-              className={`relative h-px overflow-visible ${
-                isLight ? "bg-slate-200" : "bg-white/[0.08]"
-              }`}
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={normalizeProgress(progress)}
-            >
-              <motion.div
-                className={`absolute inset-y-0 left-0 ${
-                  isLight
-                    ? "bg-gradient-to-r from-violet-500 via-fuchsia-400 to-sky-400"
-                    : "bg-gradient-to-r from-violet-400 via-fuchsia-300 to-sky-300"
-                }`}
-                initial={{ width: "0%" }}
-                animate={{ width: `${normalizeProgress(progress)}%` }}
-                transition={{ duration: 0.32, ease: "easeOut" }}
-              >
-                <span className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 translate-x-1/2 rounded-full bg-white shadow-[0_0_16px_rgba(139,92,246,0.8)]" />
-              </motion.div>
-            </div>
-          </div>
-
-          <div
-            className={`mt-5 h-5 overflow-hidden text-[10px] font-medium ${
-              isLight ? "text-slate-400" : "text-white/28"
-            }`}
-          >
-            <motion.div
-              animate={{ y: [0, -20, -40, 0] }}
-              transition={{ duration: 5.4, repeat: Infinity, ease: "easeInOut" }}
-            >
-              {copy.lines.map((line) => (
-                <p key={line} className="h-5">
-                  {line}
-                </p>
-              ))}
-            </motion.div>
-          </div>
+          <p className="mt-2 text-xs font-medium text-violet-200/50">
+            잠시만 기다려 주세요
+          </p>
         </motion.div>
-      </section>
 
-      <div
-        className={`pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-[8px] font-semibold uppercase tracking-[0.34em] ${
-          isLight ? "text-slate-300" : "text-white/12"
-        }`}
-      >
-        connecting creative worlds
+        {/* 5. 유성(Meteor) 스타일 게이지 바 */}
+        <div className="relative mt-8 h-[3px] w-44 overflow-hidden rounded-full bg-violet-950/60 border border-violet-800/30">
+          <motion.div
+            className="absolute h-full w-16 bg-gradient-to-r from-transparent via-violet-400 to-white shadow-[0_0_12px_#a78bfa]"
+            animate={{
+              x: [-70, 180],
+            }}
+            transition={{
+              duration: 1.8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
       </div>
-    </main>
+    </div>
+  );
+}
+
+function LoadingDots() {
+  return (
+    <span className="ml-1 inline-flex">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          animate={{ opacity: [0.2, 1, 0.2], y: [0, -2, 0] }}
+          transition={{
+            duration: 1.2,
+            repeat: Infinity,
+            delay: i * 0.2,
+          }}
+          className="text-violet-300"
+        >
+          .
+        </motion.span>
+      ))}
+    </span>
   );
 }
