@@ -99,7 +99,6 @@ export const useWeatherStore = create<WeatherStore>()(
     }),
     {
       name: "weather-storage",
-      version: 2,
       partialize: (state) => ({
         weather: state.weather,
         mode: state.mode,
