@@ -493,7 +493,6 @@ html {
 }
 
 html.dark {
-  background: #030014;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -616,6 +615,10 @@ html>* {
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
+}
+
+.dv-bg,
+.dv-body {
 }
 
 /* Enhanced focus states for accessibility */

@@ -22,7 +22,6 @@ import {
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { supabase } from "@/lib/supabase/client";
 import ThemeToggle from "@/components/Common/ThemeToggle";
-import WeatherToggle from "@/components/Common/WeatherToggle";
 import CosmicAudioStation from "@/components/Common/CosmicAudioStation";
 
 type NavItem = {
@@ -227,7 +226,6 @@ export default function DVNav({
                     <div className="hidden items-center gap-2 lg:flex">
                         <CosmicAudioStation />
                         <ThemeToggle />
-                        <WeatherToggle />
                         
                         <motion.div variants={squishyVariants} whileHover="hover" whileTap="tap">
                             <Link

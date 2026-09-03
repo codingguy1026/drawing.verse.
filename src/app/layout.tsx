@@ -6,8 +6,6 @@ import "./dverse-brand.css";
 
 import DVNav from "@/components/Common/DVNav";
 import { ThemeProvider } from "@/lib/ThemeProvider";
-import CosmicBackground from "@/components/themes/CosmicBackground";
-import WeatherAtmosphereSync from "@/components/themes/WeatherAtmosphereSync";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
 import PageAnimatePresence from "@/components/Common/PageAnimatePresence";
 import { FramerMotionProvider } from "@/components/Providers/FramerMotionProvider";
@@ -52,15 +50,10 @@ export default function RootLayout({
 
       <body
         suppressHydrationWarning
-        className="min-h-screen overflow-x-hidden bg-slate-50 font-sans text-slate-900 selection:bg-violet-500/30 transition-colors duration-300 dark:bg-[#03050a] dark:text-white"
+        className="min-h-screen overflow-x-hidden bg-transparent font-sans text-slate-900 selection:bg-violet-500/30 transition-colors duration-300 dark:bg-[#03050a] dark:text-white"
       >
         <FramerMotionProvider>
           <ThemeProvider>
-            {/* 🌦️ Verse Atmosphere: 현재 위치를 기상청 날씨와 동기화 */}
-            <WeatherAtmosphereSync />
-
-            {/* ✅ Global Background */}
-            <CosmicBackground />
 
             {/* ✅ New DV Nav */}
             <DVNav />

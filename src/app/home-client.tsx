@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import { ArrowRight, Orbit, Pencil, Save, Sparkles, X as CloseIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { squishyVariants } from "@/lib/animations";
-import { useWeatherStore } from "@/store/useWeatherStore";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 
 const feedTabs = ["전체", "Best", "Hot", "New", "팔로잉"];
@@ -153,7 +152,6 @@ function EditableText({
 }
 
 export default function HomeClient() {
-  const { weather } = useWeatherStore();
   const { user, loading: userLoading } = useSupabaseUser();
   const [posts, setPosts] = useState<HomePost[]>([]);
   const [universes, setUniverses] = useState<HomeUniverse[]>([]);
@@ -321,18 +319,7 @@ export default function HomeClient() {
   const featuredPosts = posts.slice(0, 3);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#f7f8fc] text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-slate-100">
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-60 dark:opacity-100">
-        <div
-          className={cn(
-            "absolute left-[4%] top-[4%] h-[440px] w-[440px] rounded-full blur-[140px]",
-            weather === "sunny" ? "bg-orange-300/20" : weather === "rainy" ? "bg-blue-400/15" : weather === "snowy" ? "bg-sky-200/20" : weather === "cloudy" ? "bg-slate-300/18" : "bg-fuchsia-300/18"
-          )}
-        />
-        <div className="absolute right-[3%] top-[10%] h-[520px] w-[520px] rounded-full bg-sky-300/15 blur-[150px] dark:bg-indigo-500/10" />
-        <div className="absolute bottom-[8%] left-[18%] h-[560px] w-[560px] rounded-full bg-violet-300/10 blur-[170px] dark:bg-violet-600/10" />
-      </div>
-
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-slate-100">
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-16 pt-24 md:px-6 lg:px-8 lg:pt-28">
         <main>
           <section className="relative overflow-hidden rounded-[40px] border border-white/90 bg-white/80 shadow-[0_30px_80px_rgba(15,23,42,.08)] backdrop-blur-3xl dark:border-white/10 dark:bg-[#0a0d14]/70">

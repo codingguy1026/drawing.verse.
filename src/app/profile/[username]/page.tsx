@@ -307,9 +307,7 @@ export default function ProfilePage() {
 
     if (errorMessage && !profile) {
         return (
-            <main className="relative min-h-screen overflow-hidden bg-white text-slate-950 dark:bg-[#03050a] dark:text-white">
-                <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(129,140,248,0.22),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.18),transparent_35%)]" />
-
+            <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#03050a] dark:text-white">
                 <div className="relative z-10 mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-4 text-center">
                     <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-[32px] bg-slate-100 text-slate-300 dark:bg-white/5 dark:text-white/30">
                         <UserRound className="h-10 w-10" />
@@ -335,15 +333,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <main className="relative min-h-screen overflow-hidden bg-white text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-white">
-            <div className="pointer-events-none fixed inset-0 z-0">
-                <div className="absolute left-[-10%] top-[8%] h-[460px] w-[460px] rounded-full bg-violet-300/20 blur-[130px] dark:bg-violet-600/15" />
-                <div className="absolute right-[-8%] top-[34%] h-[520px] w-[520px] rounded-full bg-sky-300/20 blur-[140px] dark:bg-indigo-600/15" />
-                <div className="absolute bottom-[-20%] left-[25%] h-[560px] w-[560px] rounded-full bg-indigo-200/25 blur-[150px] dark:bg-sky-600/10" />
-            </div>
-
-            <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_1px_1px,rgba(99,102,241,0.12)_1px,transparent_0)] bg-[length:34px_34px] opacity-40 dark:opacity-20" />
-
+        <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-white">
             <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mb-6 flex items-center justify-between gap-3">
                     <Link

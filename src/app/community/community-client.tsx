@@ -495,7 +495,7 @@ export default function CommunityPage() {
   if (!mounted) return null;
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,#ede9fe,transparent_30%),radial-gradient(circle_at_top_right,#fce7f3,transparent_28%),linear-gradient(180deg,#f8fafc,#f1f5f9)] px-4 pt-24 text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,#4c1d95,transparent_30%),radial-gradient(circle_at_top_right,#831843,transparent_28%),linear-gradient(180deg,#020617,#0f172a)] dark:text-white">
+    <main className="min-h-screen overflow-hidden bg-slate-50 px-4 pt-24 text-slate-900 transition-colors dark:bg-[#03050a] dark:text-white">
       {isAuthLoading && (
         <div className="flex min-h-[60vh] items-center justify-center">
           <div className="flex flex-col items-center gap-4">

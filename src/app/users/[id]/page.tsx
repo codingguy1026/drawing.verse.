@@ -608,14 +608,7 @@ export default async function UserDetailPage({ params }: PageProps) {
     const displayName = profile.display_name || profile.nickname || "창작자";
 
     return (
-        <main className="min-h-screen overflow-hidden bg-[#f4f2ff] text-slate-900 dark:bg-[#070816] dark:text-white">
-            <div className="pointer-events-none fixed inset-0">
-                <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-fuchsia-500/20 blur-3xl" />
-                <div className="absolute right-0 top-24 h-96 w-96 rounded-full bg-cyan-400/15 blur-3xl" />
-                <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.16)_1px,transparent_0)] [background-size:28px_28px] opacity-25" />
-            </div>
-
+        <main className="min-h-screen overflow-hidden bg-slate-50 text-slate-900 dark:bg-[#03050a] dark:text-white">
             <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
                 <nav className="flex items-center justify-between rounded-3xl border border-slate-200 dark:border-white/10 bg-white/60 dark:bg-white/[0.05] px-4 py-3 backdrop-blur-2xl">
                     <Link href="/" className="flex items-center gap-3">

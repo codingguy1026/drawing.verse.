@@ -121,14 +121,7 @@ export default function UniverseWritePage() {
   if (!mounted) return null;
 
   return (
-    <main className="min-h-screen bg-[#020208] text-white pt-24 pb-20 px-4 overflow-x-hidden">
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-violet-600/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-fuchsia-600/10 blur-[150px] rounded-full" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
-      </div>
-
+    <main className="min-h-screen overflow-x-hidden bg-[#03050a] px-4 pb-20 pt-24 text-white">
       <div className="relative mx-auto max-w-4xl">
         {/* Header */}
         <header className="mb-10 flex items-center justify-between">

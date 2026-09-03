@@ -282,15 +282,7 @@ export default function GalleryPage() {
     activeCategory !== "전체" || searchQuery.trim().length > 0 || sortMode !== "latest";
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-white text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-white">
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-100 transition-opacity duration-1000">
-        <div className="absolute left-[-10%] top-[8%] h-[460px] w-[460px] rounded-full bg-violet-300/20 blur-[130px] dark:bg-violet-600/15" />
-        <div className="absolute right-[-8%] top-[34%] h-[520px] w-[520px] rounded-full bg-sky-300/20 blur-[140px] dark:bg-indigo-600/15" />
-        <div className="absolute bottom-[-20%] left-[25%] h-[560px] w-[560px] rounded-full bg-indigo-200/25 blur-[150px] dark:bg-sky-600/10" />
-      </div>
-
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_1px_1px,rgba(99,102,241,0.12)_1px,transparent_0)] bg-[length:34px_34px] opacity-40 dark:opacity-20" />
-
+    <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-white">
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <header className="mb-14 flex flex-col items-center text-center">
           <div className="mb-6 flex items-center gap-2 rounded-full border border-violet-500/10 bg-violet-500/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-violet-600 shadow-sm dark:border-white/10 dark:text-violet-300">
