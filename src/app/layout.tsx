@@ -50,7 +50,7 @@ export default function RootLayout({
 
       <body
         suppressHydrationWarning
-        className="min-h-screen overflow-x-hidden bg-transparent font-sans text-slate-900 selection:bg-violet-500/30 transition-colors duration-300 dark:bg-[#03050a] dark:text-white"
+        className="min-h-screen overflow-x-hidden bg-slate-50 font-sans text-slate-900 selection:bg-violet-500/30 transition-colors duration-300 dark:bg-[#03050a] dark:text-white"
       >
         <FramerMotionProvider>
           <ThemeProvider>
