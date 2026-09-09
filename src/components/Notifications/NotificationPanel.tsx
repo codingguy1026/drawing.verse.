@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Bell, Heart, MessageCircle, Sparkles, Trophy, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -49,9 +51,17 @@ export default function NotificationPanel({
   loading,
   onRead,
 }: NotificationPanelProps) {
+  const [mounted, setMounted] = useState(false);
   const unreadCount = notifications.filter((item) => !item.read).length;
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {open ? (
         <>
@@ -59,7 +69,7 @@ export default function NotificationPanel({
             type="button"
             aria-label="알림 패널 닫기"
             onClick={onClose}
-            className="fixed inset-0 z-[1090] cursor-default bg-transparent"
+            className="fixed inset-0 z-[9998] cursor-default bg-transparent"
           />
 
           <motion.aside
@@ -73,8 +83,9 @@ export default function NotificationPanel({
               right: 20,
               left: "auto",
               width: "min(384px, calc(100vw - 24px))",
+              zIndex: 9999,
             }}
-            className="z-[1100] overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/95 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#090916]/95 dark:shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
+            className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/95 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#090916]/95 dark:shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
           >
             <div className="flex items-center justify-between border-b border-slate-200/70 px-4 py-4 dark:border-white/10">
               <div>
@@ -158,6 +169,7 @@ export default function NotificationPanel({
           </motion.aside>
         </>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
