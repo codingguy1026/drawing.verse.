@@ -11,6 +11,7 @@ import {
     Sparkles,
     MessageCircle,
     Images,
+    Tv,
     UserRound,
     LogIn,
     Menu,
@@ -67,6 +68,13 @@ const navItems: NavItem[] = [
         sub: "작품관",
         icon: Images,
         accent: "#facc15",
+    },
+    {
+        label: "D TV",
+        href: "/tv",
+        sub: "영상 우주",
+        icon: Tv,
+        accent: "#f472b6",
     },
 ];
 
