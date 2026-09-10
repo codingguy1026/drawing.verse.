@@ -9,6 +9,7 @@ import type { LucideIcon } from "lucide-react";
 import {
     Home,
     Sparkles,
+    Link2,
     MessageCircle,
     Images,
     UserRound,
@@ -53,6 +54,13 @@ const navItems: NavItem[] = [
         sub: "세계들",
         icon: Sparkles,
         accent: "#7dd3fc",
+    },
+    {
+        label: "Wormhole",
+        href: "/wormhole",
+        sub: "세계 연결",
+        icon: Link2,
+        accent: "#c084fc",
     },
     {
         label: "Community",
