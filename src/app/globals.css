@@ -1,6 +1,4 @@
-@import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
-@import "../../df/devup-ui_development/devup-ui.css";
+
 
 /* =========================================================
    THEME: DARK GLASS UNIVERSE (High Contrast)
