@@ -1,64 +1,55 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { 
-  ArrowLeft, 
-  Sparkles, 
-  Send, 
-  Image as ImageIcon, 
-  X, 
-  Loader2,
-  WandSparkles,
-  Rocket,
-  Globe
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Image as ImageIcon, Loader2, Send, X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { squishyVariants } from "@/lib/animations";
-import { LoadingScreen } from "@/components/Common/LoadingOverlay";
 
 const CATEGORIES = ["정보", "창작", "질문", "공지", "기타"];
 
 export default function UniverseWritePage() {
   const { slug } = useParams();
   const router = useRouter();
-  
+
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState<any>(null);
-  
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("창작");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  const universeSlug = decodeURIComponent((slug as string) ?? "");
+
   useEffect(() => {
     setMounted(true);
+
     const checkUser = async () => {
       const { data } = await supabase.auth.getUser();
+
       if (!data.user) {
         alert("로그인이 필요한 서비스야!");
         router.push("/login");
-      } else {
-        setUser(data.user);
+        return;
       }
+
+      setUser(data.user);
     };
+
     checkUser();
   }, [router]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImageFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const removeImage = () => {
@@ -66,29 +57,30 @@ export default function UniverseWritePage() {
     setImagePreview(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!title.trim() || !content.trim() || !user) return;
 
     setIsSubmitting(true);
-    
-    try {
-      let imageUrl = null;
 
-      // Image upload logic (placeholder - assumes 'posts' bucket exists)
+    try {
+      let imageUrl: string | null = null;
+
       if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
+        const fileExt = imageFile.name.split(".").pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
 
-        const { error: uploadError, data } = await supabase.storage
-          .from('posts')
+        const { error: uploadError } = await supabase.storage
+          .from("posts")
           .upload(filePath, imageFile);
 
         if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('posts')
-            .getPublicUrl(filePath);
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("posts").getPublicUrl(filePath);
+
           imageUrl = publicUrl;
         }
       }
@@ -96,13 +88,16 @@ export default function UniverseWritePage() {
       const { data: post, error } = await supabase
         .from("posts")
         .insert({
-          title,
-          content,
+          title: title.trim(),
+          content: content.trim(),
           category,
           universe_slug: slug,
-          author: user.user_metadata?.full_name || user.email?.split("@")[0] || "Anonymous",
+          author:
+            user.user_metadata?.full_name ||
+            user.email?.split("@")[0] ||
+            "Anonymous",
           image_url: imageUrl,
-          user_id: user.id
+          user_id: user.id,
         })
         .select()
         .single();
@@ -110,9 +105,9 @@ export default function UniverseWritePage() {
       if (error) throw error;
 
       router.push(`/universe/${slug}/${post.id}`);
-    } catch (err: any) {
-      console.error("Post creation error:", err);
-      alert("글을 올리는 중 오류가 발생했어: " + err.message);
+    } catch (error: any) {
+      console.error("Post creation error:", error);
+      alert(`글을 올리는 중 오류가 발생했어: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -121,169 +116,145 @@ export default function UniverseWritePage() {
   if (!mounted) return null;
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#03050a] px-4 pb-20 pt-24 text-white">
-      <div className="relative mx-auto max-w-4xl">
-        {/* Header */}
-        <header className="mb-10 flex items-center justify-between">
-          <button 
-            onClick={() => router.back()}
-            className="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+    <main className="min-h-screen bg-[#03050a] px-4 pb-16 pt-20 text-white">
+      <div className="mx-auto w-full max-w-3xl">
+        <header className="mb-8 space-y-4">
+          <button
+            type="button"
+            onClick={() => router.push(`/universe/${slug}`)}
+            className="inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 group-hover:bg-white/10 transition-all">
-              <ArrowLeft className="h-5 w-5" />
-            </div>
-            <span className="text-sm font-bold uppercase tracking-widest">Abort Transmission</span>
+            <ArrowLeft className="h-4 w-4" />
+            Universe로 돌아가기
           </button>
 
-          <div className="text-right">
-            <p className="text-[10px] font-black text-violet-400 uppercase tracking-[0.3em] mb-1">New Record</p>
-            <h1 className="text-2xl font-black tracking-tighter">데이터 기록 전송</h1>
+          <div>
+            <p className="text-sm text-slate-500">{universeSlug}</p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight">새 게시글 작성</h1>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              제목, 본문, 분류를 먼저 정리하고 필요한 경우 이미지를 첨부해줘.
+            </p>
           </div>
         </header>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Main Content Area */}
-          <section className="rounded-[2.5rem] border border-white/10 bg-white/[0.03] backdrop-blur-3xl p-8 shadow-2xl">
-            <div className="space-y-6">
-              {/* Universe Info Banner */}
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-violet-500/10 border border-violet-500/20 mb-8">
-                <Globe className="h-5 w-5 text-violet-400" />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <section className="space-y-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-7">
+            <div className="space-y-2">
+              <label htmlFor="post-title" className="text-sm font-semibold text-slate-300">
+                제목
+              </label>
+              <input
+                id="post-title"
+                autoFocus
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="게시글 제목"
+                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-base outline-none transition focus:border-white/30"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-slate-300">카테고리</p>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setCategory(item)}
+                    className={`rounded-xl border px-4 py-2 text-sm transition ${
+                      category === item
+                        ? "border-white bg-white text-black"
+                        : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="post-content" className="text-sm font-semibold text-slate-300">
+                본문
+              </label>
+              <textarea
+                id="post-content"
+                value={content}
+                onChange={(event) => setContent(event.target.value)}
+                placeholder="이 Universe에 공유하고 싶은 내용을 적어줘."
+                rows={12}
+                className="w-full resize-y rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-base leading-7 outline-none transition focus:border-white/30"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-violet-400/60">Target Universe</p>
-                  <p className="text-sm font-bold">{decodeURIComponent(slug as string)}</p>
-                </div>
-              </div>
-
-              {/* Title Input */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Transmission Title</label>
-                <input 
-                  autoFocus
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="당신의 발견을 한 문장으로 표현해줘..."
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xl font-black outline-none focus:border-violet-500/50 focus:ring-4 focus:ring-violet-500/10 transition-all placeholder:text-white/20"
-                />
-              </div>
-
-              {/* Category & Media Actions */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/5">
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setCategory(cat)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                        category === cat 
-                          ? "bg-white text-black shadow-lg" 
-                          : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                  <p className="text-sm font-semibold text-slate-300">이미지</p>
+                  <p className="mt-1 text-xs text-slate-500">선택 사항이야. 한 장만 첨부할 수 있어.</p>
                 </div>
 
-                <div className="h-10 w-px bg-white/10 mx-2 hidden md:block" />
-
-                <label className="cursor-pointer group flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-                  <ImageIcon className="h-4 w-4 text-fuchsia-400" />
-                  <span className="text-xs font-bold text-slate-300">이미지 첨부</span>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:border-white/20 hover:text-white">
+                  <ImageIcon className="h-4 w-4" />
+                  이미지 선택
+                  <input
+                    type="file"
+                    accept="image/*"
                     onChange={handleImageChange}
-                    className="hidden" 
+                    className="hidden"
                   />
                 </label>
               </div>
 
-              {/* Image Preview */}
-              <AnimatePresence>
-                {imagePreview && (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="relative rounded-3xl overflow-hidden border border-white/10 aspect-video group"
+              {imagePreview && (
+                <div className="relative overflow-hidden rounded-2xl border border-white/10">
+                  <img
+                    src={imagePreview}
+                    alt="첨부 이미지 미리보기"
+                    className="max-h-96 w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/70 text-white"
+                    aria-label="첨부 이미지 제거"
                   >
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button 
-                        type="button"
-                        onClick={removeImage}
-                        className="h-12 w-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow-xl hover:scale-110 transition-transform"
-                      >
-                        <X className="h-6 w-6" />
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Content Editor */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Content Data</label>
-                <textarea 
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="이 유니버스에서 무엇을 보았는지, 어떤 창작을 했는지 기록해줘..."
-                  rows={12}
-                  className="w-full bg-white/5 border border-white/10 rounded-[2rem] px-6 py-6 text-base font-medium leading-relaxed outline-none focus:border-violet-500/50 focus:ring-4 focus:ring-violet-500/10 transition-all placeholder:text-white/20 resize-none"
-                />
-              </div>
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 
-          {/* Submit Footer */}
-          <footer className="flex flex-col md:flex-row items-center justify-between gap-6 px-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600/20 text-violet-400">
-                <Rocket className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Transmission Ready</p>
-                <p className="text-xs text-slate-400">데이터가 유니버스 전역으로 동기화됩니다.</p>
-              </div>
-            </div>
+          <footer className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => router.push(`/universe/${slug}`)}
+              className="rounded-2xl border border-white/10 px-6 py-3 font-semibold text-slate-300 transition hover:border-white/20 hover:text-white"
+            >
+              취소
+            </button>
 
-            <motion.button
-              variants={squishyVariants}
-              whileHover="hover"
-              whileTap="tap"
+            <button
+              type="submit"
               disabled={isSubmitting || !title.trim() || !content.trim()}
-              className="flex items-center gap-3 h-16 px-10 rounded-[2rem] bg-white text-black font-black shadow-[0_20px_40px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3 font-bold text-black transition disabled:cursor-not-allowed disabled:opacity-40"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  전송 중...
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  게시 중...
                 </>
               ) : (
                 <>
-                  <Send className="h-5 w-5" />
-                  글 올리기
+                  <Send className="h-4 w-4" />
+                  게시하기
                 </>
               )}
-            </motion.button>
+            </button>
           </footer>
         </form>
       </div>
-
-      {isSubmitting && (
-        <LoadingScreen 
-          copy={{
-            eyebrow: "Submitting",
-            title: "Saving to Universe",
-            subtitle: "데이터를 전파 기지에 기록하고 있습니다...",
-            progressLabel: "Syncing",
-            lines: ["우주에 흔적을 남기는 중..."]
-          }}
-          progress={50}
-          mode="dark"
-        />
-      )}
     </main>
   );
 }
