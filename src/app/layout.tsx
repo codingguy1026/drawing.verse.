@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_KR } from "next/font/google";
+import "./tailwind.css";
 import "./globals.css";
 import "./dverse-brand.css";
 
@@ -13,11 +14,7 @@ import AchievementToast from "@/components/Achievements/AchievementToast";
 import ProfileAchievementsMount from "@/components/Achievements/ProfileAchievementsMount";
 import NotificationCenter from "@/components/Notifications/NotificationCenter";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const noto = Noto_Sans_KR({
   subsets: ["latin"],
   variable: "--font-noto",
@@ -35,47 +32,30 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="ko"
-      className={`${inter.variable} ${noto.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="ko" className={`${inter.variable} ${noto.variable}`} suppressHydrationWarning>
       <head />
-
       <body
         suppressHydrationWarning
         className="min-h-screen overflow-x-hidden bg-slate-50 font-sans text-slate-900 selection:bg-violet-500/30 transition-colors duration-300 dark:bg-[#03050a] dark:text-white"
       >
         <FramerMotionProvider>
           <ThemeProvider>
-
             {/* ✅ New DV Nav */}
             <DVNav />
-
             {/* ✅ Notification center */}
             <NotificationCenter />
-
             {/* ✅ Achievement unlock notification */}
             <AchievementToast />
-
             {/* ✅ 전역 라우트 이동 감지 */}
             <Suspense fallback={null}>
               <GlobalRouteLoader />
             </Suspense>
-
             {/* ✅ main children rendering with soft transitions */}
             <PageAnimatePresence>
-              <div className="pt-[96px] sm:pt-[104px]">
-                {children}
-              </div>
+              <div className="pt-[96px] sm:pt-[104px]">{children}</div>
             </PageAnimatePresence>
-
             {/* ✅ /me 프로필의 도전과제 보드 */}
             <ProfileAchievementsMount />
           </ThemeProvider>
