@@ -17,6 +17,7 @@ export default function UniverseWritePage() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [categories, setCategories] = useState(CATEGORIES);
   const [category, setCategory] = useState("창작");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -36,10 +37,12 @@ export default function UniverseWritePage() {
       }
 
       setUser(data.user);
+      const { data: universe } = await supabase.from('universes').select('sections').eq('slug', slug).maybeSingle();
+      if (universe?.sections?.length) { setCategories(universe.sections); setCategory(universe.sections[0]); }
     };
 
     checkUser();
-  }, [router]);
+  }, [router, slug]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -62,6 +65,9 @@ export default function UniverseWritePage() {
 
     if (!title.trim() || !content.trim() || !user) return;
 
+    const { data: settings, error: settingsError } = await supabase.from('universes').select('owner_id,allow_member_posts').eq('slug', slug).maybeSingle();
+    if (settingsError || !settings) { alert('유니버스를 확인하지 못했어요. 잠시 후 다시 시도해주세요.'); return; }
+    if (!settings.allow_member_posts && settings.owner_id !== user.id) { alert('이 유니버스는 소유자만 글을 쓸 수 있어요.'); return; }
     setIsSubmitting(true);
 
     try {
@@ -156,7 +162,7 @@ export default function UniverseWritePage() {
             <div className="space-y-3">
               <p className="text-sm font-semibold text-slate-300">카테고리</p>
               <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((item) => (
+                {categories.map((item) => (
                   <button
                     key={item}
                     type="button"

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { createRequestSupabase } from "@/lib/supabase/request";
 
 interface Universe {
   id: number;
@@ -19,6 +19,7 @@ export default async function SearchPage({
 }: {
   searchParams: Promise<{ query?: string }>;
 }) {
+  const supabase = await createRequestSupabase();
   const { query } = await searchParams;
   const trimmedQuery = query?.trim();
 
@@ -34,15 +35,15 @@ export default async function SearchPage({
   let universes: any[] = [];
   let posts: any[] = [];
 
-  if (supabaseAdmin) {
+  if (supabase) {
     const result = await Promise.all([
-      supabaseAdmin
+      supabase
         .from("universes")
         .select("id,slug,name,description")
         .ilike("name", `%${query}%`)
         .or(`description.ilike.%${query}%`)
         .limit(50),
-      supabaseAdmin
+      supabase
         .from("posts")
         .select("id,universe_slug,title")
         .ilike("title", `%${query}%`)

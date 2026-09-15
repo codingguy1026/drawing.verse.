@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { createRequestSupabase } from "@/lib/supabase/request";
 
 export async function GET(req: Request) {
+  const supabase = await createRequestSupabase();
   const url = new URL(req.url);
   const query = url.searchParams.get("query")?.trim();
 
@@ -11,13 +12,13 @@ export async function GET(req: Request) {
 
   try {
     const [{ data: universes, error: uErr }, { data: posts, error: pErr }] = await Promise.all([
-      supabaseAdmin
+      supabase
         .from("universes")
         .select("id,slug,name,description")
         .ilike("name", `%${query}%`)
         .or(`description.ilike.%${query}%`)
         .limit(50),
-      supabaseAdmin
+      supabase
         .from("posts")
         .select("id,universe_slug,title")
         .ilike("title", `%${query}%`)

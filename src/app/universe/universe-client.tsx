@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import UniverseGrid from "@/components/Universe/UniverseGrid";
 import UniverseSidebar from "@/components/Universe/UniverseSidebar";
@@ -112,6 +113,7 @@ export default function UniversePage() {
   return (
     <div className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-[#03050a] dark:text-white">
       <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-12 md:px-6 xl:px-8">
+      <Link href="/universe/create" className="self-end rounded-2xl bg-violet-600 px-5 py-3 text-sm font-bold text-white hover:bg-violet-700">+ 유니버스 만들기</Link>
       {isLoading ? (
         <div className="flex h-[60vh] items-center justify-center">
           <motion.div 
