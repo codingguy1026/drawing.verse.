@@ -49,7 +49,8 @@ export default function LoginPage() {
 
     // ✅ 느린 환경에서 세션 반영 기다리다 멈추는 것 방지
     setTimeout(() => {
-      window.location.href = "/";
+      const next = new URLSearchParams(window.location.search).get("next");
+      window.location.href = next === "/universe/create" ? next : "/";
     }, 800);
   }
 

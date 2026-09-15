@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { createRequestSupabase } from "@/lib/supabase/request";
 
 export async function GET(req: Request) {
+  const supabase = await createRequestSupabase();
   const url = new URL(req.url);
   const query = url.searchParams.get("query")?.trim();
 
@@ -9,19 +10,19 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "query parameter required" }, { status: 400 });
   }
 
-  if (!supabaseAdmin) {
-    console.error("autocomplete requested but supabaseAdmin is not configured");
+  if (!supabase) {
+    console.error("autocomplete requested but supabase is not configured");
     return NextResponse.json({ universes: [], posts: [] });
   }
 
   try {
     const [{ data: universes, error: uErr }, { data: posts, error: pErr }] = await Promise.all([
-      supabaseAdmin
+      supabase
         .from("universes")
         .select("id,slug,name")
         .ilike("name", `%${query}%`)
         .limit(10),
-      supabaseAdmin
+      supabase
         .from("posts")
         .select("id,universe_slug,title")
         .ilike("title", `%${query}%`)
