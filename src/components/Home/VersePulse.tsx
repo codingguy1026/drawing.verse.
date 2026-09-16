@@ -135,13 +135,6 @@ export default function VersePulse() {
     };
   }, [now, posts]);
 
-  const wave = useMemo(() => {
-    const intensity = Math.max(0.2, pulse.score / 100);
-    return [0.34, 0.68, 0.42, 1, 0.48, 0.82, 0.38, 0.72, 0.52, 0.94, 0.44, 0.64].map(
-      (point) => Math.max(4, Math.round(point * intensity * 26))
-    );
-  }, [pulse.score]);
-
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
@@ -149,7 +142,7 @@ export default function VersePulse() {
       transition={{ duration: 0.35 }}
       className="mt-6 border-t border-slate-200/70 pt-5 dark:border-white/10"
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Radio size={13} className="text-violet-500" />
@@ -158,55 +151,45 @@ export default function VersePulse() {
             </p>
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.75)]" />
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">
-            지금 Verse에서 뛰고 있는 활동 신호
+          <p className="mt-1 text-[10px] text-slate-400">
+            {pulse.hourEvents} posts / 1h · {universes.length} universes
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 rounded-full border border-violet-200/70 bg-white/60 px-3 py-1.5 shadow-sm backdrop-blur dark:border-violet-300/15 dark:bg-white/5">
-          <span className="text-[9px] font-black tracking-wider text-violet-500">
-            {loading ? "CONNECTING" : pulse.level}
-          </span>
-          <span className="text-sm font-black tabular-nums text-slate-900 dark:text-white">
-            {loading ? "--" : pulse.score}
-          </span>
-          <Activity size={12} className="text-fuchsia-500" />
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-full border border-violet-200/70 bg-white/60 px-2.5 py-1 shadow-sm backdrop-blur dark:border-violet-300/15 dark:bg-white/5">
+            <span className="text-[8px] font-black tracking-wider text-violet-500">
+              {loading ? "CONNECTING" : pulse.level}
+            </span>
+            <span className="text-xs font-black tabular-nums text-slate-900 dark:text-white">
+              {loading ? "--" : pulse.score}
+            </span>
+            <Activity size={11} className="text-fuchsia-500" />
+          </div>
+          <Link href="/community" className="text-[10px] font-black text-violet-500 transition hover:text-violet-600">
+            더 보기 →
+          </Link>
         </div>
       </div>
 
-      <div className="mt-3 flex h-7 items-center gap-1 rounded-xl border border-white/80 bg-white/45 px-3 dark:border-white/10 dark:bg-white/[0.035]">
-        {wave.map((height, index) => (
-          <motion.span
-            key={index}
-            animate={{
-              height: [Math.max(3, height * 0.55), height, Math.max(3, height * 0.72)],
-              opacity: [0.4, 1, 0.55],
-            }}
-            transition={{
-              duration: 1.05 + (index % 4) * 0.12,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: index * 0.03,
-            }}
-            className="block min-w-1 flex-1 rounded-full bg-gradient-to-t from-indigo-500 via-violet-500 to-fuchsia-400"
-            style={{ maxWidth: 10 }}
-          />
-        ))}
+      <div className="mt-3 h-1 overflow-hidden rounded-full bg-slate-200/70 dark:bg-white/10">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${loading ? 8 : Math.max(4, pulse.score)}%` }}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+          className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-400"
+        />
       </div>
 
-      <div className="mt-3 space-y-1.5">
+      <div className="mt-2 divide-y divide-slate-200/60 dark:divide-white/10">
         {loading ? (
-          <div className="rounded-2xl border border-dashed border-slate-200/80 px-4 py-5 text-center text-xs text-slate-400 dark:border-white/10">
-            신호 수신 중...
-          </div>
+          <div className="px-3 py-5 text-center text-xs text-slate-400">신호 수신 중...</div>
         ) : posts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200/80 px-4 py-5 text-center text-xs text-slate-400 dark:border-white/10">
-            아직 잡힌 Pulse가 없어요.
-          </div>
+          <div className="px-3 py-5 text-center text-xs text-slate-400">아직 잡힌 Pulse가 없어요.</div>
         ) : (
           posts.slice(0, 3).map((post) => {
             const row = (
-              <div className="group flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-white/65 dark:hover:bg-white/5">
+              <div className="group flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition hover:bg-white/60 dark:hover:bg-white/5">
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-slate-700 dark:text-slate-200">
                     {post.title || "새 게시글"}
@@ -228,13 +211,6 @@ export default function VersePulse() {
             );
           })
         )}
-      </div>
-
-      <div className="mt-3 flex items-center justify-between border-t border-slate-200/60 pt-3 text-[10px] text-slate-400 dark:border-white/10">
-        <span>{pulse.hourEvents} posts / 1h · {universes.length} universes</span>
-        <Link href="/community" className="font-black text-violet-500 transition hover:text-violet-600">
-          더 보기 →
-        </Link>
       </div>
     </motion.section>
   );
