@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Activity, ArrowUpRight, Flame, Radio, Sparkles } from "lucide-react";
+import { Activity, ArrowUpRight, Radio } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
 type PulsePost = {
@@ -17,8 +17,6 @@ type PulsePost = {
 
 type PulseUniverse = {
   slug: string | null;
-  name: string | null;
-  subscriber_count: number | null;
 };
 
 type PulseLevel = "QUIET" | "STABLE" | "ACTIVE" | "HOT" | "OVERLOAD";
@@ -63,11 +61,8 @@ export default function VersePulse() {
           .from("posts")
           .select("id,title,universe_slug,created_at,like_count,comment_count")
           .order("created_at", { ascending: false })
-          .limit(60),
-        supabase
-          .from("universes")
-          .select("slug,name,subscriber_count")
           .limit(40),
+        supabase.from("universes").select("slug").limit(40),
       ]);
 
       if (postsResult.data) setPosts(postsResult.data as PulsePost[]);
@@ -136,237 +131,111 @@ export default function VersePulse() {
     return {
       score,
       level: getPulseLevel(score),
-      fiveMinuteEvents: recentFive.length,
       hourEvents: recentHour.length,
     };
   }, [now, posts]);
 
-  const universeSignals = useMemo(() => {
-    const names = new Map(
-      universes.map((universe) => [universe.slug, universe.name || universe.slug || "Universe"])
-    );
-    const totals = new Map<string, number>();
-
-    posts.forEach((post) => {
-      if (!post.universe_slug || !post.created_at) return;
-
-      const ageHours = Math.max(
-        0,
-        (now - new Date(post.created_at).getTime()) / (60 * 60 * 1000)
-      );
-      const recency = Math.max(0, 24 - ageHours) / 24;
-      const value =
-        8 * recency + (post.like_count ?? 0) * 0.4 + (post.comment_count ?? 0) * 0.9;
-
-      totals.set(post.universe_slug, (totals.get(post.universe_slug) ?? 0) + value);
-    });
-
-    const ranked = [...totals.entries()]
-      .map(([slug, score]) => ({
-        slug,
-        name: names.get(slug) || slug,
-        score,
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
-
-    const max = Math.max(1, ...ranked.map((item) => item.score));
-
-    return ranked.map((item) => ({
-      ...item,
-      heat: clamp(Math.round((item.score / max) * 100), 8, 100),
-    }));
-  }, [now, posts, universes]);
-
   const wave = useMemo(() => {
-    const intensity = Math.max(0.18, pulse.score / 100);
-    return [0.28, 0.46, 0.88, 0.36, 0.58, 1, 0.42, 0.72, 0.32, 0.9, 0.48, 0.66].map(
-      (point) => Math.max(8, Math.round(point * intensity * 54))
+    const intensity = Math.max(0.2, pulse.score / 100);
+    return [0.34, 0.68, 0.42, 1, 0.48, 0.82, 0.38, 0.72, 0.52, 0.94, 0.44, 0.64].map(
+      (point) => Math.max(4, Math.round(point * intensity * 26))
     );
   }, [pulse.score]);
 
   return (
-    <div className="bg-slate-50 px-4 pt-5 transition-colors duration-700 dark:bg-[#03050a] md:px-6 lg:px-8">
-      <motion.section
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45 }}
-        className="relative mx-auto w-full max-w-7xl overflow-hidden rounded-[32px] border border-violet-200/70 bg-[linear-gradient(120deg,rgba(255,255,255,0.96),rgba(245,243,255,0.88),rgba(239,246,255,0.9))] shadow-[0_22px_55px_rgba(99,102,241,0.12)] backdrop-blur-2xl dark:border-violet-400/15 dark:bg-[linear-gradient(120deg,rgba(10,12,22,0.96),rgba(22,18,44,0.92),rgba(8,19,36,0.94))] dark:shadow-[0_24px_70px_rgba(76,29,149,0.2)]"
-      >
-        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-fuchsia-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-sky-400/20 blur-3xl" />
-
-        <div className="relative grid gap-5 p-5 md:p-6 lg:grid-cols-[1.15fr_0.85fr] lg:p-7">
-          <div className="flex min-w-0 flex-col justify-between gap-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em] text-violet-600 dark:text-violet-300">
-                  <Radio size={14} className="animate-pulse" />
-                  Live network
-                </div>
-                <div className="mt-2 flex items-end gap-3">
-                  <h2 className="text-2xl font-black tracking-tight text-slate-950 dark:text-white md:text-3xl">
-                    Verse Pulse
-                  </h2>
-                  <span className="mb-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-black tracking-wider text-violet-600 dark:border-violet-300/20 dark:bg-violet-300/10 dark:text-violet-200">
-                    {loading ? "CONNECTING" : pulse.level}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  지금 Drawing Verse 전체에서 뛰고 있는 활동 신호예요.
-                </p>
-              </div>
-
-              <div className="text-right">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Pulse index
-                </p>
-                <div className="mt-1 flex items-baseline justify-end gap-1">
-                  <span className="text-5xl font-black tabular-nums tracking-tighter text-slate-950 dark:text-white">
-                    {loading ? "--" : pulse.score}
-                  </span>
-                  <Activity size={18} className="text-fuchsia-500" />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex h-16 items-center gap-1 rounded-2xl border border-white/80 bg-white/65 px-4 shadow-inner dark:border-white/10 dark:bg-white/5">
-              {wave.map((height, index) => (
-                <motion.span
-                  key={index}
-                  animate={{
-                    height: [Math.max(6, height * 0.55), height, Math.max(6, height * 0.7)],
-                    opacity: [0.45, 1, 0.55],
-                  }}
-                  transition={{
-                    duration: 1.15 + (index % 4) * 0.14,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 0.035,
-                  }}
-                  className="block min-w-1 flex-1 rounded-full bg-gradient-to-t from-indigo-500 via-violet-500 to-fuchsia-400"
-                  style={{ maxWidth: 14 }}
-                />
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-3 dark:border-white/10 dark:bg-white/5">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">5 min</p>
-                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">
-                  {pulse.fiveMinuteEvents}
-                  <span className="ml-1 text-xs font-medium text-slate-400">events</span>
-                </p>
-              </div>
-              <div className="rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-3 dark:border-white/10 dark:bg-white/5">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">1 hour</p>
-                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">
-                  {pulse.hourEvents}
-                  <span className="ml-1 text-xs font-medium text-slate-400">posts</span>
-                </p>
-              </div>
-              <div className="col-span-2 rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-3 dark:border-white/10 dark:bg-white/5 sm:col-span-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Universes</p>
-                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">
-                  {universes.length}
-                  <span className="ml-1 text-xs font-medium text-slate-400">signals</span>
-                </p>
-              </div>
-            </div>
+    <motion.section
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="mt-6 border-t border-slate-200/70 pt-5 dark:border-white/10"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <Radio size={13} className="text-violet-500" />
+            <p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500 dark:text-slate-300">
+              Verse Pulse
+            </p>
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.75)]" />
           </div>
-
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <div className="rounded-3xl border border-white/80 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={15} className="text-violet-500" />
-                  <p className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                    Latest signals
-                  </p>
-                </div>
-                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.8)]" />
-              </div>
-
-              <div className="space-y-2">
-                {loading ? (
-                  <p className="py-5 text-center text-xs text-slate-400">신호 수신 중...</p>
-                ) : posts.length === 0 ? (
-                  <p className="py-5 text-center text-xs text-slate-400">아직 잡힌 신호가 없어요.</p>
-                ) : (
-                  posts.slice(0, 3).map((post) => {
-                    const content = (
-                      <div className="group flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white/70 px-3.5 py-3 transition hover:border-violet-200 hover:bg-violet-50/60 dark:border-white/5 dark:bg-white/[0.035] dark:hover:border-violet-300/15 dark:hover:bg-violet-300/[0.06]">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">
-                            {post.title || "새 게시글"}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-slate-400">
-                            {post.universe_slug || "Drawing Verse"} · {getRelativeTime(post.created_at, now)}
-                          </p>
-                        </div>
-                        <ArrowUpRight size={15} className="shrink-0 text-slate-300 transition group-hover:text-violet-500" />
-                      </div>
-                    );
-
-                    return post.universe_slug ? (
-                      <Link
-                        key={post.id}
-                        href={`/universe/${post.universe_slug}/${post.id}`}
-                      >
-                        {content}
-                      </Link>
-                    ) : (
-                      <div key={post.id}>{content}</div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-white/80 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-              <div className="mb-3 flex items-center gap-2">
-                <Flame size={15} className="text-orange-500" />
-                <p className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                  Universe signal
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {universeSignals.length === 0 ? (
-                  <p className="py-4 text-center text-xs text-slate-400">
-                    활동 데이터가 쌓이면 여기서 뜨는 유니버스를 보여줄게요.
-                  </p>
-                ) : (
-                  universeSignals.map((universe) => (
-                    <Link
-                      key={universe.slug}
-                      href={`/universe/${universe.slug}`}
-                      className="block"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="w-20 truncate text-xs font-bold text-slate-600 dark:text-slate-300">
-                          {universe.name}
-                        </span>
-                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200/80 dark:bg-white/10">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${universe.heat}%` }}
-                            transition={{ duration: 0.7, ease: "easeOut" }}
-                            className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500"
-                          />
-                        </div>
-                        <span className="w-7 text-right text-[10px] font-black tabular-nums text-slate-400">
-                          {universe.heat}
-                        </span>
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
+          <p className="mt-1 text-[11px] text-slate-400">
+            지금 Verse에서 뛰고 있는 활동 신호
+          </p>
         </div>
-      </motion.section>
-    </div>
+
+        <div className="flex shrink-0 items-center gap-2 rounded-full border border-violet-200/70 bg-white/60 px-3 py-1.5 shadow-sm backdrop-blur dark:border-violet-300/15 dark:bg-white/5">
+          <span className="text-[9px] font-black tracking-wider text-violet-500">
+            {loading ? "CONNECTING" : pulse.level}
+          </span>
+          <span className="text-sm font-black tabular-nums text-slate-900 dark:text-white">
+            {loading ? "--" : pulse.score}
+          </span>
+          <Activity size={12} className="text-fuchsia-500" />
+        </div>
+      </div>
+
+      <div className="mt-3 flex h-7 items-center gap-1 rounded-xl border border-white/80 bg-white/45 px-3 dark:border-white/10 dark:bg-white/[0.035]">
+        {wave.map((height, index) => (
+          <motion.span
+            key={index}
+            animate={{
+              height: [Math.max(3, height * 0.55), height, Math.max(3, height * 0.72)],
+              opacity: [0.4, 1, 0.55],
+            }}
+            transition={{
+              duration: 1.05 + (index % 4) * 0.12,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: index * 0.03,
+            }}
+            className="block min-w-1 flex-1 rounded-full bg-gradient-to-t from-indigo-500 via-violet-500 to-fuchsia-400"
+            style={{ maxWidth: 10 }}
+          />
+        ))}
+      </div>
+
+      <div className="mt-3 space-y-1.5">
+        {loading ? (
+          <div className="rounded-2xl border border-dashed border-slate-200/80 px-4 py-5 text-center text-xs text-slate-400 dark:border-white/10">
+            신호 수신 중...
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-200/80 px-4 py-5 text-center text-xs text-slate-400 dark:border-white/10">
+            아직 잡힌 Pulse가 없어요.
+          </div>
+        ) : (
+          posts.slice(0, 3).map((post) => {
+            const row = (
+              <div className="group flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-white/65 dark:hover:bg-white/5">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-bold text-slate-700 dark:text-slate-200">
+                    {post.title || "새 게시글"}
+                  </p>
+                  <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                    {post.universe_slug || "Drawing Verse"} · {getRelativeTime(post.created_at, now)}
+                  </p>
+                </div>
+                <ArrowUpRight size={13} className="shrink-0 text-slate-300 transition group-hover:text-violet-500" />
+              </div>
+            );
+
+            return post.universe_slug ? (
+              <Link key={post.id} href={`/universe/${post.universe_slug}/${post.id}`}>
+                {row}
+              </Link>
+            ) : (
+              <div key={post.id}>{row}</div>
+            );
+          })
+        )}
+      </div>
+
+      <div className="mt-3 flex items-center justify-between border-t border-slate-200/60 pt-3 text-[10px] text-slate-400 dark:border-white/10">
+        <span>{pulse.hourEvents} posts / 1h · {universes.length} universes</span>
+        <Link href="/community" className="font-black text-violet-500 transition hover:text-violet-600">
+          더 보기 →
+        </Link>
+      </div>
+    </motion.section>
   );
 }
