@@ -8,6 +8,7 @@ import { ArrowRight, Orbit, Pencil, Save, Sparkles, X as CloseIcon } from "lucid
 import { supabase } from "@/lib/supabase/client";
 import { squishyVariants } from "@/lib/animations";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
+import VersePulse from "@/components/Home/VersePulse";
 
 const feedTabs = ["전체", "Best", "Hot", "New", "팔로잉"];
 const noticeRankings = [
@@ -378,6 +379,7 @@ export default function HomeClient() {
                     <div className="mx-auto flex aspect-[4/3] w-full max-w-[390px] flex-col items-center justify-center rounded-[30px] border border-dashed border-slate-300/80 bg-white/45 text-center backdrop-blur dark:border-white/15 dark:bg-white/5"><Orbit size={32} className="text-violet-400"/><p className="mt-4 font-black">첫 이야기를 기다리는 중</p><p className="mt-2 text-sm text-slate-400">Verse에 첫 별이 뜨면 여기에 나타나요.</p></div>
                   )}
                   <div className="mt-7 grid grid-cols-3 gap-2"><div><p className="text-xl font-black">{trendData.posts}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">New posts</p></div><div><p className="text-xl font-black">{trendData.universes}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Universes</p></div><div><p className="text-xl font-black">{trendData.visits}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Pulse</p></div></div>
+                  <VersePulse />
                 </div>
               </div>
             </div>
