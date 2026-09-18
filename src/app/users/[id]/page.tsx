@@ -357,19 +357,31 @@ function ProfileHero({
                             />
                         )}
 
-                        <Link
-                            href={`/messages?to=${profile.id}`}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/10 px-4 py-3 text-sm font-black text-slate-900 dark:text-white transition hover:bg-white/15"
+                        <button
+                            type="button"
+                            disabled
+                            title="준비 중인 기능이에요."
+                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-400 opacity-70 dark:border-white/10 dark:bg-white/5 dark:text-white/40"
                         >
-                            <MessageCircle size={17} /> 대화
-                        </Link>
-
-                        <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/10 px-4 py-3 text-sm font-black text-slate-900 dark:text-white transition hover:bg-white/15">
-                            <Share2 size={17} /> 공유
+                            <MessageCircle size={17} /> 대화 · 준비 중
                         </button>
 
-                        <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/10 px-4 py-3 text-sm font-black text-slate-900 dark:text-white transition hover:bg-white/15">
-                            <Star size={17} /> 저장
+                        <button
+                            type="button"
+                            disabled
+                            title="준비 중인 기능이에요."
+                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-400 opacity-70 dark:border-white/10 dark:bg-white/5 dark:text-white/40"
+                        >
+                            <Share2 size={17} /> 공유 · 준비 중
+                        </button>
+
+                        <button
+                            type="button"
+                            disabled
+                            title="준비 중인 기능이에요."
+                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-400 opacity-70 dark:border-white/10 dark:bg-white/5 dark:text-white/40"
+                        >
+                            <Star size={17} /> 저장 · 준비 중
                         </button>
                     </div>
                 </aside>
