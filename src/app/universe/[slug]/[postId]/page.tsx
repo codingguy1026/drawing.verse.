@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays, Eye, Heart, MessageCircle, Share2, UserRound } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
@@ -57,6 +58,7 @@ function sortComments(comments: CommentRow[]) {
 
 export default function PostDetail({ params }: PostDetailProps) {
     const { slug, postId } = React.use(params);
+    const router = useRouter();
     const [post, setPost] = React.useState<PostRow | null>(null);
     const [relatedPosts, setRelatedPosts] = React.useState<PostRow[]>([]);
     const [comments, setComments] = React.useState<CommentRow[]>([]);
@@ -101,6 +103,10 @@ export default function PostDetail({ params }: PostDetailProps) {
             const loadedPost = data as PostRow;
             const numericPostId = loadedPost.id;
 
+            if (/^\d+$/.test(postId) && loadedPost.public_id) {
+                router.replace(`/universe/${slug}/${loadedPost.public_id}`);
+            }
+
             const [{ data: related }, { data: loadedComments }, { data: authData }] = await Promise.all([
                 supabase.from("posts").select("*").eq("universe_slug", slug).neq("id", numericPostId).order("created_at", { ascending: false }).limit(4),
                 supabase.from("comments").select("*").eq("post_id", numericPostId).order("created_at", { ascending: true }),
@@ -132,7 +138,7 @@ export default function PostDetail({ params }: PostDetailProps) {
         return () => {
             ignore = true;
         };
-    }, [slug, postId]);
+    }, [router, slug, postId]);
 
     React.useEffect(() => {
         if (!post?.id) return;
