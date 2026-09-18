@@ -232,7 +232,7 @@ export default function UniverseWritePage() {
             </div>
           </section>
 
-          <footer className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <footer className="sticky bottom-4 z-30 flex flex-col-reverse gap-3 rounded-2xl border border-white/10 bg-[#090b12]/90 p-3 shadow-2xl shadow-black/30 backdrop-blur-xl sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={() => router.push(`/universe/${slug}`)}
