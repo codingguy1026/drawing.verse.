@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase/client";
 
 type PostRow = {
     id: number;
+    public_id?: string | null;
     title: string;
     content: string | null;
     author: string | null;
@@ -73,20 +74,17 @@ export default function PostDetail({ params }: PostDetailProps) {
         async function loadPost() {
             setLoading(true);
             setErrorMessage(null);
-            const numericPostId = Number(postId);
 
-            if (!Number.isFinite(numericPostId)) {
-                setErrorMessage("잘못된 글 주소입니다.");
-                setLoading(false);
-                return;
-            }
-
-            const { data, error } = await supabase
+            let query = supabase
                 .from("posts")
                 .select("*")
-                .eq("id", numericPostId)
-                .eq("universe_slug", slug)
-                .maybeSingle();
+                .eq("universe_slug", slug);
+
+            query = /^\\d+$/.test(postId)
+                ? query.eq("id", Number(postId))
+                : query.eq("public_id", postId);
+
+            const { data, error } = await query.maybeSingle();
 
             if (ignore) return;
 
@@ -100,6 +98,9 @@ export default function PostDetail({ params }: PostDetailProps) {
                 return;
             }
 
+            const loadedPost = data as PostRow;
+            const numericPostId = loadedPost.id;
+
             const [{ data: related }, { data: loadedComments }, { data: authData }] = await Promise.all([
                 supabase.from("posts").select("*").eq("universe_slug", slug).neq("id", numericPostId).order("created_at", { ascending: false }).limit(4),
                 supabase.from("comments").select("*").eq("post_id", numericPostId).order("created_at", { ascending: true }),
@@ -107,7 +108,7 @@ export default function PostDetail({ params }: PostDetailProps) {
             ]);
 
             if (ignore) return;
-            setPost(data as PostRow);
+            setPost(loadedPost);
             setRelatedPosts((related || []) as PostRow[]);
             setComments((loadedComments || []) as CommentRow[]);
 
@@ -119,6 +120,8 @@ export default function PostDetail({ params }: PostDetailProps) {
                     .eq("user_id", authData.user.id)
                     .maybeSingle();
                 if (!ignore) setIsStarred(!!starData);
+            } else {
+                setIsStarred(false);
             }
 
             setLoading(false);
@@ -126,35 +129,50 @@ export default function PostDetail({ params }: PostDetailProps) {
 
         loadPost();
 
-        const channel = supabase
-            .channel(`post-detail-${slug}-${postId}`)
-            .on("postgres_changes", { event: "*", schema: "public", table: "posts", filter: `id=eq.${postId}` }, loadPost)
-            .on("postgres_changes", { event: "*", schema: "public", table: "comments", filter: `post_id=eq.${postId}` }, (payload) => {
-                if (ignore) return;
-                if (payload.eventType === "INSERT") {
-                    const next = payload.new as CommentRow;
-                    setComments((prev) => prev.some((item) => item.id === next.id) ? prev : sortComments([...prev, next]));
-                } else if (payload.eventType === "UPDATE") {
-                    const next = payload.new as CommentRow;
-                    setComments((prev) => sortComments(prev.map((item) => item.id === next.id ? next : item)));
-                } else if (payload.eventType === "DELETE") {
-                    const deleted = payload.old as Pick<CommentRow, "id">;
-                    setComments((prev) => prev.filter((item) => item.id !== deleted.id));
-                }
-            })
-            .subscribe();
-
         return () => {
             ignore = true;
-            supabase.removeChannel(channel);
         };
     }, [slug, postId]);
 
+    React.useEffect(() => {
+        if (!post?.id) return;
+
+        const numericPostId = post.id;
+        const channel = supabase
+            .channel(`post-detail-${slug}-${numericPostId}`)
+            .on(
+                "postgres_changes",
+                { event: "UPDATE", schema: "public", table: "posts", filter: `id=eq.${numericPostId}` },
+                (payload) => setPost(payload.new as PostRow)
+            )
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "comments", filter: `post_id=eq.${numericPostId}` },
+                (payload) => {
+                    if (payload.eventType === "INSERT") {
+                        const next = payload.new as CommentRow;
+                        setComments((prev) => prev.some((item) => item.id === next.id) ? prev : sortComments([...prev, next]));
+                    } else if (payload.eventType === "UPDATE") {
+                        const next = payload.new as CommentRow;
+                        setComments((prev) => sortComments(prev.map((item) => item.id === next.id ? next : item)));
+                    } else if (payload.eventType === "DELETE") {
+                        const deleted = payload.old as Pick<CommentRow, "id">;
+                        setComments((prev) => prev.filter((item) => item.id !== deleted.id));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [slug, post?.id]);
+
     async function submitComment(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        const numericPostId = Number(postId);
+        const numericPostId = post?.id;
         const content = commentContent.trim();
-        if (!Number.isFinite(numericPostId) || !content) return;
+        if (!numericPostId || !content) return;
 
         setCommentSaving(true);
         const { data, error } = await supabase.from("comments").insert({
@@ -183,7 +201,7 @@ export default function PostDetail({ params }: PostDetailProps) {
                 alert("로그인이 필요해!");
                 return;
             }
-            const response = await fetch(`/api/posts/${postId}/star`, { method: "POST" });
+            const response = await fetch(`/api/posts/${post.id}/star`, { method: "POST" });
             if (response.ok) {
                 const data = await response.json();
                 setIsStarred(data.isStarred);
@@ -274,7 +292,7 @@ export default function PostDetail({ params }: PostDetailProps) {
                 {relatedPosts.length > 0 && (
                     <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
                         <div className="flex items-center justify-between"><h2 className="text-lg font-bold">같은 Universe의 다른 글</h2><Link href={`/universe/${slug}`} className="text-sm text-slate-500 hover:text-slate-900 dark:hover:text-white">전체 보기</Link></div>
-                        <div className="mt-4 divide-y divide-slate-100 dark:divide-white/5">{relatedPosts.map((item) => <Link key={item.id} href={`/universe/${slug}/${item.id}`} className="block py-3 first:pt-0"><p className="font-semibold">{item.title}</p><p className="mt-1 text-xs text-slate-400">{item.category || "전체"} · {formatDate(item.created_at)}</p></Link>)}</div>
+                        <div className="mt-4 divide-y divide-slate-100 dark:divide-white/5">{relatedPosts.map((item) => <Link key={item.id} href={`/universe/${slug}/${item.public_id || item.id}`} className="block py-3 first:pt-0"><p className="font-semibold">{item.title}</p><p className="mt-1 text-xs text-slate-400">{item.category || "전체"} · {formatDate(item.created_at)}</p></Link>)}</div>
                     </section>
                 )}
             </div>
