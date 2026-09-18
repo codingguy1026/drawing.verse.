@@ -9,7 +9,7 @@ import type { SportsConfig } from "@/lib/sports/types";
 import { supabase } from "@/lib/supabase/client";
 
 type UniverseRow = { icon?: string; visibility?: string; sections?: string[]; rules?: string; id: number | string; slug: string; name: string; description: string | null; category: string | null; subscriber_count: number | null; post_count: number | null };
-type PostRow = { id: number | string; title: string; author?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; universe_slug?: string | null };
+type PostRow = { id: number | string; public_id?: string | null; title: string; author?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; universe_slug?: string | null };
 type FeedMode = "latest" | "popular";
 
 const cn = (...v: Array<string | false | null | undefined>) => v.filter(Boolean).join(" ");
@@ -99,7 +99,34 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
 function Hero({ universe, sports }: { universe: UniverseRow; sports: SportsConfig | null }) { const banner = sports?.banner ? safeAsset(sports.banner) : undefined; return <section style={sports ? { borderTop: `4px solid ${sports.color}` } : undefined} className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/85 shadow-[0_20px_55px_rgba(148,163,184,0.14)] backdrop-blur-3xl dark:border-white/10 dark:bg-white/[0.045]">{banner && <div className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-15" style={{ backgroundImage: `url(${JSON.stringify(banner)})` }}/>}<div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[38%] sm:block"><div className="absolute right-[-70px] top-[-100px] size-80 rounded-full border border-violet-300/35"/><div className="absolute right-16 top-12 size-44 rounded-full border border-sky-300/35"/><div className="absolute right-[28%] top-[38%] size-3 rounded-full bg-violet-500 shadow-[0_0_28px_rgba(139,92,246,.7)]"/><div className="absolute right-[12%] top-[48%] h-px w-56 -rotate-12 bg-gradient-to-r from-transparent via-violet-400/70 to-transparent"/></div><div className="relative px-6 py-7 sm:px-9 sm:py-9 lg:px-10"><div className="max-w-3xl"><span className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-700 ring-1 ring-violet-100 dark:bg-violet-500/10 dark:text-violet-200"><Orbit className="size-3.5"/>{universe.category ?? "Universe"}</span>{sports?.logo && <div className="mt-4"><TeamLogo team={{ id: universe.slug, name: universe.name, logo: sports.logo, color: sports.color }}/></div>}<h1 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-5xl">{universe.icon} {universe.name}</h1><p className="mt-2 text-sm text-slate-500">{universe.visibility === 'private' ? '비공개 · 소유자만 접근' : '공개 유니버스'}</p><p className="mt-3 max-w-2xl text-base leading-7 text-slate-600 dark:text-white/55">{sports?.tagline ?? universe.description ?? "이 유니버스의 이야기가 곧 시작됩니다."}</p><div className="mt-5 flex flex-wrap items-center gap-5 text-sm font-bold text-slate-500"><span className="inline-flex items-center gap-2"><Users className="size-4"/> 멤버 {compactNumber(universe.subscriber_count ?? 0)}</span><span className="inline-flex items-center gap-2"><BookOpen className="size-4"/> 게시글 {compactNumber(universe.post_count ?? 0)}</span></div></div><Link href={`/universe/${encodeURIComponent(universe.slug)}/write`} className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white shadow-[0_12px_28px_rgba(124,58,237,.22)] sm:absolute sm:bottom-8 sm:right-9 sm:mt-0"><PenLine className="size-4"/> 글쓰기</Link></div></section>; }
 
 function EmptyFeed({ slug }: { slug: string }) { return <div className="rounded-[1.6rem] border border-dashed border-slate-300 px-6 py-8 text-center dark:border-white/15"><div className="mx-auto flex size-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-500 dark:bg-violet-500/10"><MessageCircle className="size-5"/></div><p className="mt-3 text-base font-black">아직 게시글이 없어요</p><p className="mt-1.5 text-sm text-slate-500">이 유니버스의 첫 이야기를 남겨보세요.</p><Link href={`/universe/${encodeURIComponent(slug)}/write`} className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-black text-white dark:bg-white dark:text-slate-950"><PenLine className="size-4"/> 첫 글 작성하기</Link></div>; }
-function PostRowItem({ post, last }: { post: PostRow; last: boolean }) { return <article className={cn("group py-5", !last && "border-b border-slate-200 dark:border-white/10")}><div className="flex items-start justify-between gap-5"><div className="min-w-0"><div className="flex gap-2 text-xs font-bold text-violet-500"><span>{post.category ?? "이야기"}</span><span>·</span><span className="text-slate-400">{relativeDate(post.created_at)}</span></div><h3 className="mt-2 truncate text-lg font-black group-hover:text-violet-600">{post.title}</h3><p className="mt-2 text-xs text-slate-400">{post.author ?? "익명"}</p></div><div className="flex gap-3 text-xs font-bold text-slate-400"><span className="inline-flex items-center gap-1"><Flame className="size-3.5"/>{post.like_count ?? 0}</span><span className="inline-flex items-center gap-1"><MessageCircle className="size-3.5"/>{post.comment_count ?? 0}</span></div></div></article>; }
+function PostRowItem({ post, last }: { post: PostRow; last: boolean }) {
+  const href = post.universe_slug
+    ? `/universe/${post.universe_slug}/${post.public_id || post.id}`
+    : "#";
+
+  return (
+    <Link
+      href={href}
+      className={cn("group block py-5", !last && "border-b border-slate-200 dark:border-white/10")}
+    >
+      <div className="flex items-start justify-between gap-5">
+        <div className="min-w-0">
+          <div className="flex gap-2 text-xs font-bold text-violet-500">
+            <span>{post.category ?? "이야기"}</span>
+            <span>·</span>
+            <span className="text-slate-400">{relativeDate(post.created_at)}</span>
+          </div>
+          <h3 className="mt-2 truncate text-lg font-black group-hover:text-violet-600">{post.title}</h3>
+          <p className="mt-2 text-xs text-slate-400">{post.author ?? "익명"}</p>
+        </div>
+        <div className="flex gap-3 text-xs font-bold text-slate-400">
+          <span className="inline-flex items-center gap-1"><Flame className="size-3.5"/>{post.like_count ?? 0}</span>
+          <span className="inline-flex items-center gap-1"><MessageCircle className="size-3.5"/>{post.comment_count ?? 0}</span>
+        </div>
+      </div>
+    </Link>
+  );
+}
 function InfoPanel({ universe, posts }: { universe: UniverseRow; posts: PostRow[] }) { return <section className="rounded-[1.7rem] border border-slate-200 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.04]"><h3 className="flex items-center gap-2 text-sm font-black"><Sparkles className="size-4 text-violet-500"/> 유니버스 정보</h3><dl className="mt-5 space-y-3 text-sm"><div className="flex justify-between"><dt className="text-slate-500">카테고리</dt><dd className="font-black">{universe.category ?? "기타"}</dd></div><div className="flex justify-between"><dt className="text-slate-500">멤버</dt><dd className="font-black">{compactNumber(universe.subscriber_count ?? 0)}</dd></div><div className="flex justify-between"><dt className="text-slate-500">게시글</dt><dd className="font-black">{compactNumber(Math.max(universe.post_count ?? 0, posts.length))}</dd></div></dl></section>; }
 function RulesPanel() { return <section className="rounded-[1.7rem] border border-slate-200 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.04]"><h3 className="flex items-center gap-2 text-sm font-black"><ShieldCheck className="size-4 text-violet-500"/> 기본 규칙</h3><ul className="mt-4 space-y-3 text-sm leading-6 text-slate-600 dark:text-white/50"><li>• 주제에 맞는 글을 올려주세요.</li><li>• 다른 창작자를 존중해주세요.</li><li>• 출처와 저작권을 지켜주세요.</li></ul></section>; }
 function UniverseSkeleton() { return <main className="min-h-screen bg-slate-50 px-4 pb-24 pt-12 dark:bg-[#03050a]"><div className="mx-auto max-w-7xl animate-pulse"><div className="h-5 w-28 rounded-full bg-slate-200"/><div className="mt-5 h-56 rounded-[2rem] bg-white dark:bg-white/5"/><div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]"><div className="h-72 rounded-[2rem] bg-white"/><div className="h-52 rounded-[2rem] bg-white"/></div></div></main>; }
