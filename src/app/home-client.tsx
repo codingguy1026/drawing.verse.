@@ -10,7 +10,8 @@ import { squishyVariants } from "@/lib/animations";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import VersePulse from "@/components/Home/VersePulse";
 
-const feedTabs = ["전체", "Best", "Hot", "New", "팔로잉"];
+const feedTabs = ["전체", "Best", "Hot"] as const;
+type FeedTab = (typeof feedTabs)[number];
 const noticeRankings = [
   "[공지] 홈 화면 리워크 의견 모아보기",
   "[이벤트] 이번 주 인기 유니버스 선정 중",
@@ -34,6 +35,9 @@ type HomePost = {
   stats: string;
   universe: string;
   type: string;
+  createdAt: string;
+  likeCount: number;
+  commentCount: number;
 };
 
 type HomeUniverse = {
@@ -156,8 +160,9 @@ export default function HomeClient() {
   const { user, loading: userLoading } = useSupabaseUser();
   const [posts, setPosts] = useState<HomePost[]>([]);
   const [universes, setUniverses] = useState<HomeUniverse[]>([]);
-  const [trendData, setTrendData] = useState({ visits: 0, posts: 0, universes: 0 });
+  const [trendData, setTrendData] = useState({ artworks: 0, posts: 0, universes: 0 });
   const [loading, setLoading] = useState(true);
+  const [activeFeedTab, setActiveFeedTab] = useState<FeedTab>("전체");
 
   const [isEditing, setIsEditing] = useState(false);
   const [heroTitle, setHeroTitle] = useState(defaultHomeConfig.heroTitle);
@@ -218,8 +223,8 @@ export default function HomeClient() {
 
       try {
         const [postsResult, universesResult, galleryResult] = await Promise.all([
-          supabase.from("posts").select("*").order("created_at", { ascending: false }).limit(10),
-          supabase.from("universes").select("*").limit(4),
+          supabase.from("posts").select("*", { count: "exact" }).order("created_at", { ascending: false }).limit(10),
+          supabase.from("universes").select("*", { count: "exact" }).limit(4),
           supabase.from("gallery").select("id", { count: "exact", head: true }),
         ]);
 
@@ -233,6 +238,9 @@ export default function HomeClient() {
           stats: `좋아요 ${item.like_count || 0} · 댓글 ${item.comment_count || 0}`,
           universe: item.universe_slug || "unknown",
           type: item.category || "전체",
+          createdAt: item.created_at,
+          likeCount: item.like_count ?? item.likes_count ?? 0,
+          commentCount: item.comment_count ?? item.comments_count ?? 0,
         }));
 
         const mappedUniverses: HomeUniverse[] = (universesResult.data ?? []).map((item) => ({
@@ -246,9 +254,9 @@ export default function HomeClient() {
         setPosts(mappedPosts);
         setUniverses(mappedUniverses);
         setTrendData({
-          visits: (galleryResult.count || 0) * 123 + 456,
-          posts: mappedPosts.length,
-          universes: mappedUniverses.length,
+          artworks: galleryResult.count || 0,
+          posts: postsResult.count || 0,
+          universes: universesResult.count || 0,
         });
       } catch (error) {
         console.error("Error loading home data:", error);
@@ -318,6 +326,25 @@ export default function HomeClient() {
 
   const primaryPost = posts[0];
   const featuredPosts = posts.slice(0, 3);
+  const filteredPosts = React.useMemo(() => {
+    if (activeFeedTab === "전체") return posts;
+
+    const ranked = [...posts];
+
+    if (activeFeedTab === "Best") {
+      return ranked.sort(
+        (a, b) =>
+          b.likeCount + b.commentCount - (a.likeCount + a.commentCount) ||
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    }
+
+    return ranked.sort(
+      (a, b) =>
+        b.commentCount * 2 + b.likeCount - (a.commentCount * 2 + a.likeCount) ||
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [activeFeedTab, posts]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-slate-100">
@@ -378,7 +405,7 @@ export default function HomeClient() {
                   ) : (
                     <div className="mx-auto flex aspect-[4/3] w-full max-w-[390px] flex-col items-center justify-center rounded-[30px] border border-dashed border-slate-300/80 bg-white/45 text-center backdrop-blur dark:border-white/15 dark:bg-white/5"><Orbit size={32} className="text-violet-400"/><p className="mt-4 font-black">첫 이야기를 기다리는 중</p><p className="mt-2 text-sm text-slate-400">Verse에 첫 별이 뜨면 여기에 나타나요.</p></div>
                   )}
-                  <div className="mt-7 grid grid-cols-3 gap-2"><div><p className="text-xl font-black">{trendData.posts}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">New posts</p></div><div><p className="text-xl font-black">{trendData.universes}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Universes</p></div><div><p className="text-xl font-black">{trendData.visits}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Pulse</p></div></div>
+                  <div className="mt-7 grid grid-cols-3 gap-2"><div><p className="text-xl font-black">{trendData.posts}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Posts</p></div><div><p className="text-xl font-black">{trendData.universes}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Universes</p></div><div><p className="text-xl font-black">{trendData.artworks}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Artworks</p></div></div>
                   <VersePulse />
                 </div>
               </div>
@@ -408,12 +435,12 @@ export default function HomeClient() {
                 <div className="grid gap-4 sm:grid-cols-2">{featuredPosts.slice(0,2).map((post,index)=><Link key={post.id} href={`/universe/${post.universe}/${post.id}`} className={cn("group flex min-h-[230px] flex-col justify-end rounded-[26px] p-6 transition hover:-translate-y-1", index===0 ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "border border-slate-200 bg-white/70 dark:border-white/10 dark:bg-white/5")}><span className={cn("mb-auto text-[10px] font-black uppercase tracking-[.18em]", index===0?"text-violet-300 dark:text-violet-600":"text-violet-500")}>{post.type} · {post.universe}</span><h3 className="line-clamp-3 text-2xl font-black leading-tight">{post.title}</h3><p className={cn("mt-4 text-xs",index===0?"text-white/50 dark:text-slate-500":"text-slate-400")}>{post.meta}</p></Link>)}</div>
               )}
             </div>
-            <div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Live ranking</p><h2 className="mt-1 text-3xl font-black">지금 뜨는 것</h2><div className="mt-7 divide-y divide-slate-200 dark:divide-white/10">{notices.map((notice,index)=><div key={`${notice}-${index}`} className="group flex items-start gap-4 py-4"><span className="text-2xl font-black text-slate-200 dark:text-white/15">0{index+1}</span>{isEditing?<input value={notice} onChange={(e)=>{const next=[...notices];next[index]=e.target.value;setNotices(next)}} className="min-w-0 flex-1 bg-transparent pt-1 text-sm font-bold outline-none"/>:<p className="min-w-0 flex-1 pt-1 text-sm font-bold leading-6 text-slate-700 dark:text-slate-300">{notice}</p>}{isEditing&&<button onClick={()=>setNotices(notices.filter((_,i)=>i!==index))} className="text-rose-500"><CloseIcon size={14}/></button>}</div>)}</div></div>
+            <div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Drawing Verse news</p><h2 className="mt-1 text-3xl font-black">공지 & 이벤트</h2><div className="mt-7 divide-y divide-slate-200 dark:divide-white/10">{notices.map((notice,index)=><div key={`${notice}-${index}`} className="group flex items-start gap-4 py-4"><span className="text-2xl font-black text-slate-200 dark:text-white/15">0{index+1}</span>{isEditing?<input value={notice} onChange={(e)=>{const next=[...notices];next[index]=e.target.value;setNotices(next)}} className="min-w-0 flex-1 bg-transparent pt-1 text-sm font-bold outline-none"/>:<p className="min-w-0 flex-1 pt-1 text-sm font-bold leading-6 text-slate-700 dark:text-slate-300">{notice}</p>}{isEditing&&<button onClick={()=>setNotices(notices.filter((_,i)=>i!==index))} className="text-rose-500"><CloseIcon size={14}/></button>}</div>)}</div></div>
           </section>
 
           <section className="py-12">
-            <div className="mb-7 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Fresh feed</p><h2 className="mt-1 text-3xl font-black">최근 올라온 글</h2></div><div className="flex gap-2">{feedTabs.slice(0,3).map((tab,index)=><button key={tab} className={cn("rounded-full px-4 py-2 text-xs font-black",index===0?"bg-slate-950 text-white dark:bg-white dark:text-slate-950":"text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5")}>{tab}</button>)}</div></div>
-            <div className="border-t border-slate-200 dark:border-white/10">{loading?<p className="py-16 text-center text-sm text-slate-400">글 목록 불러오는 중...</p>:posts.length===0?<div className="py-11 text-center"><p className="text-sm font-bold text-slate-500 dark:text-slate-300">아직 최근 글이 없어요.</p><p className="mt-1 text-xs text-slate-400">첫 이야기가 올라오면 이곳에서 바로 만날 수 있어요.</p><Link href="/community" className="mt-3 inline-flex items-center gap-1 text-xs font-black text-violet-500 hover:text-violet-600">첫 글 남기기 <ArrowRight size={12}/></Link></div>:posts.slice(0,7).map((post,index)=><motion.div key={post.id} whileHover={{x:6}}><Link href={`/universe/${post.universe}/${post.id}`} className="grid gap-2 border-b border-slate-200 py-5 sm:grid-cols-[70px_minmax(0,1fr)_160px] sm:items-center dark:border-white/10"><span className="text-xs font-black text-violet-500">{post.type}</span><h3 className="truncate text-base font-bold">{post.title}</h3><span className="truncate text-xs text-slate-400 sm:text-right">{post.universe} · {post.stats}</span></Link></motion.div>)}</div>
+            <div className="mb-7 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Fresh feed</p><h2 className="mt-1 text-3xl font-black">최근 올라온 글</h2></div><div className="flex gap-2">{feedTabs.map((tab)=><button key={tab} type="button" onClick={()=>setActiveFeedTab(tab)} aria-pressed={activeFeedTab===tab} className={cn("rounded-full px-4 py-2 text-xs font-black transition",activeFeedTab===tab?"bg-slate-950 text-white dark:bg-white dark:text-slate-950":"text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5")}>{tab}</button>)}</div></div>
+            <div className="border-t border-slate-200 dark:border-white/10">{loading?<p className="py-16 text-center text-sm text-slate-400">글 목록 불러오는 중...</p>:posts.length===0?<div className="py-11 text-center"><p className="text-sm font-bold text-slate-500 dark:text-slate-300">아직 최근 글이 없어요.</p><p className="mt-1 text-xs text-slate-400">첫 이야기가 올라오면 이곳에서 바로 만날 수 있어요.</p><Link href="/community" className="mt-3 inline-flex items-center gap-1 text-xs font-black text-violet-500 hover:text-violet-600">첫 글 남기기 <ArrowRight size={12}/></Link></div>:filteredPosts.slice(0,7).map((post,index)=><motion.div key={post.id} whileHover={{x:6}}><Link href={`/universe/${post.universe}/${post.id}`} className="grid gap-2 border-b border-slate-200 py-5 sm:grid-cols-[70px_minmax(0,1fr)_160px] sm:items-center dark:border-white/10"><span className="text-xs font-black text-violet-500">{post.type}</span><h3 className="truncate text-base font-bold">{post.title}</h3><span className="truncate text-xs text-slate-400 sm:text-right">{post.universe} · {post.stats}</span></Link></motion.div>)}</div>
           </section>
 
           <section className="relative isolate overflow-hidden rounded-[34px] bg-[linear-gradient(115deg,#4338ca_0%,#7c3aed_48%,#0284c7_120%)] px-7 py-12 text-white shadow-[0_24px_60px_rgba(79,70,229,.22)] md:px-12 md:py-16"><div className="pointer-events-none absolute -right-20 -top-28 h-80 w-80 rounded-full border-[42px] border-white/10"/><div className="pointer-events-none absolute bottom-[-90px] right-[28%] h-44 w-44 rounded-full bg-white/10"/><div className="relative z-10 max-w-2xl"><span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-black ring-1 ring-white/20">Create your universe</span><h2 className="mt-5 text-3xl font-black md:text-4xl">너의 세계를 열어봐 🌌</h2><p className="mt-3 max-w-xl text-sm leading-7 text-white/75 md:text-base">상상하던 설정, 그림, 캐릭터와 이야기를 하나의 우주로 묶어보세요. 아이디어 하나가 새로운 Verse의 시작이 됩니다.</p><Link href="/universe/new" className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-black !text-slate-950 shadow-lg transition hover:-translate-y-0.5">Universe 만들기 <ArrowRight size={15}/></Link></div></section>
