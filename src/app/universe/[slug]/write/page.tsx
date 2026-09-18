@@ -309,7 +309,7 @@ export default function UniverseWritePage() {
       );
 
       router.push(
-        `/universe/${encodeURIComponent(universeSlug)}/${post.id}`
+        `/universe/${encodeURIComponent(universeSlug)}/${post.public_id || post.id}`
       );
     } catch (error: any) {
       console.error("Post creation error:", error);
