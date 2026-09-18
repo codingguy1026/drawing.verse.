@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 
 type PulsePost = {
   id: string | number;
+  public_id: string | null;
   title: string | null;
   universe_slug: string | null;
   created_at: string | null;
@@ -59,7 +60,7 @@ export default function VersePulse() {
       const [postsResult, universesResult] = await Promise.all([
         supabase
           .from("posts")
-          .select("id,title,universe_slug,created_at,like_count,comment_count")
+          .select("id,public_id,title,universe_slug,created_at,like_count,comment_count")
           .order("created_at", { ascending: false })
           .limit(40),
         supabase.from("universes").select("slug").limit(40),
@@ -203,7 +204,7 @@ export default function VersePulse() {
             );
 
             return post.universe_slug ? (
-              <Link key={post.id} href={`/universe/${post.universe_slug}/${post.id}`}>
+              <Link key={post.id} href={`/universe/${post.universe_slug}/${post.public_id || post.id}`}>
                 {row}
               </Link>
             ) : (
