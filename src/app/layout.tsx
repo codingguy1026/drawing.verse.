@@ -13,6 +13,7 @@ import { FramerMotionProvider } from "@/components/Providers/FramerMotionProvide
 import AchievementToast from "@/components/Achievements/AchievementToast";
 import ProfileAchievementsMount from "@/components/Achievements/ProfileAchievementsMount";
 import NotificationCenter from "@/components/Notifications/NotificationCenter";
+import WeatherAtmosphereSync from "@/components/themes/WeatherAtmosphereSync";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -58,6 +59,9 @@ export default function RootLayout({
 
             {/* ✅ New DV Nav */}
             <DVNav />
+
+            {/* ✅ 기상청 기반 자동 날씨 동기화 */}
+            <WeatherAtmosphereSync />
 
             {/* ✅ Notification center */}
             <NotificationCenter />
