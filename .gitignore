@@ -21,3 +21,6 @@ pnpm-debug.log*
 
 # OS
 .DS_Store
+
+# TypeScript build info
+*.tsbuildinfo
