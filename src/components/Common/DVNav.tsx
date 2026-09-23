@@ -16,9 +16,11 @@ import {
   Images,
   Link2,
   LogIn,
+  LogOut,
   Menu,
   MessageCircle,
   PenLine,
+  Pencil,
   Plus,
   Rocket,
   Search,
@@ -171,6 +173,20 @@ export default function DVNav({
     user?.user_metadata?.avatar_url;
   const profileHref =
     propProfileHref ?? (user ? "/users/" + user.id : "/login");
+
+  const handleLogout = async () => {
+    setProfileOpen(false);
+
+    try {
+      const { error } = await supabase.auth.signOut();
+
+      if (error) throw error;
+
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Navbar logout failed:", error);
+    }
+  };
 
   const activeItem =
     navItems.find((item) => isActivePath(pathname, item.href)) ?? navItems[0];
@@ -383,7 +399,14 @@ export default function DVNav({
                   aria-label="User menu"
                   aria-expanded={profileOpen}
                   onClick={() => setProfileOpen((value) => !value)}
-                  className="flex h-10 items-center gap-2 rounded-xl border border-slate-200/70 bg-white/60 px-1.5 pr-2.5 transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 dark:border-white/10 dark:bg-white/[0.05] dark:hover:bg-white/[0.09]"
+                  className={cn(
+                    "group/profile flex h-10 items-center gap-2 rounded-xl border px-1.5 pr-2.5 transition-all",
+                    "border-[#b89cff]/35 bg-[linear-gradient(135deg,rgba(255,107,114,.07),rgba(184,156,255,.10))]",
+                    "hover:-translate-y-0.5 hover:border-[#ff7a7a]/40 hover:shadow-[0_8px_24px_rgba(128,96,241,.14)]",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60",
+                    "dark:border-white/10 dark:bg-white/[0.05] dark:hover:bg-white/[0.09]",
+                    profileOpen && "border-[#b89cff]/60 shadow-[0_8px_28px_rgba(128,96,241,.16)]"
+                  )}
                 >
                   {avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -410,47 +433,107 @@ export default function DVNav({
                 <AnimatePresence>
                   {profileOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                      transition={{ duration: 0.14 }}
-                      className="absolute right-0 top-[48px] z-50 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl dark:border-white/10 dark:bg-[#0b0d16]"
+                      transition={{ duration: 0.16, ease: "easeOut" }}
+                      className="absolute right-0 top-[50px] z-50 w-[min(19rem,calc(100vw-1.5rem))] overflow-hidden rounded-[24px] border border-[#b89cff]/25 bg-white/95 p-2.5 shadow-[0_24px_70px_rgba(44,31,80,.18)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0a0c15]/95 dark:shadow-[0_28px_80px_rgba(0,0,0,.55)]"
                     >
-                      <div className="border-b border-slate-100 px-3 py-2.5 dark:border-white/[0.07]">
-                        <p className="truncate text-sm font-black text-slate-900 dark:text-white">
-                          {userName}
-                        </p>
-                        <p className="truncate text-[11px] text-slate-400">
-                          {user?.email}
-                        </p>
+                      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[24px]">
+                        <div className="absolute -left-12 -top-16 h-32 w-32 rounded-full bg-[#ff6b72]/10 blur-3xl" />
+                        <div className="absolute -right-10 -top-16 h-36 w-36 rounded-full bg-[#b89cff]/15 blur-3xl" />
+                        <div className="absolute inset-x-8 top-0 h-px bg-[linear-gradient(90deg,transparent,#ff7a7a,#b89cff,transparent)] opacity-75" />
                       </div>
 
-                      <Link
-                        href={profileHref}
-                        onClick={() => setProfileOpen(false)}
-                        className="mt-1 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-white/70 dark:hover:bg-white/[0.07]"
-                      >
-                        <UserRound size={15} />
-                        Profile
-                      </Link>
+                      <div className="relative">
+                        <div className="flex items-center gap-3 rounded-[18px] border border-slate-200/70 bg-slate-50/75 p-3 dark:border-white/[0.07] dark:bg-white/[0.04]">
+                          <div className="relative h-11 w-11 shrink-0">
+                            <div className="absolute -inset-1 rounded-[15px] bg-[linear-gradient(135deg,rgba(255,107,114,.35),rgba(184,156,255,.42))] blur-[5px] opacity-50" />
+                            {avatarUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={avatarUrl}
+                                alt={userName}
+                                className="relative h-11 w-11 rounded-[14px] border border-white/70 object-cover shadow-sm dark:border-white/10"
+                              />
+                            ) : (
+                              <div className="relative grid h-11 w-11 place-items-center rounded-[14px] border border-violet-200/60 bg-[linear-gradient(135deg,#fff1f2,#ede9fe)] text-violet-600 dark:border-white/10 dark:bg-[linear-gradient(135deg,#291625,#211b3f)] dark:text-violet-200">
+                                <UserRound size={20} />
+                              </div>
+                            )}
+                          </div>
 
-                      <Link
-                        href="/universe/write"
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-white/70 dark:hover:bg-white/[0.07]"
-                      >
-                        <PenLine size={15} />
-                        Write
-                      </Link>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <p className="truncate text-[14px] font-black tracking-tight text-slate-950 dark:text-white">
+                                {userName}
+                              </p>
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,.65)]" />
+                            </div>
+                            <p className="mt-0.5 truncate text-[11px] font-medium text-slate-400 dark:text-white/35">
+                              {user?.email}
+                            </p>
+                          </div>
+                        </div>
 
-                      <Link
-                        href="/universe/create"
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-white/70 dark:hover:bg-white/[0.07]"
-                      >
-                        <Plus size={15} />
-                        Create Universe
-                      </Link>
+                        <div className="mt-2 grid grid-cols-2 gap-1.5">
+                          <Link
+                            href={profileHref}
+                            onClick={() => setProfileOpen(false)}
+                            className="group/menu flex min-h-[66px] flex-col justify-between rounded-[16px] border border-slate-200/70 bg-white/65 p-3 transition hover:-translate-y-0.5 hover:border-[#b89cff]/35 hover:bg-violet-50/55 hover:shadow-[0_8px_20px_rgba(128,96,241,.08)] dark:border-white/[0.07] dark:bg-white/[0.035] dark:hover:bg-white/[0.07]"
+                          >
+                            <UserRound size={17} className="text-violet-500" />
+                            <span className="text-[12px] font-black text-slate-700 dark:text-white/80">
+                              Profile
+                            </span>
+                          </Link>
+
+                          <Link
+                            href={user ? "/users/" + user.id + "/edit" : profileHref}
+                            onClick={() => setProfileOpen(false)}
+                            className="group/menu flex min-h-[66px] flex-col justify-between rounded-[16px] border border-slate-200/70 bg-white/65 p-3 transition hover:-translate-y-0.5 hover:border-[#ff7a7a]/35 hover:bg-rose-50/55 hover:shadow-[0_8px_20px_rgba(255,107,114,.08)] dark:border-white/[0.07] dark:bg-white/[0.035] dark:hover:bg-white/[0.07]"
+                          >
+                            <Pencil size={17} className="text-[#ef5d68]" />
+                            <span className="text-[12px] font-black text-slate-700 dark:text-white/80">
+                              Edit profile
+                            </span>
+                          </Link>
+
+                          <Link
+                            href="/universe/write"
+                            onClick={() => setProfileOpen(false)}
+                            className="group/menu flex items-center gap-2 rounded-[14px] px-3 py-2.5 text-[12px] font-black text-slate-600 transition hover:bg-slate-100/80 dark:text-white/65 dark:hover:bg-white/[0.06]"
+                          >
+                            <PenLine size={15} className="text-slate-400" />
+                            Write
+                          </Link>
+
+                          <Link
+                            href="/universe/create"
+                            onClick={() => setProfileOpen(false)}
+                            className="group/menu flex items-center gap-2 rounded-[14px] px-3 py-2.5 text-[12px] font-black text-slate-600 transition hover:bg-slate-100/80 dark:text-white/65 dark:hover:bg-white/[0.06]"
+                          >
+                            <Rocket size={15} className="text-violet-400" />
+                            Create
+                          </Link>
+                        </div>
+
+                        <div className="my-2 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-white/10" />
+
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="flex w-full items-center justify-between rounded-[14px] px-3 py-2.5 text-left transition hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                        >
+                          <span className="flex items-center gap-2 text-[12px] font-black text-slate-500 dark:text-white/55">
+                            <LogOut size={15} />
+                            Log out
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-300 dark:text-white/20">
+                            End session
+                          </span>
+                        </button>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
