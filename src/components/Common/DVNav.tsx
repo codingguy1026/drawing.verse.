@@ -18,14 +18,12 @@ import {
   LogIn,
   Menu,
   MessageCircle,
-  Orbit,
   PenLine,
   Plus,
   Rocket,
   Search,
   Sparkles,
   UserRound,
-  WandSparkles,
   X,
 } from "lucide-react";
 
@@ -216,25 +214,26 @@ export default function DVNav({
               aria-label="Drawing Verse Home"
               className="group flex items-center gap-3 rounded-2xl px-2 py-1.5 transition hover:bg-violet-500/[0.05] dark:hover:bg-white/[0.05]"
             >
-              <div className="dv-logo-orbit relative grid h-11 w-11 shrink-0 place-items-center">
-                <div className="absolute inset-[2px] rounded-full border border-violet-400/30 dark:border-violet-300/25" />
-                <div className="absolute inset-[7px] rounded-full bg-[radial-gradient(circle_at_32%_28%,#ffffff_0%,#ddd6fe_22%,#8b5cf6_54%,#312e81_100%)] shadow-[0_0_22px_rgba(139,92,246,.38)] dark:shadow-[0_0_28px_rgba(139,92,246,.52)]" />
-                <div className="absolute left-0 top-1/2 h-[22px] w-[44px] -translate-y-1/2 -rotate-[18deg] rounded-[50%] border border-cyan-400/55" />
-                <span className="dv-orbit-dot absolute right-[1px] top-[9px] h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_9px_rgba(103,232,249,.95)]" />
-                <Orbit size={18} className="relative z-10 text-white drop-shadow-[0_0_6px_rgba(255,255,255,.9)]" />
+              <div className="relative h-[52px] w-[58px] shrink-0">
+                <div className="pointer-events-none absolute inset-1 rounded-full bg-[radial-gradient(circle,rgba(255,91,91,.18),rgba(184,156,255,.18)_48%,transparent_72%)] blur-md transition-opacity duration-300 group-hover:opacity-100" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/branding/dverse-logo-mark.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="relative h-full w-full object-contain drop-shadow-[0_6px_12px_rgba(230,61,85,.14)] transition duration-300 group-hover:-translate-y-0.5 group-hover:drop-shadow-[0_0_14px_rgba(184,156,255,.42)]"
+                />
               </div>
 
               <div className="hidden leading-tight sm:block">
                 <div className="flex items-center gap-1.5">
-                  <p className="whitespace-nowrap bg-gradient-to-r from-slate-950 via-violet-700 to-indigo-600 bg-clip-text text-[15px] font-black tracking-[-0.035em] text-transparent dark:from-white dark:via-violet-200 dark:to-cyan-200">
+                  <p className="whitespace-nowrap bg-[linear-gradient(92deg,#ef4c5f_0%,#ff5b5b_34%,#a883ff_72%,#8060f1_100%)] bg-clip-text text-[15px] font-black tracking-[-0.025em] text-transparent dark:bg-[linear-gradient(92deg,#ff9292_0%,#ff6b72_34%,#d7c6ff_68%,#b89cff_100%)]">
                     Drawing Verse
                   </p>
-                  <span className="hidden rounded-full border border-violet-300/40 bg-violet-500/[0.08] px-1.5 py-0.5 text-[7px] font-black uppercase tracking-[.16em] text-violet-600 xl:inline dark:border-violet-300/15 dark:text-violet-200">
-                    LIVE
-                  </span>
+                  <span className="hidden text-[8px] text-violet-400 xl:inline">✦</span>
                 </div>
-                <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-white/35">
-                  Interverse Network
+                <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.22em] text-slate-400 dark:text-white/40">
+                  Verse Navigator
                 </p>
               </div>
             </Link>
