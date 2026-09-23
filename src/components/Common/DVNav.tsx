@@ -204,7 +204,7 @@ export default function DVNav({
         className={cn(
           "dv-verse-dock relative mx-auto max-w-[1440px] overflow-visible rounded-[26px] border backdrop-blur-2xl",
           "transition-[background-color,border-color,box-shadow,transform] duration-300",
-          "border-slate-200/70 bg-white/[0.88] dark:border-white/[0.12] dark:bg-[#060811]/[0.88]",
+          "border-slate-200/70 bg-white/[0.78] dark:border-white/[0.12] dark:bg-[#060811]/[0.74]",
           scrolled
             ? "shadow-[0_20px_64px_rgba(15,23,42,0.16)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.58)]"
             : "shadow-[0_12px_42px_rgba(76,29,149,0.10)] dark:shadow-[0_16px_58px_rgba(0,0,0,0.36)]"
