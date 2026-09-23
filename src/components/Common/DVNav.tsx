@@ -49,11 +49,11 @@ type DVNavProps = {
 };
 
 const navItems: NavItem[] = [
-  { label: "Home", href: "/", icon: Home, accent: "#8b5cf6" },
-  { label: "Universe", href: "/universe", icon: Sparkles, accent: "#38bdf8" },
-  { label: "Wormhole", href: "/wormhole", icon: Link2, accent: "#c084fc" },
-  { label: "Community", href: "/community", icon: MessageCircle, accent: "#fb7185" },
-  { label: "Gallery", href: "/gallery", icon: Images, accent: "#facc15" },
+  { label: "Home", href: "/", icon: Home, accent: "#ff6b72" },
+  { label: "Universe", href: "/universe", icon: Sparkles, accent: "#b89cff" },
+  { label: "Wormhole", href: "/wormhole", icon: Link2, accent: "#8b5cf6" },
+  { label: "Community", href: "/community", icon: MessageCircle, accent: "#f472b6" },
+  { label: "Gallery", href: "/gallery", icon: Images, accent: "#a78bfa" },
 ];
 
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -202,7 +202,7 @@ export default function DVNav({
           <div className="absolute bottom-0 right-[9%] h-px w-[18%] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
         </div>
 
-        <div className="flex h-[68px] items-center gap-2 px-2.5 sm:gap-3 sm:px-4">
+        <div className="flex h-[74px] items-center gap-2 px-2.5 sm:gap-3 sm:px-4">
           <motion.div
             variants={squishyVariants}
             whileHover="hover"
@@ -240,9 +240,11 @@ export default function DVNav({
           </motion.div>
 
           <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
-            <div className="relative flex items-center gap-0.5 rounded-[18px] border border-slate-200/60 bg-slate-100/45 p-1 shadow-inner shadow-white/70 xl:gap-1 dark:border-white/[0.07] dark:bg-black/20 dark:shadow-black/30">
-              <div className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent dark:via-white/10" />
-              {navItems.map((item) => {
+            <div className="dv-orbit-nav relative flex h-[56px] items-center px-3">
+              <div className="dv-orbit-track pointer-events-none absolute left-8 right-8 top-[21px] h-px" />
+              <div className="dv-orbit-track-glow pointer-events-none absolute left-8 right-8 top-[21px] h-px" />
+
+              {navItems.map((item, index) => {
                 const active = isActivePath(pathname, item.href);
                 const Icon = item.icon;
 
@@ -252,47 +254,72 @@ export default function DVNav({
                     variants={squishyVariants}
                     whileHover="hover"
                     whileTap="tap"
+                    className="relative z-10"
                   >
                     <Link
                       href={item.href}
                       aria-current={active ? "page" : undefined}
-                      className={cn(
-                        "relative flex h-10 items-center gap-1.5 rounded-xl px-2.5 text-[12px] font-bold transition-all xl:gap-2 xl:px-3 xl:text-[13px]",
-                        active
-                          ? "text-slate-950 dark:text-white"
-                          : "text-slate-500 hover:bg-white/70 hover:text-slate-950 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white"
-                      )}
-                      style={
-                        active
-                          ? {
-                              background:
-                                "linear-gradient(135deg, color-mix(in srgb, var(--dv-nav-accent) 18%, white), color-mix(in srgb, var(--dv-nav-accent) 8%, transparent))",
-                              boxShadow:
-                                "0 8px 24px color-mix(in srgb, var(--dv-nav-accent) 18%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--dv-nav-accent) 22%, transparent)",
-                            }
-                          : undefined
-                      }
+                      className="group/orbit relative flex min-w-[72px] flex-col items-center justify-start px-1.5 pt-1 xl:min-w-[82px]"
                     >
-                      <Icon size={15} />
-                      <span>{item.label}</span>
+                      <span
+                        className={cn(
+                          "relative grid h-9 w-9 place-items-center rounded-full border transition-all duration-300",
+                          active
+                            ? "scale-105 border-white/70 bg-white text-slate-950 shadow-[0_8px_22px_rgba(15,23,42,.14)] dark:border-white/80 dark:bg-white dark:text-slate-950"
+                            : "border-slate-300/70 bg-white/85 text-slate-500 shadow-[0_4px_14px_rgba(15,23,42,.08)] group-hover/orbit:-translate-y-0.5 group-hover/orbit:border-violet-300 group-hover/orbit:text-violet-600 dark:border-white/15 dark:bg-[#0b0d17]/90 dark:text-white/55 dark:group-hover/orbit:border-violet-300/40 dark:group-hover/orbit:text-white"
+                        )}
+                        style={
+                          active
+                            ? {
+                                boxShadow:
+                                  "0 0 0 4px color-mix(in srgb, var(--dv-nav-accent) 12%, transparent), 0 0 22px color-mix(in srgb, var(--dv-nav-accent) 38%, transparent), 0 8px 22px rgba(15,23,42,.14)",
+                              }
+                            : undefined
+                        }
+                      >
+                        {active && (
+                          <span
+                            className="dv-active-orbit absolute -inset-[7px] rounded-full border"
+                            style={{
+                              borderColor:
+                                "color-mix(in srgb, var(--dv-nav-accent) 58%, transparent)",
+                            }}
+                          />
+                        )}
+
+                        <Icon size={15} />
+
+                        <span
+                          className={cn(
+                            "absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full transition-opacity",
+                            active ? "opacity-100" : "opacity-0 group-hover/orbit:opacity-70"
+                          )}
+                          style={{
+                            background: item.accent,
+                            boxShadow: `0 0 9px ${item.accent}`,
+                          }}
+                        />
+                      </span>
+
+                      <span
+                        className={cn(
+                          "mt-1 whitespace-nowrap text-[10px] font-black tracking-[-0.01em] transition-colors xl:text-[11px]",
+                          active
+                            ? "text-slate-950 dark:text-white"
+                            : "text-slate-400 group-hover/orbit:text-slate-700 dark:text-white/35 dark:group-hover/orbit:text-white/70"
+                        )}
+                      >
+                        {item.label}
+                      </span>
 
                       {active && (
-                        <>
-                          <span
-                            className="absolute -bottom-[7px] left-1/2 h-[2px] w-7 -translate-x-1/2 rounded-full"
-                            style={{
-                              background: "var(--dv-nav-accent)",
-                              boxShadow: "0 0 12px var(--dv-nav-accent)",
-                            }}
-                          />
-                          <span
-                            className="absolute right-1.5 top-1.5 h-1 w-1 rounded-full"
-                            style={{
-                              background: "var(--dv-nav-accent)",
-                              boxShadow: "0 0 8px var(--dv-nav-accent)",
-                            }}
-                          />
-                        </>
+                        <span className="absolute -bottom-[8px] text-[7px] font-black uppercase tracking-[.2em] text-violet-500 dark:text-violet-300">
+                          Current Verse
+                        </span>
+                      )}
+
+                      {index < navItems.length - 1 && (
+                        <span className="sr-only">Next verse follows</span>
                       )}
                     </Link>
                   </motion.div>
@@ -302,8 +329,8 @@ export default function DVNav({
           </div>
 
           <div className="hidden w-[270px] shrink-0 2xl:block">
-            <div className="relative rounded-[18px] border border-violet-300/25 bg-gradient-to-br from-violet-500/[0.08] to-cyan-400/[0.05] p-[3px] shadow-[0_10px_34px_rgba(99,102,241,.08)] dark:border-white/[0.08] dark:from-violet-500/[0.10] dark:to-cyan-400/[0.06]">
-              <div className="pointer-events-none absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-violet-400/70 shadow-[0_0_10px_rgba(167,139,250,.7)]" />
+            <div className="relative rounded-[18px] border border-[#b89cff]/25 bg-[linear-gradient(135deg,rgba(255,107,114,.07),rgba(184,156,255,.10))] p-[3px] shadow-[0_10px_34px_rgba(128,96,241,.09)] dark:border-white/[0.08]">
+              <div className="pointer-events-none absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-[#ff6b72]/80 shadow-[0_0_10px_rgba(255,107,114,.65)]" />
               <SearchBar
                 placeholder="Search the Verse..."
                 className="w-full"
@@ -340,7 +367,7 @@ export default function DVNav({
             >
               <Link
                 href="/universe/create"
-                className="group/create relative flex h-10 items-center gap-1.5 overflow-hidden rounded-xl border border-violet-400/35 bg-[linear-gradient(135deg,rgba(124,58,237,.16),rgba(6,182,212,.10))] px-3 text-[12px] font-black text-violet-700 shadow-[0_8px_24px_rgba(124,58,237,.12)] transition hover:-translate-y-0.5 hover:border-cyan-400/40 hover:shadow-[0_12px_30px_rgba(124,58,237,.20)] dark:text-violet-100"
+                className="group/create relative flex h-10 items-center gap-1.5 overflow-hidden rounded-xl border border-[#b89cff]/35 bg-[linear-gradient(105deg,rgba(255,107,114,.16),rgba(184,156,255,.18))] px-3 text-[12px] font-black text-[#8a4cf3] shadow-[0_8px_24px_rgba(128,96,241,.12)] transition hover:-translate-y-0.5 hover:border-[#ff7a7a]/45 hover:shadow-[0_12px_30px_rgba(184,156,255,.22)] dark:text-[#e2d7ff]"
               >
                 <span className="pointer-events-none absolute inset-y-0 -left-10 w-8 rotate-12 bg-white/40 blur-md transition-all duration-500 group-hover/create:left-[115%] dark:bg-white/15" />
                 <Rocket size={15} />
@@ -607,11 +634,7 @@ export default function DVNav({
           animation: dvBeamPulse 4.2s ease-in-out infinite;
         }
       
-        .dv-logo-orbit {
-          animation: dvLogoFloat 5.5s ease-in-out infinite;
-        }
-      
-        .dv-orbit-dot {
+.dv-orbit-dot {
           animation: dvOrbitDot 3.2s ease-in-out infinite;
         }
       
@@ -627,35 +650,72 @@ export default function DVNav({
           }
         }
       
-        @keyframes dvLogoFloat {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
+50% {
             transform: translateY(-1.5px);
           }
         }
       
-        @keyframes dvOrbitDot {
-          0%,
-          100% {
-            transform: translate(0, 0) scale(0.9);
-            opacity: 0.72;
-          }
-          50% {
+50% {
             transform: translate(-5px, 12px) scale(1.15);
             opacity: 1;
           }
         }
       
+        .dv-orbit-nav::before {
+          content: "";
+          position: absolute;
+          left: -26px;
+          top: 19px;
+          width: 38px;
+          height: 7px;
+          border-top: 1px solid rgba(255, 107, 114, 0.35);
+          border-radius: 50%;
+          transform: rotate(-8deg);
+          filter: drop-shadow(0 0 5px rgba(255, 107, 114, 0.25));
+        }
+
+        .dv-orbit-track {
+          background: linear-gradient(
+            90deg,
+            rgba(255, 107, 114, 0.78) 0%,
+            rgba(255, 122, 122, 0.42) 20%,
+            rgba(184, 156, 255, 0.56) 55%,
+            rgba(128, 96, 241, 0.72) 100%
+          );
+          opacity: 0.72;
+        }
+
+        .dv-orbit-track-glow {
+          background: linear-gradient(
+            90deg,
+            rgba(255, 107, 114, 0.24),
+            rgba(184, 156, 255, 0.30),
+            rgba(128, 96, 241, 0.24)
+          );
+          filter: blur(5px);
+          opacity: 0.8;
+        }
+
+        .dv-active-orbit {
+          animation: dvActiveOrbit 3.6s ease-in-out infinite;
+        }
+
+        @keyframes dvActiveOrbit {
+          0%,
+          100% {
+            opacity: 0.38;
+            transform: scale(0.96);
+          }
+          50% {
+            opacity: 0.92;
+            transform: scale(1.06);
+          }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .dv-nav-beam,
           .dv-logo-orbit,
-          .dv-orbit-dot {
-            animation: none;
-          }
-        }
+  }
       `}</style>
     </header>
   );
