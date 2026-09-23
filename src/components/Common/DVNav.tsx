@@ -572,94 +572,92 @@ export default function DVNav({
           )}
         </AnimatePresence>
       </nav>
+      <style jsx>{`
+        .dv-verse-dock::before {
+          content: "";
+          position: absolute;
+          inset: -1px;
+          z-index: -1;
+          border-radius: 27px;
+          padding: 1px;
+          background: linear-gradient(
+            110deg,
+            rgba(139, 92, 246, 0.30),
+            rgba(255, 255, 255, 0.12) 32%,
+            rgba(34, 211, 238, 0.22) 68%,
+            rgba(139, 92, 246, 0.22)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+      
+        .dv-nav-beam {
+          background: linear-gradient(
+            90deg,
+            transparent,
+            var(--dv-nav-accent),
+            rgba(255, 255, 255, 0.92),
+            var(--dv-nav-accent),
+            transparent
+          );
+          box-shadow: 0 0 18px var(--dv-nav-accent);
+          animation: dvBeamPulse 4.2s ease-in-out infinite;
+        }
+      
+        .dv-logo-orbit {
+          animation: dvLogoFloat 5.5s ease-in-out infinite;
+        }
+      
+        .dv-orbit-dot {
+          animation: dvOrbitDot 3.2s ease-in-out infinite;
+        }
+      
+        @keyframes dvBeamPulse {
+          0%,
+          100% {
+            opacity: 0.34;
+            transform: translateX(-50%) scaleX(0.74);
+          }
+          50% {
+            opacity: 0.92;
+            transform: translateX(-50%) scaleX(1);
+          }
+        }
+      
+        @keyframes dvLogoFloat {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-1.5px);
+          }
+        }
+      
+        @keyframes dvOrbitDot {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(0.9);
+            opacity: 0.72;
+          }
+          50% {
+            transform: translate(-5px, 12px) scale(1.15);
+            opacity: 1;
+          }
+        }
+      
+        @media (prefers-reduced-motion: reduce) {
+          .dv-nav-beam,
+          .dv-logo-orbit,
+          .dv-orbit-dot {
+            animation: none;
+          }
+        }
+      `}</style>
     </header>
   );
 }
-
-
-<style jsx>{`
-  .dv-verse-dock::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    z-index: -1;
-    border-radius: 27px;
-    padding: 1px;
-    background: linear-gradient(
-      110deg,
-      rgba(139, 92, 246, 0.30),
-      rgba(255, 255, 255, 0.12) 32%,
-      rgba(34, 211, 238, 0.22) 68%,
-      rgba(139, 92, 246, 0.22)
-    );
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-
-  .dv-nav-beam {
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--dv-nav-accent),
-      rgba(255, 255, 255, 0.92),
-      var(--dv-nav-accent),
-      transparent
-    );
-    box-shadow: 0 0 18px var(--dv-nav-accent);
-    animation: dvBeamPulse 4.2s ease-in-out infinite;
-  }
-
-  .dv-logo-orbit {
-    animation: dvLogoFloat 5.5s ease-in-out infinite;
-  }
-
-  .dv-orbit-dot {
-    animation: dvOrbitDot 3.2s ease-in-out infinite;
-  }
-
-  @keyframes dvBeamPulse {
-    0%,
-    100% {
-      opacity: 0.34;
-      transform: translateX(-50%) scaleX(0.74);
-    }
-    50% {
-      opacity: 0.92;
-      transform: translateX(-50%) scaleX(1);
-    }
-  }
-
-  @keyframes dvLogoFloat {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-1.5px);
-    }
-  }
-
-  @keyframes dvOrbitDot {
-    0%,
-    100% {
-      transform: translate(0, 0) scale(0.9);
-      opacity: 0.72;
-    }
-    50% {
-      transform: translate(-5px, 12px) scale(1.15);
-      opacity: 1;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .dv-nav-beam,
-    .dv-logo-orbit,
-    .dv-orbit-dot {
-      animation: none;
-    }
-  }
-`}</style>
