@@ -356,8 +356,10 @@ export default function HomeClient() {
   ] as const;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#f8f7fb] text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-slate-100">
+    <div className="relative -mt-[88px] min-h-screen overflow-hidden bg-[#f8f7fb] pt-[88px] text-slate-950 transition-colors duration-700 sm:-mt-[92px] sm:pt-[92px] dark:bg-[#03050a] dark:text-slate-100">
       <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-x-[-12%] top-0 h-[430px] bg-[radial-gradient(ellipse_at_18%_12%,rgba(255,107,114,.18),transparent_34%),radial-gradient(ellipse_at_82%_6%,rgba(184,156,255,.20),transparent_38%),linear-gradient(180deg,rgba(128,96,241,.05),transparent_78%)] blur-[18px] dark:bg-[radial-gradient(ellipse_at_18%_10%,rgba(255,107,114,.16),transparent_36%),radial-gradient(ellipse_at_82%_4%,rgba(128,96,241,.22),transparent_40%),linear-gradient(180deg,rgba(99,60,180,.10),transparent_80%)]" />
+        <div className="absolute inset-x-0 top-0 h-[260px] bg-gradient-to-b from-white/22 via-transparent to-transparent dark:from-[#171224]/35 dark:via-transparent" />
         <div className="absolute left-[-12%] top-[-10%] h-[560px] w-[560px] rounded-full bg-[#ff6b72]/10 blur-[140px] dark:bg-[#ff6b72]/12" />
         <div className="absolute right-[-8%] top-[4%] h-[620px] w-[620px] rounded-full bg-[#b89cff]/12 blur-[150px] dark:bg-[#8060f1]/18" />
         <div className="absolute left-[34%] top-[28%] h-[420px] w-[420px] rounded-full bg-violet-400/5 blur-[150px] dark:bg-violet-400/8" />
