@@ -18,8 +18,10 @@ import {
   LogIn,
   Menu,
   MessageCircle,
+  Orbit,
   PenLine,
   Plus,
+  Rocket,
   Search,
   Sparkles,
   UserRound,
@@ -186,22 +188,21 @@ export default function DVNav({
     >
       <nav
         className={cn(
-          "relative mx-auto max-w-[1440px] rounded-[24px] border backdrop-blur-xl",
-          "transition-[background-color,border-color,box-shadow] duration-300",
-          "border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-[#070912]/80",
+          "dv-verse-dock relative mx-auto max-w-[1440px] overflow-visible rounded-[26px] border backdrop-blur-2xl",
+          "transition-[background-color,border-color,box-shadow,transform] duration-300",
+          "border-slate-200/70 bg-white/[0.88] dark:border-white/[0.12] dark:bg-[#060811]/[0.88]",
           scrolled
-            ? "shadow-[0_16px_50px_rgba(15,23,42,0.12)] dark:shadow-[0_18px_60px_rgba(0,0,0,0.42)]"
-            : "shadow-[0_8px_30px_rgba(15,23,42,0.07)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+            ? "shadow-[0_20px_64px_rgba(15,23,42,0.16)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.58)]"
+            : "shadow-[0_12px_42px_rgba(76,29,149,0.10)] dark:shadow-[0_16px_58px_rgba(0,0,0,0.36)]"
         )}
       >
-        <div
-          className="pointer-events-none absolute inset-x-10 top-0 h-px opacity-70"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, var(--dv-nav-accent), transparent)",
-            boxShadow: "0 0 16px var(--dv-nav-accent)",
-          }}
-        />
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[26px]">
+          <div className="absolute -left-16 -top-20 h-44 w-44 rounded-full bg-violet-400/15 blur-3xl dark:bg-violet-500/20" />
+          <div className="absolute -right-10 -top-24 h-52 w-52 rounded-full bg-cyan-300/10 blur-3xl dark:bg-cyan-400/15" />
+          <div className="absolute left-1/2 top-0 h-px w-[58%] -translate-x-1/2 dv-nav-beam" />
+          <div className="absolute bottom-0 left-[14%] h-px w-[22%] bg-gradient-to-r from-transparent via-violet-400/35 to-transparent" />
+          <div className="absolute bottom-0 right-[9%] h-px w-[18%] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
+        </div>
 
         <div className="flex h-[68px] items-center gap-2 px-2.5 sm:gap-3 sm:px-4">
           <motion.div
@@ -213,29 +214,35 @@ export default function DVNav({
             <Link
               href="/"
               aria-label="Drawing Verse Home"
-              className="flex items-center gap-2.5 rounded-xl px-2 py-2 transition hover:bg-slate-100/80 dark:hover:bg-white/[0.06]"
+              className="group flex items-center gap-3 rounded-2xl px-2 py-1.5 transition hover:bg-violet-500/[0.05] dark:hover:bg-white/[0.05]"
             >
-              <div className="relative grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-xl border border-violet-300/40 bg-violet-500/10 dark:border-violet-400/20">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(167,139,250,.40),transparent_55%)]" />
-                <WandSparkles
-                  size={18}
-                  className="relative text-violet-600 dark:text-violet-300"
-                />
+              <div className="dv-logo-orbit relative grid h-11 w-11 shrink-0 place-items-center">
+                <div className="absolute inset-[2px] rounded-full border border-violet-400/30 dark:border-violet-300/25" />
+                <div className="absolute inset-[7px] rounded-full bg-[radial-gradient(circle_at_32%_28%,#ffffff_0%,#ddd6fe_22%,#8b5cf6_54%,#312e81_100%)] shadow-[0_0_22px_rgba(139,92,246,.38)] dark:shadow-[0_0_28px_rgba(139,92,246,.52)]" />
+                <div className="absolute left-0 top-1/2 h-[22px] w-[44px] -translate-y-1/2 -rotate-[18deg] rounded-[50%] border border-cyan-400/55" />
+                <span className="dv-orbit-dot absolute right-[1px] top-[9px] h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_9px_rgba(103,232,249,.95)]" />
+                <Orbit size={18} className="relative z-10 text-white drop-shadow-[0_0_6px_rgba(255,255,255,.9)]" />
               </div>
 
               <div className="hidden leading-tight sm:block">
-                <p className="whitespace-nowrap text-[14px] font-black tracking-tight text-slate-950 dark:text-white">
-                  Drawing Verse
-                </p>
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-white/35">
-                  Verse Navigator
+                <div className="flex items-center gap-1.5">
+                  <p className="whitespace-nowrap bg-gradient-to-r from-slate-950 via-violet-700 to-indigo-600 bg-clip-text text-[15px] font-black tracking-[-0.035em] text-transparent dark:from-white dark:via-violet-200 dark:to-cyan-200">
+                    Drawing Verse
+                  </p>
+                  <span className="hidden rounded-full border border-violet-300/40 bg-violet-500/[0.08] px-1.5 py-0.5 text-[7px] font-black uppercase tracking-[.16em] text-violet-600 xl:inline dark:border-violet-300/15 dark:text-violet-200">
+                    LIVE
+                  </span>
+                </div>
+                <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-white/35">
+                  Interverse Network
                 </p>
               </div>
             </Link>
           </motion.div>
 
           <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
-            <div className="flex items-center gap-0.5 xl:gap-1">
+            <div className="relative flex items-center gap-0.5 rounded-[18px] border border-slate-200/60 bg-slate-100/45 p-1 shadow-inner shadow-white/70 xl:gap-1 dark:border-white/[0.07] dark:bg-black/20 dark:shadow-black/30">
+              <div className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent dark:via-white/10" />
               {navItems.map((item) => {
                 const active = isActivePath(pathname, item.href);
                 const Icon = item.icon;
@@ -253,21 +260,40 @@ export default function DVNav({
                       className={cn(
                         "relative flex h-10 items-center gap-1.5 rounded-xl px-2.5 text-[12px] font-bold transition-all xl:gap-2 xl:px-3 xl:text-[13px]",
                         active
-                          ? "bg-slate-950 text-white shadow-sm dark:bg-white dark:text-slate-950"
-                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-white/55 dark:hover:bg-white/[0.07] dark:hover:text-white"
+                          ? "text-slate-950 dark:text-white"
+                          : "text-slate-500 hover:bg-white/70 hover:text-slate-950 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white"
                       )}
+                      style={
+                        active
+                          ? {
+                              background:
+                                "linear-gradient(135deg, color-mix(in srgb, var(--dv-nav-accent) 18%, white), color-mix(in srgb, var(--dv-nav-accent) 8%, transparent))",
+                              boxShadow:
+                                "0 8px 24px color-mix(in srgb, var(--dv-nav-accent) 18%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--dv-nav-accent) 22%, transparent)",
+                            }
+                          : undefined
+                      }
                     >
                       <Icon size={15} />
                       <span>{item.label}</span>
 
                       {active && (
-                        <span
-                          className="absolute -bottom-[7px] left-1/2 h-[2px] w-7 -translate-x-1/2 rounded-full"
-                          style={{
-                            background: "var(--dv-nav-accent)",
-                            boxShadow: "0 0 10px var(--dv-nav-accent)",
-                          }}
-                        />
+                        <>
+                          <span
+                            className="absolute -bottom-[7px] left-1/2 h-[2px] w-7 -translate-x-1/2 rounded-full"
+                            style={{
+                              background: "var(--dv-nav-accent)",
+                              boxShadow: "0 0 12px var(--dv-nav-accent)",
+                            }}
+                          />
+                          <span
+                            className="absolute right-1.5 top-1.5 h-1 w-1 rounded-full"
+                            style={{
+                              background: "var(--dv-nav-accent)",
+                              boxShadow: "0 0 8px var(--dv-nav-accent)",
+                            }}
+                          />
+                        </>
                       )}
                     </Link>
                   </motion.div>
@@ -276,11 +302,14 @@ export default function DVNav({
             </div>
           </div>
 
-          <div className="hidden w-[250px] shrink-0 2xl:block">
-            <SearchBar
-              placeholder="Search the Verse..."
-              className="w-full"
-            />
+          <div className="hidden w-[270px] shrink-0 2xl:block">
+            <div className="relative rounded-[18px] border border-violet-300/25 bg-gradient-to-br from-violet-500/[0.08] to-cyan-400/[0.05] p-[3px] shadow-[0_10px_34px_rgba(99,102,241,.08)] dark:border-white/[0.08] dark:from-violet-500/[0.10] dark:to-cyan-400/[0.06]">
+              <div className="pointer-events-none absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-violet-400/70 shadow-[0_0_10px_rgba(167,139,250,.7)]" />
+              <SearchBar
+                placeholder="Search the Verse..."
+                className="w-full"
+              />
+            </div>
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
@@ -312,9 +341,10 @@ export default function DVNav({
             >
               <Link
                 href="/universe/create"
-                className="flex h-10 items-center gap-1.5 rounded-xl border border-violet-400/20 bg-violet-500/10 px-3 text-[12px] font-black text-violet-700 transition hover:border-violet-400/40 hover:bg-violet-500/15 dark:text-violet-200"
+                className="group/create relative flex h-10 items-center gap-1.5 overflow-hidden rounded-xl border border-violet-400/35 bg-[linear-gradient(135deg,rgba(124,58,237,.16),rgba(6,182,212,.10))] px-3 text-[12px] font-black text-violet-700 shadow-[0_8px_24px_rgba(124,58,237,.12)] transition hover:-translate-y-0.5 hover:border-cyan-400/40 hover:shadow-[0_12px_30px_rgba(124,58,237,.20)] dark:text-violet-100"
               >
-                <Plus size={15} />
+                <span className="pointer-events-none absolute inset-y-0 -left-10 w-8 rotate-12 bg-white/40 blur-md transition-all duration-500 group-hover/create:left-[115%] dark:bg-white/15" />
+                <Rocket size={15} />
                 <span className="hidden xl:inline">Create Universe</span>
                 <span className="xl:hidden">Create</span>
               </Link>
@@ -449,7 +479,20 @@ export default function DVNav({
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="overflow-hidden border-t border-slate-200/70 lg:hidden dark:border-white/[0.08]"
             >
-              <div className="space-y-2 p-3">
+              <div className="relative space-y-2 p-3">
+                <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/50 to-transparent" />
+                <div className="flex items-center justify-between px-1 pb-1 pt-1">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[.24em] text-violet-500 dark:text-violet-300">
+                      Verse Navigator
+                    </p>
+                    <p className="text-[11px] font-bold text-slate-400 dark:text-white/35">
+                      Choose your next orbit
+                    </p>
+                  </div>
+                  <Sparkles size={16} className="text-cyan-400" />
+                </div>
+
                 <SearchBar
                   placeholder="Search the Verse..."
                   className="w-full"
@@ -532,3 +575,91 @@ export default function DVNav({
     </header>
   );
 }
+
+
+<style jsx>{`
+  .dv-verse-dock::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: 27px;
+    padding: 1px;
+    background: linear-gradient(
+      110deg,
+      rgba(139, 92, 246, 0.30),
+      rgba(255, 255, 255, 0.12) 32%,
+      rgba(34, 211, 238, 0.22) 68%,
+      rgba(139, 92, 246, 0.22)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .dv-nav-beam {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--dv-nav-accent),
+      rgba(255, 255, 255, 0.92),
+      var(--dv-nav-accent),
+      transparent
+    );
+    box-shadow: 0 0 18px var(--dv-nav-accent);
+    animation: dvBeamPulse 4.2s ease-in-out infinite;
+  }
+
+  .dv-logo-orbit {
+    animation: dvLogoFloat 5.5s ease-in-out infinite;
+  }
+
+  .dv-orbit-dot {
+    animation: dvOrbitDot 3.2s ease-in-out infinite;
+  }
+
+  @keyframes dvBeamPulse {
+    0%,
+    100% {
+      opacity: 0.34;
+      transform: translateX(-50%) scaleX(0.74);
+    }
+    50% {
+      opacity: 0.92;
+      transform: translateX(-50%) scaleX(1);
+    }
+  }
+
+  @keyframes dvLogoFloat {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-1.5px);
+    }
+  }
+
+  @keyframes dvOrbitDot {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(0.9);
+      opacity: 0.72;
+    }
+    50% {
+      transform: translate(-5px, 12px) scale(1.15);
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dv-nav-beam,
+    .dv-logo-orbit,
+    .dv-orbit-dot {
+      animation: none;
+    }
+  }
+`}</style>
