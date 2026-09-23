@@ -9,6 +9,7 @@ import {
   type CSSProperties,
 } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import type { LucideIcon } from "lucide-react";
 import {
   ChevronDown,
@@ -75,9 +76,15 @@ export default function DVNav({
 }: DVNavProps = {}) {
   const pathname = usePathname();
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [profileMenuPosition, setProfileMenuPosition] = useState<{
+    top: number;
+    right: number;
+  } | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   const { user } = useSupabaseUser();
@@ -136,9 +143,12 @@ export default function DVNav({
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+
       if (
         profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target as Node)
+        !profileMenuRef.current.contains(target) &&
+        !profileDropdownRef.current?.contains(target)
       ) {
         setProfileOpen(false);
       }
@@ -159,6 +169,30 @@ export default function DVNav({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+
+    const updateProfileMenuPosition = () => {
+      const button = profileButtonRef.current;
+      if (!button) return;
+
+      const rect = button.getBoundingClientRect();
+      setProfileMenuPosition({
+        top: rect.bottom + 10,
+        right: Math.max(12, window.innerWidth - rect.right),
+      });
+    };
+
+    updateProfileMenuPosition();
+    window.addEventListener("resize", updateProfileMenuPosition);
+    window.addEventListener("scroll", updateProfileMenuPosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updateProfileMenuPosition);
+      window.removeEventListener("scroll", updateProfileMenuPosition, true);
+    };
+  }, [profileOpen]);
 
   const isLoggedIn = propIsLoggedIn ?? Boolean(user);
   const userName =
@@ -395,6 +429,7 @@ export default function DVNav({
             {isLoggedIn ? (
               <div ref={profileMenuRef} className="relative hidden sm:block">
                 <button
+                  ref={profileButtonRef}
                   type="button"
                   aria-label="User menu"
                   aria-expanded={profileOpen}
@@ -430,15 +465,22 @@ export default function DVNav({
                   />
                 </button>
 
-                <AnimatePresence>
-                  {profileOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                      transition={{ duration: 0.16, ease: "easeOut" }}
-                      className="absolute right-0 top-[50px] z-[100] w-[min(19rem,calc(100vw-1.5rem))] overflow-hidden rounded-[24px] border border-[#b89cff]/25 bg-white/95 p-2.5 shadow-[0_24px_70px_rgba(44,31,80,.18)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0a0c15]/95 dark:shadow-[0_28px_80px_rgba(0,0,0,.55)]"
-                    >
+                {typeof document !== "undefined" &&
+                  createPortal(
+                    <AnimatePresence>
+                      {profileOpen && profileMenuPosition && (
+                        <motion.div
+                          ref={profileDropdownRef}
+                          initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                          transition={{ duration: 0.16, ease: "easeOut" }}
+                          style={{
+                            top: profileMenuPosition.top,
+                            right: profileMenuPosition.right,
+                          }}
+                          className="fixed z-[2147483647] w-[min(19rem,calc(100vw-1.5rem))] overflow-hidden rounded-[24px] border border-[#b89cff]/25 bg-white/95 p-2.5 shadow-[0_24px_70px_rgba(44,31,80,.18)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0a0c15]/95 dark:shadow-[0_28px_80px_rgba(0,0,0,.55)]"
+                        >
                       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[24px]">
                         <div className="absolute -left-12 -top-16 h-32 w-32 rounded-full bg-[#ff6b72]/10 blur-3xl" />
                         <div className="absolute -right-10 -top-16 h-36 w-36 rounded-full bg-[#b89cff]/15 blur-3xl" />
@@ -534,9 +576,11 @@ export default function DVNav({
                           </span>
                         </button>
                       </div>
-                    </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>,
+                    document.body
                   )}
-                </AnimatePresence>
               </div>
             ) : (
               <Link
