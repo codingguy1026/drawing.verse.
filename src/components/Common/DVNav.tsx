@@ -608,10 +608,10 @@ export default function DVNav({
           padding: 1px;
           background: linear-gradient(
             110deg,
-            rgba(139, 92, 246, 0.30),
-            rgba(255, 255, 255, 0.12) 32%,
-            rgba(34, 211, 238, 0.22) 68%,
-            rgba(139, 92, 246, 0.22)
+            rgba(255, 107, 114, 0.34),
+            rgba(255, 255, 255, 0.10) 30%,
+            rgba(184, 156, 255, 0.28) 68%,
+            rgba(128, 96, 241, 0.26)
           );
           -webkit-mask:
             linear-gradient(#fff 0 0) content-box,
@@ -620,47 +620,22 @@ export default function DVNav({
           mask-composite: exclude;
           pointer-events: none;
         }
-      
+
         .dv-nav-beam {
           background: linear-gradient(
             90deg,
             transparent,
-            var(--dv-nav-accent),
+            rgba(255, 107, 114, 0.75),
             rgba(255, 255, 255, 0.92),
-            var(--dv-nav-accent),
+            rgba(184, 156, 255, 0.78),
             transparent
           );
-          box-shadow: 0 0 18px var(--dv-nav-accent);
+          box-shadow:
+            0 0 12px rgba(255, 107, 114, 0.22),
+            0 0 18px rgba(184, 156, 255, 0.28);
           animation: dvBeamPulse 4.2s ease-in-out infinite;
         }
-      
-.dv-orbit-dot {
-          animation: dvOrbitDot 3.2s ease-in-out infinite;
-        }
-      
-        @keyframes dvBeamPulse {
-          0%,
-          100% {
-            opacity: 0.34;
-            transform: translateX(-50%) scaleX(0.74);
-          }
-          50% {
-            opacity: 0.92;
-            transform: translateX(-50%) scaleX(1);
-          }
-        }
-      
-50% {
-            transform: translateY(-1.5px);
-          }
-        }
-      
-50% {
-            transform: translate(-5px, 12px) scale(1.15);
-            opacity: 1;
-          }
-        }
-      
+
         .dv-orbit-nav::before {
           content: "";
           position: absolute;
@@ -677,10 +652,10 @@ export default function DVNav({
         .dv-orbit-track {
           background: linear-gradient(
             90deg,
-            rgba(255, 107, 114, 0.78) 0%,
-            rgba(255, 122, 122, 0.42) 20%,
-            rgba(184, 156, 255, 0.56) 55%,
-            rgba(128, 96, 241, 0.72) 100%
+            rgba(255, 107, 114, 0.80) 0%,
+            rgba(255, 122, 122, 0.45) 22%,
+            rgba(184, 156, 255, 0.58) 58%,
+            rgba(128, 96, 241, 0.74) 100%
           );
           opacity: 0.72;
         }
@@ -700,12 +675,26 @@ export default function DVNav({
           animation: dvActiveOrbit 3.6s ease-in-out infinite;
         }
 
+        @keyframes dvBeamPulse {
+          0%,
+          100% {
+            opacity: 0.34;
+            transform: translateX(-50%) scaleX(0.74);
+          }
+
+          50% {
+            opacity: 0.92;
+            transform: translateX(-50%) scaleX(1);
+          }
+        }
+
         @keyframes dvActiveOrbit {
           0%,
           100% {
             opacity: 0.38;
             transform: scale(0.96);
           }
+
           50% {
             opacity: 0.92;
             transform: scale(1.06);
@@ -714,8 +703,10 @@ export default function DVNav({
 
         @media (prefers-reduced-motion: reduce) {
           .dv-nav-beam,
-          .dv-logo-orbit,
-  }
+          .dv-active-orbit {
+            animation: none;
+          }
+        }
       `}</style>
     </header>
   );
