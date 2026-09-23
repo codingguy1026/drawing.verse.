@@ -348,106 +348,513 @@ export default function HomeClient() {
     );
   }, [activeFeedTab, posts]);
 
+  const orbitPositions = [
+    "left-[8%] top-[18%]",
+    "right-[3%] top-[24%]",
+    "left-[2%] bottom-[18%]",
+    "right-[12%] bottom-[10%]",
+  ] as const;
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-slate-100">
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-16 pt-24 md:px-6 lg:px-8 lg:pt-28">
-        <main>
-          <section className="relative overflow-hidden rounded-[40px] border border-white/90 bg-white/80 shadow-[0_30px_80px_rgba(15,23,42,.08)] backdrop-blur-3xl dark:border-white/10 dark:bg-[#0a0d14]/70">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(244,114,182,.14),transparent_32%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,.16),transparent_34%),radial-gradient(circle_at_55%_100%,rgba(139,92,246,.1),transparent_35%)]" />
-            {!userLoading && user && (
-              <div className="absolute right-5 top-5 z-30 md:right-7 md:top-7">
-                {isEditing ? (
-                  <div className="flex gap-2">
-                    <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-black text-white"><Save size={14}/>{isSaving ? "저장 중..." : "저장"}</button>
-                    <button onClick={handleCancel} className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-black text-slate-600 shadow-sm dark:bg-white/10 dark:text-white"><CloseIcon size={14}/>취소</button>
-                  </div>
+    <div className="relative -mt-[88px] min-h-screen overflow-hidden bg-[#f8f7fb] pt-[88px] text-slate-950 transition-colors duration-700 sm:-mt-[92px] sm:pt-[92px] dark:bg-[#03050a] dark:text-slate-100">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-x-[-12%] top-0 h-[430px] bg-[radial-gradient(ellipse_at_18%_12%,rgba(255,107,114,.18),transparent_34%),radial-gradient(ellipse_at_82%_6%,rgba(184,156,255,.20),transparent_38%),linear-gradient(180deg,rgba(128,96,241,.05),transparent_78%)] blur-[18px] dark:bg-[radial-gradient(ellipse_at_18%_10%,rgba(255,107,114,.16),transparent_36%),radial-gradient(ellipse_at_82%_4%,rgba(128,96,241,.22),transparent_40%),linear-gradient(180deg,rgba(99,60,180,.10),transparent_80%)]" />
+        <div className="absolute inset-x-0 top-0 h-[260px] bg-gradient-to-b from-white/22 via-transparent to-transparent dark:from-[#171224]/35 dark:via-transparent" />
+        <div className="absolute left-[-12%] top-[-10%] h-[560px] w-[560px] rounded-full bg-[#ff6b72]/10 blur-[140px] dark:bg-[#ff6b72]/12" />
+        <div className="absolute right-[-8%] top-[4%] h-[620px] w-[620px] rounded-full bg-[#b89cff]/12 blur-[150px] dark:bg-[#8060f1]/18" />
+        <div className="absolute left-[34%] top-[28%] h-[420px] w-[420px] rounded-full bg-violet-400/5 blur-[150px] dark:bg-violet-400/8" />
+        <div className="absolute inset-0 opacity-[0.34] [background-image:radial-gradient(circle,rgba(100,116,139,.26)_1px,transparent_1px)] [background-size:34px_34px] [mask-image:linear-gradient(to_bottom,black,transparent_82%)] dark:opacity-[0.16]" />
+      </div>
+
+      <main className="relative z-10 mx-auto w-full max-w-[1380px] px-4 pb-24 sm:px-6 lg:px-8">
+        <section className="relative min-h-[660px] overflow-visible pb-14 pt-2 sm:pt-3 lg:grid lg:grid-cols-[1.02fr_.98fr] lg:items-center lg:gap-10 lg:pb-20 lg:pt-3">
+          {!userLoading && user && (
+            <div className="absolute right-0 top-0 z-20">
+              {isEditing ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-black text-white shadow-[0_10px_24px_rgba(16,185,129,.22)] transition hover:-translate-y-0.5 disabled:opacity-60"
+                  >
+                    <Save size={14} />
+                    {isSaving ? "저장 중..." : "저장"}
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-xs font-black text-slate-600 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.07] dark:text-white"
+                  >
+                    <CloseIcon size={14} />
+                    취소
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/75 px-4 py-2 text-xs font-black text-slate-500 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-violet-300 hover:text-violet-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-white/65"
+                >
+                  <Pencil size={14} />
+                  홈 수정
+                </button>
+              )}
+
+              {saveMessage && (
+                <p className="mt-2 rounded-xl border border-slate-200/70 bg-white/85 px-3 py-2 text-right text-[11px] font-bold text-slate-500 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-black/40 dark:text-slate-300">
+                  {saveMessage}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="relative z-10 max-w-[720px]">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-7 flex w-fit items-center gap-3"
+            >
+              <span className="h-2 w-2 rounded-full bg-[#ff6b72] shadow-[0_0_12px_rgba(255,107,114,.85)]" />
+              <span className="text-[10px] font-black uppercase tracking-[.28em] text-slate-400 dark:text-white/35">
+                Drawing Verse · Interverse Gateway
+              </span>
+              <span className="h-px w-10 bg-gradient-to-r from-[#ff6b72]/60 to-[#b89cff]/20" />
+            </motion.div>
+
+            <h1 className="max-w-[760px] text-[48px] font-black leading-[.92] tracking-[-.065em] text-slate-950 dark:text-white sm:text-[62px] md:text-[74px] lg:text-[76px] xl:text-[86px]">
+              <EditableText
+                isEditing={isEditing}
+                value={heroTitle}
+                onChange={setHeroTitle}
+              />
+              <br />
+              <span className="bg-[linear-gradient(96deg,#ef4c5f_0%,#ff6b72_30%,#b89cff_67%,#8060f1_100%)] bg-clip-text text-transparent">
+                <EditableText
+                  isEditing={isEditing}
+                  value={heroHighlight}
+                  onChange={setHeroHighlight}
+                />
+              </span>
+              <span className="text-slate-950 dark:text-white">
+                <EditableText
+                  isEditing={isEditing}
+                  value={heroSuffix}
+                  onChange={setHeroSuffix}
+                />
+              </span>
+            </h1>
+
+            <EditableText
+              isEditing={isEditing}
+              value={heroDesc}
+              onChange={setHeroDesc}
+              multiline
+              as="p"
+              className="mt-8 max-w-[650px] text-[15px] font-medium leading-8 text-slate-500 dark:text-white/45 sm:text-base"
+            />
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <motion.div variants={squishyVariants} whileHover="hover" whileTap="tap">
+                <Link
+                  href="/universe"
+                  className="group inline-flex h-12 items-center gap-2.5 rounded-full bg-slate-950 px-6 text-sm font-black text-white shadow-[0_16px_40px_rgba(15,23,42,.18)] transition dark:bg-white dark:text-slate-950"
+                >
+                  Enter the Verse
+                  <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+                </Link>
+              </motion.div>
+
+              <motion.div variants={squishyVariants} whileHover="hover" whileTap="tap">
+                <Link
+                  href="/universe/create"
+                  className="inline-flex h-12 items-center gap-2 rounded-full border border-[#b89cff]/30 bg-[linear-gradient(105deg,rgba(255,107,114,.10),rgba(184,156,255,.14))] px-6 text-sm font-black text-[#8050de] shadow-[0_10px_30px_rgba(128,96,241,.08)] transition hover:border-[#ff7a7a]/40 dark:text-[#d9ccff]"
+                >
+                  <Sparkles size={15} />
+                  Create Universe
+                </Link>
+              </motion.div>
+
+              <Link
+                href="/community"
+                className="px-3 py-3 text-sm font-black text-slate-400 transition hover:text-slate-900 dark:text-white/35 dark:hover:text-white"
+              >
+                Community →
+              </Link>
+            </div>
+
+            <div className="mt-8 flex max-w-[680px] flex-wrap gap-2">
+              {tags.map((tag, idx) =>
+                isEditing ? (
+                  <input
+                    key={idx}
+                    value={tag}
+                    onChange={(e) => {
+                      const next = [...tags];
+                      next[idx] = e.target.value;
+                      setTags(next);
+                    }}
+                    className="min-w-[90px] rounded-full border border-violet-300/40 bg-white/70 px-3 py-1.5 text-[11px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-violet-400/30 dark:border-white/10 dark:bg-white/[0.06] dark:text-white/70"
+                  />
                 ) : (
-                  <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-xs font-black text-slate-600 shadow-sm backdrop-blur dark:bg-white/10 dark:text-white"><Pencil size={14}/>홈 수정</button>
-                )}
-                {saveMessage && <p className="mt-2 rounded-xl bg-white/80 px-3 py-2 text-right text-[11px] font-bold text-slate-500 shadow-sm backdrop-blur dark:bg-black/30 dark:text-slate-300">{saveMessage}</p>}
+                  <span
+                    key={idx}
+                    className="rounded-full border border-slate-200/75 bg-white/55 px-3 py-1.5 text-[11px] font-bold text-slate-400 backdrop-blur-sm dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-white/35"
+                  >
+                    #{tag}
+                  </span>
+                )
+              )}
+            </div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 18 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.08 }}
+            className="relative mx-auto mt-16 h-[500px] w-full max-w-[590px] lg:mt-0 lg:h-[570px]"
+          >
+            <div className="absolute inset-[7%] rounded-full border border-[#b89cff]/15" />
+            <div className="absolute inset-[16%] rounded-full border border-dashed border-[#ff7a7a]/20" />
+            <div className="absolute inset-[27%] rounded-full border border-[#b89cff]/20" />
+            <div className="absolute inset-[36%] rounded-full bg-[radial-gradient(circle,rgba(184,156,255,.18),transparent_64%)] blur-xl" />
+
+            <div className="absolute left-1/2 top-1/2 z-10 flex h-[132px] w-[132px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/60 shadow-[0_26px_70px_rgba(128,96,241,.14)] backdrop-blur-xl dark:bg-white/[0.045] dark:shadow-[0_24px_80px_rgba(0,0,0,.45)]">
+              <div className="absolute inset-2 rounded-full border border-[#b89cff]/20" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/branding/dverse-logo-mark.svg"
+                alt="Drawing Verse"
+                className="relative h-[82px] w-[96px] object-contain drop-shadow-[0_12px_24px_rgba(128,96,241,.18)]"
+              />
+              <span className="absolute -bottom-7 whitespace-nowrap text-[8px] font-black uppercase tracking-[.28em] text-slate-400 dark:text-white/30">
+                Verse Core
+              </span>
+            </div>
+
+            <div className="absolute left-1/2 top-1/2 h-[52%] w-px -translate-x-1/2 -translate-y-1/2 rotate-[42deg] bg-gradient-to-b from-transparent via-[#b89cff]/25 to-transparent" />
+            <div className="absolute left-1/2 top-1/2 h-[58%] w-px -translate-x-1/2 -translate-y-1/2 -rotate-[55deg] bg-gradient-to-b from-transparent via-[#ff6b72]/20 to-transparent" />
+
+            {(universes.length ? universes.slice(0, 4) : [
+              { slug: "universe", name: "Discover", description: "", members: 0, tags: [] },
+              { slug: "community", name: "Stories", description: "", members: 0, tags: [] },
+              { slug: "gallery", name: "Gallery", description: "", members: 0, tags: [] },
+              { slug: "wormhole", name: "Wormhole", description: "", members: 0, tags: [] },
+            ]).map((universe, index) => {
+              const fallbackHref =
+                universe.slug === "community" || universe.slug === "gallery" || universe.slug === "wormhole"
+                  ? "/" + universe.slug
+                  : "/universe";
+              const href = universes.length
+                ? `/universe/${universe.slug}`
+                : fallbackHref;
+
+              return (
+                <motion.div
+                  key={universe.slug + index}
+                  animate={{ y: [0, index % 2 === 0 ? -6 : 6, 0] }}
+                  transition={{ duration: 4.8 + index * 0.45, repeat: Infinity, ease: "easeInOut" }}
+                  className={cn("absolute z-20", orbitPositions[index])}
+                >
+                  <Link
+                    href={href}
+                    className="group block w-[150px] rounded-[20px] border border-white/80 bg-white/72 p-3.5 shadow-[0_16px_44px_rgba(15,23,42,.09)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-[#b89cff]/40 hover:shadow-[0_18px_50px_rgba(128,96,241,.14)] dark:border-white/10 dark:bg-[#0b0d17]/72"
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[linear-gradient(135deg,#ff7a7a,#b89cff)] text-white shadow-[0_6px_18px_rgba(128,96,241,.18)]">
+                        <Orbit size={13} />
+                      </span>
+                      <span className="text-[9px] font-black text-slate-300 dark:text-white/20">
+                        0{index + 1}
+                      </span>
+                    </div>
+                    <p className="truncate text-[13px] font-black text-slate-800 dark:text-white/80">
+                      {universe.name}
+                    </p>
+                    {universes.length > 0 && (
+                      <p className="mt-1 text-[10px] font-bold text-slate-400 dark:text-white/30">
+                        {formatMembers(universe.members)} members
+                      </p>
+                    )}
+                  </Link>
+                </motion.div>
+              );
+            })}
+
+            <div className="absolute bottom-3 left-1/2 w-[min(92%,420px)] -translate-x-1/2 rounded-[22px] border border-slate-200/70 bg-white/70 p-3 shadow-[0_18px_50px_rgba(15,23,42,.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#090b13]/75">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-[.22em] text-[#8a61dd]">
+                    Live verse signal
+                  </p>
+                  <p className="mt-1 max-w-[280px] truncate text-[12px] font-black text-slate-700 dark:text-white/75">
+                    {primaryPost ? primaryPost.title : "첫 이야기를 기다리는 중"}
+                  </p>
+                </div>
+                <span className="flex shrink-0 items-center gap-1.5 text-[9px] font-black uppercase tracking-[.14em] text-emerald-500">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,.75)]" />
+                  Live
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+        <section className="border-y border-slate-200/70 py-7 dark:border-white/[0.08]">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-[1.2fr_repeat(3,.7fr)] lg:items-center">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[.24em] text-slate-400 dark:text-white/25">
+                Network status
+              </p>
+              <p className="mt-1 text-sm font-black text-slate-700 dark:text-white/70">
+                Drawing Verse is alive right now.
+              </p>
+            </div>
+            {[
+              ["Posts", trendData.posts],
+              ["Universes", trendData.universes],
+              ["Artworks", trendData.artworks],
+            ].map(([label, value]) => (
+              <div key={label} className="lg:text-right">
+                <p className="text-2xl font-black tracking-[-0.04em] text-slate-950 dark:text-white">
+                  {value}
+                </p>
+                <p className="text-[9px] font-black uppercase tracking-[.2em] text-slate-400 dark:text-white/25">
+                  {label}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <VersePulse />
+          </div>
+        </section>
+
+        <section className="py-16 sm:py-20">
+          <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[.24em] text-[#8a61dd]">
+                Orbit destinations
+              </p>
+              <h2 className="mt-2 text-3xl font-black tracking-[-.045em] sm:text-4xl">
+                지금 열려 있는 Universe
+              </h2>
+            </div>
+            <Link href="/universe" className="text-sm font-black text-slate-400 transition hover:text-violet-600">
+              전체 보기 →
+            </Link>
+          </div>
+
+          {loading ? (
+            <p className="py-20 text-center text-sm font-bold text-slate-400">유니버스를 찾는 중...</p>
+          ) : universes.length === 0 ? (
+            <div className="rounded-[30px] border border-dashed border-slate-300/80 px-6 py-16 text-center dark:border-white/15">
+              <Orbit size={30} className="mx-auto text-violet-400" />
+              <p className="mt-4 font-black">아직 발견된 유니버스가 없어요.</p>
+              <Link href="/universe/create" className="mt-3 inline-flex text-xs font-black text-violet-500">
+                첫 Universe 만들기 →
+              </Link>
+            </div>
+          ) : (
+            <div className="grid gap-px overflow-hidden rounded-[32px] border border-slate-200/70 bg-slate-200/70 sm:grid-cols-2 lg:grid-cols-4 dark:border-white/[0.08] dark:bg-white/[0.08]">
+              {universes.map((universe, index) => (
+                <motion.div key={universe.slug} whileHover={{ y: -4 }}>
+                  <Link
+                    href={`/universe/${universe.slug}`}
+                    className="group flex min-h-[260px] h-full flex-col bg-white/80 p-6 backdrop-blur-xl transition hover:bg-white dark:bg-[#080a11]/88 dark:hover:bg-[#0d0f19]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="grid h-10 w-10 place-items-center rounded-full border border-[#b89cff]/25 bg-[linear-gradient(135deg,rgba(255,107,114,.10),rgba(184,156,255,.18))] text-violet-500">
+                        <Orbit size={17} />
+                      </span>
+                      <span className="text-[10px] font-black tracking-[.16em] text-slate-300 dark:text-white/20">
+                        0{index + 1}
+                      </span>
+                    </div>
+                    <h3 className="mt-auto text-2xl font-black tracking-[-.035em] text-slate-900 transition group-hover:text-violet-600 dark:text-white">
+                      {universe.name}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500 dark:text-white/35">
+                      {universe.description}
+                    </p>
+                    <div className="mt-5 flex items-center justify-between text-[11px] font-black text-slate-400">
+                      <span>{formatMembers(universe.members)} members</span>
+                      <span className="transition group-hover:translate-x-1 group-hover:text-violet-500">Enter →</span>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="grid gap-12 border-y border-slate-200/70 py-16 lg:grid-cols-[1.35fr_.65fr] dark:border-white/[0.08]">
+          <div>
+            <div className="mb-7 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[.22em] text-[#ef5d68]">
+                  Verse signal
+                </p>
+                <h2 className="mt-2 text-3xl font-black tracking-[-.04em]">오늘의 이야기</h2>
+              </div>
+              <Link href="/community" className="text-sm font-black text-slate-400 hover:text-violet-600">
+                Community →
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="py-20 text-center text-sm font-bold text-slate-400">이야기를 모으는 중...</div>
+            ) : featuredPosts.length === 0 ? (
+              <div className="rounded-[28px] border border-dashed border-slate-300/80 px-6 py-14 text-center dark:border-white/15">
+                <Sparkles size={22} className="mx-auto text-violet-300" />
+                <p className="mt-3 text-sm font-black text-slate-500 dark:text-slate-300">아직 오늘의 이야기가 없어요.</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {featuredPosts.slice(0, 2).map((post, index) => (
+                  <Link
+                    key={post.id}
+                    href={`/universe/${post.universe}/${post.publicId}`}
+                    className={cn(
+                      "group flex min-h-[300px] flex-col justify-end overflow-hidden rounded-[30px] p-7 transition hover:-translate-y-1",
+                      index === 0
+                        ? "bg-slate-950 text-white shadow-[0_22px_60px_rgba(15,23,42,.18)] dark:bg-white dark:text-slate-950"
+                        : "border border-slate-200/80 bg-white/68 shadow-[0_18px_50px_rgba(15,23,42,.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "mb-auto text-[9px] font-black uppercase tracking-[.2em]",
+                        index === 0 ? "text-[#d4c5ff] dark:text-violet-600" : "text-violet-500"
+                      )}
+                    >
+                      {post.type} · {post.universe}
+                    </span>
+                    <h3 className="line-clamp-3 text-2xl font-black leading-tight tracking-[-.03em]">{post.title}</h3>
+                    <p className={cn("mt-4 text-xs", index === 0 ? "text-white/45 dark:text-slate-500" : "text-slate-400")}>
+                      {post.meta}
+                    </p>
+                  </Link>
+                ))}
               </div>
             )}
+          </div>
 
-            <div className="relative grid min-h-[430px] lg:grid-cols-[1.08fr_.92fr]">
-              <div className="flex flex-col justify-center px-7 py-10 md:px-12 lg:px-14 lg:py-11">
-                <span className="mb-5 w-fit rounded-full border border-fuchsia-200/80 bg-white/70 px-4 py-1.5 text-[10px] font-black uppercase tracking-[.18em] text-fuchsia-500 shadow-sm backdrop-blur dark:border-fuchsia-500/20 dark:bg-white/5">Dreamcore community hub</span>
-                <h1 className="max-w-[640px] text-[42px] font-black leading-[.98] tracking-[-.055em] text-slate-950 dark:text-white sm:text-[50px] md:text-[58px] lg:text-[62px] xl:text-[68px]">
-                  <EditableText isEditing={isEditing} value={heroTitle} onChange={setHeroTitle} />
-                  <br />
-                  <span className="inline-flex flex-wrap items-baseline gap-x-0">
-                    <span className="whitespace-nowrap bg-gradient-to-r from-violet-600 via-indigo-500 to-sky-400 bg-clip-text text-transparent">
-                      <EditableText isEditing={isEditing} value={heroHighlight} onChange={setHeroHighlight} />
-                    </span>
-                    <span className="whitespace-nowrap">
-                      <EditableText isEditing={isEditing} value={heroSuffix} onChange={setHeroSuffix} />
-                    </span>
-                  </span>
-                </h1>
-                <EditableText isEditing={isEditing} value={heroDesc} onChange={setHeroDesc} multiline as="p" className="mt-7 max-w-xl text-[15px] leading-7 text-slate-500 dark:text-slate-400 md:text-base" />
-                <div className="mt-7 flex flex-wrap gap-3">
-                  <Link href="/universe" className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950">유니버스 둘러보기 <ArrowRight size={14}/></Link>
-                  <Link href="/community" className="rounded-full border border-slate-200 bg-white/70 px-6 py-3.5 text-sm font-black text-slate-700 transition hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-200">커뮤니티 가기</Link>
-                </div>
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {tags.map((tag, idx) => (
-                    <span key={idx} className="rounded-full border border-slate-200 bg-white/55 px-3 py-1.5 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">#{tag}</span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="relative flex min-h-[380px] flex-col justify-center border-t border-slate-200/60 bg-[radial-gradient(circle_at_70%_25%,rgba(56,189,248,.12),transparent_36%),linear-gradient(180deg,rgba(248,250,252,.35),rgba(255,255,255,.04))] p-8 dark:border-white/10 lg:min-h-0 lg:border-l lg:border-t-0">
-                <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle,#cbd5e1_1px,transparent_1px)] [background-size:34px_34px] dark:opacity-10" />
-                <div className="relative z-10">
-                  <div className="mb-7 flex items-center justify-between text-[10px] font-black uppercase tracking-[.24em] text-slate-400"><span>Verse signal</span><span>Live ●</span></div>
-                  {primaryPost ? (
-                    <Link href={`/universe/${primaryPost.universe}/${primaryPost.publicId}`} className="group mx-auto block aspect-[4/3] w-full max-w-[390px] rounded-[30px] bg-slate-950 p-7 text-white shadow-2xl shadow-violet-500/10 transition hover:-translate-y-1 dark:bg-white dark:text-slate-950">
-                      <span className="text-[10px] font-black uppercase tracking-[.2em] text-violet-300 dark:text-violet-600">Featured verse</span>
-                      <div className="mt-16"><h3 className="line-clamp-3 text-3xl font-black leading-tight">{primaryPost.title}</h3><p className="mt-4 text-xs text-white/55 dark:text-slate-500">{primaryPost.meta}</p></div>
-                    </Link>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[.22em] text-[#8a61dd]">Transmission</p>
+            <h2 className="mt-2 text-3xl font-black tracking-[-.04em]">공지 & 이벤트</h2>
+            <div className="mt-7 divide-y divide-slate-200/80 dark:divide-white/[0.08]">
+              {notices.map((notice, index) => (
+                <div key={`${notice}-${index}`} className="group flex items-start gap-4 py-5">
+                  <span className="text-2xl font-black text-slate-200 dark:text-white/10">0{index + 1}</span>
+                  {isEditing ? (
+                    <input
+                      value={notice}
+                      onChange={(e) => {
+                        const next = [...notices];
+                        next[index] = e.target.value;
+                        setNotices(next);
+                      }}
+                      className="min-w-0 flex-1 bg-transparent pt-1 text-sm font-bold outline-none"
+                    />
                   ) : (
-                    <div className="mx-auto flex aspect-[4/3] w-full max-w-[390px] flex-col items-center justify-center rounded-[30px] border border-dashed border-slate-300/80 bg-white/45 text-center backdrop-blur dark:border-white/15 dark:bg-white/5"><Orbit size={32} className="text-violet-400"/><p className="mt-4 font-black">첫 이야기를 기다리는 중</p><p className="mt-2 text-sm text-slate-400">Verse에 첫 별이 뜨면 여기에 나타나요.</p></div>
+                    <p className="min-w-0 flex-1 pt-1 text-sm font-bold leading-6 text-slate-700 dark:text-white/60">
+                      {notice}
+                    </p>
                   )}
-                  <div className="mt-7 grid grid-cols-3 gap-2"><div><p className="text-xl font-black">{trendData.posts}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Posts</p></div><div><p className="text-xl font-black">{trendData.universes}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Universes</p></div><div><p className="text-xl font-black">{trendData.artworks}</p><p className="text-[10px] uppercase tracking-wider text-slate-400">Artworks</p></div></div>
-                  <VersePulse />
+                  {isEditing && (
+                    <button
+                      onClick={() => setNotices(notices.filter((_, i) => i !== index))}
+                      className="text-rose-500"
+                    >
+                      <CloseIcon size={14} />
+                    </button>
+                  )}
                 </div>
-              </div>
+              ))}
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section className="relative py-12 md:py-14">
-            <div className="mb-7 flex items-end justify-between gap-4"><div><p className="mb-1 text-[11px] font-black uppercase tracking-[0.2em] text-violet-500">Explore the verse</p><h2 className="text-3xl font-black tracking-tight md:text-4xl">우주를 발견해봐</h2></div><Link href="/universe" className="text-sm font-bold text-slate-500 hover:text-violet-600">모든 유니버스 →</Link></div>
-            <div className="relative min-h-[220px] overflow-hidden rounded-[32px] border border-slate-200/60 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,.09),transparent_45%)] dark:border-white/5">
-              <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle,#cbd5e1_1px,transparent_1px)] [background-size:38px_38px] dark:opacity-10" />
-              {loading ? <p className="relative py-28 text-center text-sm text-slate-400">유니버스를 찾는 중...</p> : universes.length === 0 ? <div className="relative flex min-h-[220px] flex-col items-center justify-center"><Orbit size={34} className="text-violet-400"/><p className="mt-3 font-bold">아직 발견된 유니버스가 없어요.</p></div> : (
-                <div className={cn("relative grid min-h-[220px] place-items-center gap-5 p-6", universes.length === 1 ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-4")}>
-                  {universes.map((universe, index) => (
-                    <motion.div key={universe.slug} whileHover={{ y: -7, scale: 1.02 }} className={cn("w-full max-w-[270px]", universes.length === 1 && "max-w-[340px]")}>
-                      <Link href={`/universe/${universe.slug}`} className="group block rounded-[26px] border border-white/90 bg-white/78 p-5 shadow-[0_16px_40px_rgba(15,23,42,.07)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0b0e14]/75"><div className="mb-6 flex items-center justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-sky-400 text-white shadow-lg"><Orbit size={20}/></span><span className="text-xs font-black text-slate-300">0{index+1}</span></div><h3 className="text-xl font-black">{universe.name}</h3><p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{universe.description}</p><div className="mt-5 flex items-center justify-between text-xs font-bold text-slate-400"><span>멤버 {formatMembers(universe.members)}명</span><span className="text-slate-700 group-hover:text-violet-600 dark:text-slate-200">입장 →</span></div></Link>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className="grid gap-10 border-y border-slate-200/80 py-12 lg:grid-cols-[1.35fr_.65fr] dark:border-white/10">
+        <section className="py-16 sm:py-20">
+          <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <div className="mb-7 flex items-end justify-between"><div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Today in Drawing Verse</p><h2 className="mt-1 text-3xl font-black">오늘의 이야기 ✨</h2></div><Link href="/community" className="text-sm font-bold text-slate-400">더 둘러보기 →</Link></div>
-              {loading ? <div className="py-20 text-center text-sm text-slate-400">이야기를 모으는 중...</div> : featuredPosts.length === 0 ? <div className="rounded-[26px] border border-dashed border-slate-300 px-6 py-14 text-center dark:border-white/15"><Sparkles size={22} className="mx-auto text-violet-300"/><p className="mt-3 text-sm font-bold text-slate-500 dark:text-slate-300">아직 오늘의 이야기가 없어요.</p><Link href="/community" className="mt-2 inline-block text-xs font-black text-violet-500 hover:text-violet-600">첫 이야기 남기기 →</Link></div> : (
-                <div className="grid gap-4 sm:grid-cols-2">{featuredPosts.slice(0,2).map((post,index)=><Link key={post.id} href={`/universe/${post.universe}/${post.publicId}`} className={cn("group flex min-h-[230px] flex-col justify-end rounded-[26px] p-6 transition hover:-translate-y-1", index===0 ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "border border-slate-200 bg-white/70 dark:border-white/10 dark:bg-white/5")}><span className={cn("mb-auto text-[10px] font-black uppercase tracking-[.18em]", index===0?"text-violet-300 dark:text-violet-600":"text-violet-500")}>{post.type} · {post.universe}</span><h3 className="line-clamp-3 text-2xl font-black leading-tight">{post.title}</h3><p className={cn("mt-4 text-xs",index===0?"text-white/50 dark:text-slate-500":"text-slate-400")}>{post.meta}</p></Link>)}</div>
-              )}
+              <p className="text-[10px] font-black uppercase tracking-[.22em] text-[#8a61dd]">Fresh feed</p>
+              <h2 className="mt-2 text-3xl font-black tracking-[-.04em]">최근 올라온 글</h2>
             </div>
-            <div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Drawing Verse news</p><h2 className="mt-1 text-3xl font-black">공지 & 이벤트</h2><div className="mt-7 divide-y divide-slate-200 dark:divide-white/10">{notices.map((notice,index)=><div key={`${notice}-${index}`} className="group flex items-start gap-4 py-4"><span className="text-2xl font-black text-slate-200 dark:text-white/15">0{index+1}</span>{isEditing?<input value={notice} onChange={(e)=>{const next=[...notices];next[index]=e.target.value;setNotices(next)}} className="min-w-0 flex-1 bg-transparent pt-1 text-sm font-bold outline-none"/>:<p className="min-w-0 flex-1 pt-1 text-sm font-bold leading-6 text-slate-700 dark:text-slate-300">{notice}</p>}{isEditing&&<button onClick={()=>setNotices(notices.filter((_,i)=>i!==index))} className="text-rose-500"><CloseIcon size={14}/></button>}</div>)}</div></div>
-          </section>
 
-          <section className="py-12">
-            <div className="mb-7 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[11px] font-black uppercase tracking-[.2em] text-violet-500">Fresh feed</p><h2 className="mt-1 text-3xl font-black">최근 올라온 글</h2></div><div className="flex gap-2">{feedTabs.map((tab)=><button key={tab} type="button" onClick={()=>setActiveFeedTab(tab)} aria-pressed={activeFeedTab===tab} className={cn("rounded-full px-4 py-2 text-xs font-black transition",activeFeedTab===tab?"bg-slate-950 text-white dark:bg-white dark:text-slate-950":"text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5")}>{tab}</button>)}</div></div>
-            <div className="border-t border-slate-200 dark:border-white/10">{loading?<p className="py-16 text-center text-sm text-slate-400">글 목록 불러오는 중...</p>:posts.length===0?<div className="py-11 text-center"><p className="text-sm font-bold text-slate-500 dark:text-slate-300">아직 최근 글이 없어요.</p><p className="mt-1 text-xs text-slate-400">첫 이야기가 올라오면 이곳에서 바로 만날 수 있어요.</p><Link href="/community" className="mt-3 inline-flex items-center gap-1 text-xs font-black text-violet-500 hover:text-violet-600">첫 글 남기기 <ArrowRight size={12}/></Link></div>:filteredPosts.slice(0,7).map((post,index)=><motion.div key={post.id} whileHover={{x:6}}><Link href={`/universe/${post.universe}/${post.publicId}`} className="grid gap-2 border-b border-slate-200 py-5 sm:grid-cols-[70px_minmax(0,1fr)_160px] sm:items-center dark:border-white/10"><span className="text-xs font-black text-violet-500">{post.type}</span><h3 className="truncate text-base font-bold">{post.title}</h3><span className="truncate text-xs text-slate-400 sm:text-right">{post.universe} · {post.stats}</span></Link></motion.div>)}</div>
-          </section>
+            <div className="flex rounded-full border border-slate-200/80 bg-white/55 p-1 dark:border-white/10 dark:bg-white/[0.035]">
+              {feedTabs.map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveFeedTab(tab)}
+                  aria-pressed={activeFeedTab === tab}
+                  className={cn(
+                    "rounded-full px-4 py-2 text-xs font-black transition",
+                    activeFeedTab === tab
+                      ? "bg-slate-950 text-white shadow-sm dark:bg-white dark:text-slate-950"
+                      : "text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                  )}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <section className="relative isolate overflow-hidden rounded-[34px] bg-[linear-gradient(115deg,#4338ca_0%,#7c3aed_48%,#0284c7_120%)] px-7 py-12 text-white shadow-[0_24px_60px_rgba(79,70,229,.22)] md:px-12 md:py-16"><div className="pointer-events-none absolute -right-20 -top-28 h-80 w-80 rounded-full border-[42px] border-white/10"/><div className="pointer-events-none absolute bottom-[-90px] right-[28%] h-44 w-44 rounded-full bg-white/10"/><div className="relative z-10 max-w-2xl"><span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-black ring-1 ring-white/20">Create your universe</span><h2 className="mt-5 text-3xl font-black md:text-4xl">너의 세계를 열어봐 🌌</h2><p className="mt-3 max-w-xl text-sm leading-7 text-white/75 md:text-base">상상하던 설정, 그림, 캐릭터와 이야기를 하나의 우주로 묶어보세요. 아이디어 하나가 새로운 Verse의 시작이 됩니다.</p><Link href="/universe/new" className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-black !text-slate-950 shadow-lg transition hover:-translate-y-0.5">Universe 만들기 <ArrowRight size={15}/></Link></div></section>
-        </main>
-      </div>
+          <div className="border-t border-slate-200/80 dark:border-white/[0.08]">
+            {loading ? (
+              <p className="py-16 text-center text-sm font-bold text-slate-400">글 목록 불러오는 중...</p>
+            ) : posts.length === 0 ? (
+              <div className="py-12 text-center">
+                <p className="text-sm font-black text-slate-500 dark:text-slate-300">아직 최근 글이 없어요.</p>
+                <Link href="/community" className="mt-3 inline-flex text-xs font-black text-violet-500">
+                  첫 이야기 남기기 →
+                </Link>
+              </div>
+            ) : (
+              filteredPosts.slice(0, 7).map((post, index) => (
+                <motion.div key={post.id} whileHover={{ x: 5 }}>
+                  <Link
+                    href={`/universe/${post.universe}/${post.publicId}`}
+                    className="grid gap-2 border-b border-slate-200/80 py-5 sm:grid-cols-[60px_minmax(0,1fr)_180px] sm:items-center dark:border-white/[0.08]"
+                  >
+                    <span className="text-[10px] font-black text-violet-500">0{index + 1}</span>
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-black text-slate-800 dark:text-white/75">{post.title}</p>
+                      <p className="mt-1 truncate text-[11px] font-bold text-slate-400">{post.type}</p>
+                    </div>
+                    <span className="truncate text-xs font-bold text-slate-400 sm:text-right">
+                      {post.universe} · {post.stats}
+                    </span>
+                  </Link>
+                </motion.div>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="relative overflow-hidden rounded-[36px] border border-[#b89cff]/18 bg-[#0b0d16] px-7 py-14 text-white shadow-[0_30px_80px_rgba(35,25,70,.26)] sm:px-10 md:px-14 md:py-16">
+          <div className="pointer-events-none absolute -left-20 -top-24 h-72 w-72 rounded-full bg-[#ff6b72]/18 blur-[90px]" />
+          <div className="pointer-events-none absolute -right-10 -bottom-24 h-80 w-80 rounded-full bg-[#8060f1]/25 blur-[100px]" />
+          <div className="pointer-events-none absolute left-[46%] top-[-110px] h-[320px] w-[320px] rounded-full border border-white/[0.06]" />
+
+          <div className="relative z-10 max-w-3xl">
+            <span className="text-[9px] font-black uppercase tracking-[.28em] text-[#d7c6ff]">Open a new orbit</span>
+            <h2 className="mt-5 text-4xl font-black tracking-[-.05em] sm:text-5xl">너의 세계를 Verse에 연결해.</h2>
+            <p className="mt-5 max-w-2xl text-sm font-medium leading-7 text-white/50 sm:text-base">
+              상상하던 설정, 그림, 캐릭터와 이야기를 하나의 Universe로 묶어보세요.
+              새로운 세계 하나가 Drawing Verse의 다음 궤도가 됩니다.
+            </p>
+            <Link
+              href="/universe/create"
+              className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-black text-slate-950 transition hover:-translate-y-0.5"
+            >
+              Universe 만들기
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
