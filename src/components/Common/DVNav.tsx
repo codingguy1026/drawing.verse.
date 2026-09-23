@@ -198,7 +198,7 @@ export default function DVNav({
   return (
     <header
       style={accentStyle}
-      className="fixed inset-x-0 top-0 z-[2147483000] px-3 pt-3 sm:px-5"
+      className="fixed inset-x-0 top-0 z-[2147483000] px-3 pt-1 sm:px-5 sm:pt-1"
     >
       <nav
         className={cn(
