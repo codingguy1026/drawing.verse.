@@ -364,8 +364,8 @@ export default function HomeClient() {
         <div className="absolute inset-0 opacity-[0.34] [background-image:radial-gradient(circle,rgba(100,116,139,.26)_1px,transparent_1px)] [background-size:34px_34px] [mask-image:linear-gradient(to_bottom,black,transparent_82%)] dark:opacity-[0.16]" />
       </div>
 
-      <main className="relative z-10 mx-auto w-full max-w-[1380px] px-4 pb-24 pt-5 sm:px-6 sm:pt-7 lg:px-8">
-        <section className="relative min-h-[660px] overflow-visible pb-14 pt-8 sm:pt-12 lg:grid lg:grid-cols-[1.02fr_.98fr] lg:items-center lg:gap-10 lg:pb-20 lg:pt-16">
+      <main className="relative z-10 mx-auto w-full max-w-[1380px] px-4 pb-24 sm:px-6 lg:px-8">
+        <section className="relative min-h-[660px] overflow-visible pb-14 pt-2 sm:pt-3 lg:grid lg:grid-cols-[1.02fr_.98fr] lg:items-center lg:gap-10 lg:pb-20 lg:pt-3">
           {!userLoading && user && (
             <div className="absolute right-0 top-0 z-20">
               {isEditing ? (
