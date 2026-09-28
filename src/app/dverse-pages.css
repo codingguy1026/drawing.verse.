@@ -1305,3 +1305,816 @@
     display: none;
   }
 }
+
+
+/* =========================================================
+   DRAWING VERSE — VERSE DOCK V2
+   Global top navbar removed. The vertical dock is now the shell.
+   ========================================================= */
+
+.dv-site-shell {
+  min-height: 100vh;
+}
+
+.dv-subpage-frame:not(.dv-subpage-frame--focus) {
+  width: min(calc(100% - 2rem), 100rem);
+  min-height: 100vh;
+  margin-inline: auto;
+  padding: 1rem 0 2rem;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.dv-subpage-rail {
+  isolation: isolate;
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  height: calc(100vh - 2rem);
+  min-height: 620px;
+  border: 1px solid rgba(148, 163, 184, .42);
+  border-radius: 30px;
+  overflow: visible;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.84), rgba(252,248,255,.72));
+  box-shadow:
+    0 34px 86px rgba(15,23,42,.20),
+    0 13px 30px rgba(128,96,241,.13),
+    inset 0 1px 0 rgba(255,255,255,.92);
+  backdrop-filter: blur(28px) saturate(1.18);
+  -webkit-backdrop-filter: blur(28px) saturate(1.18);
+  transform-style: preserve-3d;
+  perspective: 1200px;
+}
+
+.dark .dv-subpage-rail {
+  border-color: rgba(255,255,255,.12);
+  background:
+    linear-gradient(180deg, rgba(6,8,17,.82), rgba(10,7,21,.78));
+  box-shadow:
+    0 38px 96px rgba(0,0,0,.66),
+    0 14px 34px rgba(128,96,241,.18),
+    inset 0 1px 0 rgba(255,255,255,.055);
+}
+
+.dv-rail-depth-shadow {
+  pointer-events: none;
+  position: absolute;
+  z-index: -3;
+  inset: 14px 12px -14px;
+  border-radius: 30px;
+  background: rgba(15,23,42,.12);
+  filter: blur(15px);
+  transform: translateZ(-30px);
+}
+
+.dark .dv-rail-depth-shadow {
+  background: rgba(0,0,0,.55);
+}
+
+.dv-rail-underplate {
+  pointer-events: none;
+  position: absolute;
+  z-index: -2;
+  inset: 9px -7px 9px 7px;
+  border: 1px solid rgba(184,156,255,.20);
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255,107,114,.06), rgba(184,156,255,.12));
+  box-shadow: 10px 16px 34px rgba(76,29,149,.09);
+  transform: translateZ(-18px);
+}
+
+.dark .dv-rail-underplate {
+  border-color: rgba(184,156,255,.10);
+  background:
+    linear-gradient(180deg, rgba(255,107,114,.05), rgba(128,96,241,.09));
+}
+
+.dv-rail-stars {
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.dv-rail-stars::before,
+.dv-rail-stars::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.dv-rail-stars::before {
+  opacity: .76;
+  background-image:
+    radial-gradient(circle at 19px 31px, rgba(184,156,255,.78) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 68px 92px, rgba(255,107,114,.64) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 118px 48px, rgba(128,96,241,.56) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 167px 126px, rgba(255,255,255,.90) 0 1px, transparent 1.7px);
+  background-size: 196px 156px;
+  mask-image: linear-gradient(to bottom, black 0 72%, transparent 96%);
+  animation: dvRailStars 18s linear infinite;
+}
+
+.dv-rail-stars::after {
+  background:
+    radial-gradient(circle at 16% 2%, rgba(255,91,91,.16), transparent 28%),
+    radial-gradient(circle at 86% 10%, rgba(184,156,255,.20), transparent 32%);
+  filter: blur(8px);
+}
+
+.dv-frame-brand {
+  position: relative;
+  z-index: 3;
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  gap: .78rem;
+  margin: .48rem;
+  padding: .58rem .7rem;
+  border-bottom: 0;
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(255,107,114,.055), rgba(184,156,255,.085));
+  transition: transform .22s ease, background .22s ease;
+}
+
+.dv-frame-brand:hover {
+  transform: translateY(-2px);
+  background:
+    linear-gradient(135deg, rgba(255,107,114,.09), rgba(184,156,255,.13));
+}
+
+.dv-frame-brand-mark {
+  position: relative;
+  width: 62px;
+  height: 58px;
+  flex: 0 0 62px;
+  display: grid;
+  place-items: center;
+}
+
+.dv-frame-brand-mark i {
+  position: absolute;
+  inset: 5px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(255,91,91,.17), rgba(184,156,255,.20) 48%, transparent 72%);
+  filter: blur(7px);
+}
+
+.dv-frame-brand-mark img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 7px 12px rgba(230,61,85,.16))
+    drop-shadow(0 0 14px rgba(184,156,255,.24));
+  animation: dvDockLogoFloat 4.8s ease-in-out infinite;
+}
+
+.dv-frame-brand-copy {
+  min-width: 0;
+  display: grid;
+  line-height: 1;
+}
+
+.dv-frame-brand-copy strong {
+  white-space: nowrap;
+  font-size: .92rem;
+  font-weight: 950;
+  letter-spacing: -.03em;
+  background: linear-gradient(92deg, #ef4c5f 0%, #ff5b5b 34%, #a883ff 72%, #8060f1 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.dark .dv-frame-brand-copy strong {
+  background: linear-gradient(92deg, #ff9292 0%, #ff6b72 34%, #d7c6ff 68%, #b89cff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.dv-frame-brand-copy small {
+  margin-top: .34rem;
+  font-size: .52rem;
+  font-weight: 900;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(100,116,139,.72);
+}
+
+.dark .dv-frame-brand-copy small {
+  color: rgba(226,232,240,.46);
+}
+
+.dv-frame-nav-scroll {
+  position: relative;
+  z-index: 3;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: visible;
+  padding: .5rem .72rem .8rem;
+  scrollbar-width: none;
+}
+
+.dv-frame-nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.dv-frame-group {
+  position: relative;
+}
+
+.dv-frame-group + .dv-frame-group {
+  margin-top: 1.1rem;
+}
+
+.dv-frame-group-label {
+  margin: 0 0 .46rem;
+  padding-inline: .5rem;
+  font-size: .52rem;
+  font-weight: 950;
+  letter-spacing: .22em;
+  color: rgba(100,116,139,.58);
+}
+
+.dark .dv-frame-group-label {
+  color: rgba(226,232,240,.34);
+}
+
+.dv-frame-group-items {
+  position: relative;
+  display: grid;
+  gap: .28rem;
+}
+
+.dv-frame-group--orbit .dv-frame-group-items {
+  padding-block: .2rem;
+}
+
+.dv-rail-orbit-line {
+  pointer-events: none;
+  position: absolute;
+  left: 24px;
+  top: 18px;
+  bottom: 18px;
+  width: 1px;
+  background:
+    linear-gradient(180deg, transparent, rgba(184,156,255,.56) 15%, rgba(255,107,114,.38) 55%, rgba(128,96,241,.50) 84%, transparent);
+  box-shadow: 0 0 12px rgba(184,156,255,.25);
+}
+
+.dv-frame-link-wrap {
+  position: relative;
+  z-index: 2;
+}
+
+.dv-frame-link {
+  position: relative;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: .72rem;
+  padding: .36rem .5rem;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  color: rgba(71,85,105,.72);
+  background: transparent;
+  transition:
+    color .22s ease,
+    border-color .22s ease,
+    background .22s ease,
+    box-shadow .22s ease;
+}
+
+.dark .dv-frame-link {
+  color: rgba(255,255,255,.48);
+}
+
+.dv-frame-link:hover {
+  color: #362a43;
+  border-color: rgba(184,156,255,.16);
+  background: rgba(255,255,255,.56);
+}
+
+.dark .dv-frame-link:hover {
+  color: #fff;
+  border-color: rgba(184,156,255,.14);
+  background: rgba(255,255,255,.045);
+}
+
+.dv-frame-link.is-active {
+  color: #251a33;
+  border-color: rgba(184,156,255,.20);
+  background:
+    linear-gradient(102deg, rgba(255,107,114,.075), rgba(184,156,255,.12));
+  box-shadow:
+    0 10px 24px rgba(15,23,42,.07),
+    0 8px 26px color-mix(in srgb, var(--dv-item-accent) 14%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.68);
+}
+
+.dark .dv-frame-link.is-active {
+  color: #fff;
+  border-color: rgba(255,255,255,.09);
+  background:
+    linear-gradient(102deg, rgba(255,107,114,.07), rgba(184,156,255,.095));
+  box-shadow:
+    0 12px 28px rgba(0,0,0,.24),
+    0 8px 28px color-mix(in srgb, var(--dv-item-accent) 17%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.dv-frame-link-icon {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(148,163,184,.52);
+  border-radius: 999px;
+  color: rgba(71,85,105,.72);
+  background: rgba(255,255,255,.86);
+  box-shadow: 0 5px 15px rgba(15,23,42,.08);
+  transition: transform .22s ease, border-color .22s ease, color .22s ease;
+}
+
+.dark .dv-frame-link-icon {
+  border-color: rgba(255,255,255,.14);
+  color: rgba(255,255,255,.55);
+  background: rgba(11,13,23,.88);
+}
+
+.dv-frame-link:hover .dv-frame-link-icon {
+  transform: translateX(2px) scale(1.025);
+  border-color: color-mix(in srgb, var(--dv-item-accent) 38%, rgba(148,163,184,.35));
+  color: var(--dv-item-accent);
+}
+
+.dv-frame-link.is-active .dv-frame-link-icon {
+  transform: scale(1.06);
+  border-color: rgba(255,255,255,.82);
+  background: #fff;
+  color: #251a33;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--dv-item-accent) 12%, transparent),
+    0 0 22px color-mix(in srgb, var(--dv-item-accent) 40%, transparent),
+    0 8px 22px rgba(15,23,42,.13);
+}
+
+.dark .dv-frame-link.is-active .dv-frame-link-icon {
+  border-color: rgba(255,255,255,.78);
+  background: #fff;
+  color: #160d22;
+}
+
+.dv-frame-active-orbit {
+  pointer-events: none;
+  position: absolute;
+  inset: -7px;
+  border: 1px solid color-mix(in srgb, var(--dv-item-accent) 58%, transparent);
+  border-radius: 999px;
+  animation: dvDockOrbitPulse 2.8s ease-in-out infinite;
+}
+
+.dv-frame-node {
+  position: absolute;
+  right: -2px;
+  top: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--dv-item-accent);
+  box-shadow: 0 0 9px var(--dv-item-accent);
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.dv-frame-link:hover .dv-frame-node,
+.dv-frame-link.is-active .dv-frame-node {
+  opacity: 1;
+}
+
+.dv-frame-link-copy {
+  min-width: 0;
+  display: grid;
+  gap: .16rem;
+}
+
+.dv-frame-link-copy strong {
+  font-size: .73rem;
+  font-weight: 900;
+  letter-spacing: -.015em;
+}
+
+.dv-frame-link-copy small {
+  font-size: .47rem;
+  font-weight: 950;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--dv-item-accent);
+}
+
+.dv-frame-rail-footer {
+  position: relative;
+  z-index: 3;
+  margin: .5rem;
+  padding: .62rem;
+  border-top: 0;
+  border: 1px solid rgba(184,156,255,.14);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255,107,114,.045), rgba(184,156,255,.075));
+}
+
+.dv-frame-utility {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+}
+
+.dv-frame-utility > button {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 13px !important;
+}
+
+.dv-frame-utility > div:last-child {
+  display: grid;
+  line-height: 1;
+}
+
+.dv-frame-utility strong {
+  font-size: .66rem;
+  font-weight: 900;
+  color: #4d405a;
+}
+
+.dark .dv-frame-utility strong {
+  color: rgba(255,255,255,.72);
+}
+
+.dv-frame-utility small {
+  margin-top: .3rem;
+  font-size: .5rem;
+  color: rgba(100,116,139,.64);
+}
+
+.dark .dv-frame-utility small {
+  color: rgba(255,255,255,.34);
+}
+
+.dv-frame-orbit-mark {
+  height: 1px;
+  margin: .65rem 0 .45rem;
+  background:
+    linear-gradient(90deg, transparent, rgba(255,91,91,.65), rgba(184,156,255,.75), transparent);
+  box-shadow: 0 0 9px rgba(184,156,255,.22);
+}
+
+.dv-frame-rail-footer p {
+  margin: 0;
+  text-align: center;
+  font-size: .47rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: rgba(100,116,139,.50);
+}
+
+.dark .dv-frame-rail-footer p {
+  color: rgba(255,255,255,.28);
+}
+
+.dv-subpage-stage {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: .72rem;
+}
+
+.dv-subpage-contextbar {
+  position: sticky;
+  top: 1rem;
+  z-index: 80;
+  min-height: 64px;
+  padding: .7rem .9rem .7rem 1rem;
+  border-radius: 22px;
+  box-shadow:
+    0 18px 44px rgba(15,23,42,.10),
+    0 8px 22px rgba(128,96,241,.07),
+    inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+.dark .dv-subpage-contextbar {
+  box-shadow:
+    0 20px 52px rgba(0,0,0,.34),
+    0 8px 24px rgba(128,96,241,.09),
+    inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.dv-subpage-slot {
+  min-height: calc(100vh - 6.5rem);
+  border-radius: 30px;
+}
+
+.dv-subpage-slot > :where(main, div)[class*="min-h-screen"] {
+  min-height: calc(100vh - 7rem) !important;
+}
+
+/* Home is now inside the app shell. Its old navbar compensation must stay dead. */
+.dv-site-shell[data-route="/"] .dv-subpage-slot > div {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.dv-site-shell[data-route="/"] .dv-subpage-slot > div > main {
+  max-width: none;
+  padding-inline: clamp(1rem, 2.2vw, 2rem);
+}
+
+.dv-subpage-theme :where(main, section, article, aside) {
+  scroll-margin-top: 5.8rem;
+}
+
+/* Nested sticky page controls sit below the compact context bar, not below a deleted navbar. */
+.dv-subpage-theme[data-route="/gallery"] header + section,
+.dv-subpage-theme[data-route="/universe"] .dv-route-content section:nth-of-type(2),
+.dv-subpage-theme :where(section, article, aside)[class*="sticky"] {
+  top: 5.8rem !important;
+}
+
+/* Focus/auth pages no longer reserve the old top-nav height. */
+.dv-subpage-frame--focus {
+  width: min(calc(100% - 2rem), 86rem);
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+}
+
+.dv-focus-brandbar {
+  position: sticky;
+  top: 1rem;
+  z-index: 80;
+}
+
+/* Medium screens keep a real sidebar, but collapse it to an icon dock. */
+@media (max-width: 1179px) and (min-width: 768px) {
+  .dv-subpage-frame:not(.dv-subpage-frame--focus) {
+    width: min(calc(100% - 1.25rem), 92rem);
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: .7rem;
+    padding-top: .7rem;
+  }
+
+  .dv-subpage-rail {
+    top: .7rem;
+    height: calc(100vh - 1.4rem);
+    min-height: 560px;
+    border-radius: 26px;
+  }
+
+  .dv-frame-brand {
+    min-height: 74px;
+    justify-content: center;
+    padding: .45rem;
+  }
+
+  .dv-frame-brand-mark {
+    width: 58px;
+    height: 54px;
+    flex-basis: 58px;
+  }
+
+  .dv-frame-brand-copy,
+  .dv-frame-group-label,
+  .dv-frame-link-copy,
+  .dv-frame-utility > div:last-child,
+  .dv-frame-rail-footer p {
+    display: none;
+  }
+
+  .dv-frame-nav-scroll {
+    display: block;
+    overflow-y: auto;
+    padding: .45rem .5rem;
+  }
+
+  .dv-frame-group + .dv-frame-group {
+    margin-top: .75rem;
+  }
+
+  .dv-frame-group-items {
+    display: grid;
+    gap: .36rem;
+  }
+
+  .dv-rail-orbit-line {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .dv-frame-link {
+    width: 100%;
+    min-height: 54px;
+    justify-content: center;
+    padding: .4rem;
+    border-radius: 17px;
+  }
+
+  .dv-frame-link-icon {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .dv-frame-rail-footer {
+    padding: .5rem;
+  }
+
+  .dv-frame-utility {
+    justify-content: center;
+  }
+
+  .dv-subpage-contextbar {
+    top: .7rem;
+  }
+}
+
+/* Phones turn the same dock into a floating horizontal orbit bar. */
+@media (max-width: 767px) {
+  .dv-subpage-frame:not(.dv-subpage-frame--focus) {
+    width: 100%;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: .45rem;
+    padding: 0 0 1rem;
+  }
+
+  .dv-subpage-rail {
+    position: sticky;
+    top: .45rem;
+    z-index: 100;
+    width: calc(100% - .75rem);
+    height: 68px;
+    min-height: 0;
+    margin: .45rem auto 0;
+    display: flex;
+    align-items: center;
+    overflow: visible;
+    border-radius: 23px;
+  }
+
+  .dv-rail-depth-shadow {
+    inset: 8px 10px -9px;
+    border-radius: 23px;
+  }
+
+  .dv-rail-underplate {
+    inset: 5px -4px 5px 4px;
+    border-radius: 23px;
+  }
+
+  .dv-frame-brand {
+    width: 58px;
+    min-height: 58px;
+    flex: 0 0 58px;
+    justify-content: center;
+    margin: .28rem .08rem .28rem .28rem;
+    padding: .2rem;
+    border-radius: 18px;
+  }
+
+  .dv-frame-brand-mark {
+    width: 52px;
+    height: 48px;
+    flex-basis: 52px;
+  }
+
+  .dv-frame-brand-copy,
+  .dv-frame-group-label,
+  .dv-frame-link-copy,
+  .dv-frame-rail-footer {
+    display: none;
+  }
+
+  .dv-frame-nav-scroll {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: .24rem;
+    padding: .35rem .45rem;
+  }
+
+  .dv-frame-group,
+  .dv-frame-group + .dv-frame-group {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  .dv-frame-group-items {
+    display: flex;
+    gap: .24rem;
+  }
+
+  .dv-rail-orbit-line {
+    left: 16px;
+    right: 16px;
+    top: 50%;
+    bottom: auto;
+    width: auto;
+    height: 1px;
+    transform: translateY(-50%);
+    background:
+      linear-gradient(90deg, transparent, rgba(184,156,255,.48), rgba(255,107,114,.34), rgba(128,96,241,.46), transparent);
+  }
+
+  .dv-frame-link {
+    width: 48px;
+    min-height: 48px;
+    justify-content: center;
+    padding: .2rem;
+    border-radius: 16px;
+  }
+
+  .dv-frame-link-icon {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .dv-subpage-stage {
+    gap: .45rem;
+  }
+
+  .dv-subpage-contextbar {
+    top: 4.75rem;
+    width: calc(100% - .75rem);
+    min-height: 52px;
+    margin-inline: auto;
+    border-radius: 18px;
+    padding: .52rem .7rem;
+  }
+
+  .dv-subpage-slot {
+    min-height: calc(100vh - 8rem);
+    border-inline: 0;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .dv-site-shell[data-route="/"] .dv-subpage-slot > div > main {
+    padding-inline: .75rem;
+  }
+
+  .dv-subpage-theme[data-route="/gallery"] header + section,
+  .dv-subpage-theme[data-route="/universe"] .dv-route-content section:nth-of-type(2) {
+    position: relative !important;
+    top: auto !important;
+  }
+
+  .dv-subpage-frame--focus {
+    width: 100%;
+    padding-top: .5rem;
+  }
+
+  .dv-focus-brandbar {
+    top: .5rem;
+  }
+}
+
+@keyframes dvDockLogoFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2px) scale(1.012); }
+}
+
+@keyframes dvDockOrbitPulse {
+  0%, 100% { opacity: .55; transform: scale(.96); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+@keyframes dvRailStars {
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 0 190px, 0 240px, 0 160px, 0 280px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dv-frame-brand-mark img,
+  .dv-frame-active-orbit,
+  .dv-rail-stars::before {
+    animation: none !important;
+  }
+}
