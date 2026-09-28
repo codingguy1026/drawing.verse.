@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ChevronRight, FileText, Layers3, LockKeyhole, ShieldAlert, UsersRound } from "lucide-react";
+import { ArrowLeft, ChevronRight, Layers3, LockKeyhole, ShieldAlert, UsersRound } from "lucide-react";
 
 export default async function UniverseSettingsPage({
   params,
@@ -29,12 +29,62 @@ export default async function UniverseSettingsPage({
         </header>
 
         <div className="divide-y divide-slate-200 dark:divide-white/10">
-          <SettingsSection
-            icon={<FileText className="size-5" />}
-            title="기본 정보"
-            description="Universe 이름, 설명, 아이콘처럼 사람들이 가장 먼저 보는 정보를 관리합니다."
-            items={["이름", "설명", "아이콘"]}
-          />
+          <section className="py-8">
+            <div>
+              <h2 className="text-lg font-black">기본 정보</h2>
+              <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-white/50">
+                Universe 이름, 설명, 아이콘처럼 사람들이 가장 먼저 보는 정보를 관리합니다.
+              </p>
+            </div>
+
+            <form className="mt-6 space-y-5">
+              <label className="block">
+                <span className="text-sm font-bold">이름</span>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Universe 이름"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none placeholder:text-slate-400 focus:border-slate-400 dark:border-white/10 dark:bg-white/[0.03] dark:focus:border-white/30"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-bold">설명</span>
+                <textarea
+                  name="description"
+                  rows={4}
+                  placeholder="이 Universe가 어떤 공간인지 설명해 주세요."
+                  className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 outline-none placeholder:text-slate-400 focus:border-slate-400 dark:border-white/10 dark:bg-white/[0.03] dark:focus:border-white/30"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-bold">아이콘</span>
+                <input
+                  type="text"
+                  name="icon"
+                  placeholder="예: 🌌"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none placeholder:text-slate-400 focus:border-slate-400 dark:border-white/10 dark:bg-white/[0.03] dark:focus:border-white/30 sm:max-w-40"
+                />
+              </label>
+
+              <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-5 dark:border-white/10 sm:flex-row sm:justify-end">
+                <Link
+                  href={universeHref}
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-bold dark:border-white/10"
+                >
+                  취소
+                </Link>
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-950 px-5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-950"
+                >
+                  변경사항 저장
+                </button>
+              </div>
+            </form>
+          </section>
 
           <SettingsSection
             icon={<UsersRound className="size-5" />}
