@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Bell, BellOff, BookOpen, Compass, Flame, Image as ImageIcon, Info, MessageCircle, Orbit, PenLine, ShieldCheck, Sparkles, Star, Users } from "lucide-react";
+import { ArrowLeft, Bell, BellOff, BookOpen, Compass, Flame, Image as ImageIcon, Info, MessageCircle, Orbit, PenLine, Plus, ShieldCheck, Sparkles, Star, Sun, Users } from "lucide-react";
 import SportsPanel, { TeamLogo } from "@/components/Sports/SportsPanel";
 import { resolveSportsConfig, safeAsset } from "@/lib/sports/config";
 import type { SportsConfig } from "@/lib/sports/types";
 import { supabase } from "@/lib/supabase/client";
 
 type UniverseRow = { icon?: string; visibility?: string; sections?: string[]; rules?: string; id: number | string; slug: string; name: string; description: string | null; category: string | null; subscriber_count: number | null; post_count: number | null };
-type PostRow = { id: number | string; public_id?: string | null; title: string; author?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; universe_slug?: string | null };
+type PostRow = { id: number | string; public_id?: string | null; title: string; author?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; universe_slug?: string | null };\ntype StellarSystemRow = { id: number | string; universe_slug: string; slug: string; name: string; description: string; icon: string; accent: string; owner_id: string; created_at: string };
 type FeedMode = "latest" | "popular";
 
 const cn = (...v: Array<string | false | null | undefined>) => v.filter(Boolean).join(" ");
@@ -24,7 +24,7 @@ function relativeDate(value?: string | null) {
 
 export default function UniverseDetailClient({ slug }: { slug: string }) {
   const [universe, setUniverse] = useState<UniverseRow | null>(null);
-  const [posts, setPosts] = useState<PostRow[]>([]);
+  const [posts, setPosts] = useState<PostRow[]>([]);\n  const [systems, setSystems] = useState<StellarSystemRow[]>([]);\n  const [canCreateSystem, setCanCreateSystem] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [section, setSection] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
       ]);
       if (ignore) return;
       if (u.error || !u.data) { setNotFound(true); setLoading(false); return; }
-      setUniverse(u.data as UniverseRow); setPosts((p.data as PostRow[] | null) ?? []); setNotFound(false);
+      setUniverse(u.data as UniverseRow); setPosts((p.data as PostRow[] | null) ?? []); setSystems((systemsResult.data as StellarSystemRow[] | null) ?? []); setCanCreateSystem(Boolean(a.data.user && (u.data as UniverseRow & { owner_id?: string }).owner_id === a.data.user.id)); setNotFound(false);
       if (a.data.user) {
         const s = await supabase.from("universe_subscriptions").select("universe_slug").eq("user_id", a.data.user.id).eq("universe_slug", slug).maybeSingle();
         if (!ignore) { if (s.error) setSubscriptionReady(false); else setSubscribed(Boolean(s.data)); }
@@ -53,7 +53,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
     setLoading(true); load();
     const channel = supabase.channel(`universe-detail-${slug}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "posts", filter: `universe_slug=eq.${slug}` }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "universes", filter: `slug=eq.${slug}` }, load).subscribe();
+      .on("postgres_changes", { event: "*", schema: "public", table: "universes", filter: `slug=eq.${slug}` }, load)\n      .on("postgres_changes", { event: "*", schema: "public", table: "stellar_systems", filter: `universe_slug=eq.${slug}` }, load).subscribe();
     return () => { ignore = true; supabase.removeChannel(channel); };
   }, [slug]);
 
@@ -85,7 +85,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
     <div className="relative mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6 sm:pt-10 lg:px-8 lg:pt-12">
       <nav className="mb-4 flex items-center justify-between gap-4"><Link href="/universe" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-violet-600 dark:text-white/55"><ArrowLeft className="size-4"/> 모든 유니버스</Link><button onClick={toggleSubscription} disabled={!subscriptionReady || subscriptionBusy} className={cn("inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition disabled:opacity-50", subscribed ? "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-400/20 dark:bg-violet-500/10 dark:text-violet-200" : "border-slate-200 bg-white/80 text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-white/70")}>{subscribed ? <BellOff className="size-4"/> : <Bell className="size-4"/>}{subscriptionBusy ? "처리 중..." : subscribed ? "구독 중" : "구독하기"}</button></nav>
       <Hero universe={universe} sports={sportsConfig}/>
-      {sportsConfig && <SportsPanel key={slug} config={sportsConfig}/>} 
+      {sportsConfig && <SportsPanel key={slug} config={sportsConfig}/>}\n      <StellarSystemsSection universeSlug={universe.slug} systems={systems} canCreate={canCreateSystem}/>
       {!!universe.sections?.length && <nav aria-label="게시글 섹션" className="my-6 flex flex-wrap gap-2">{[null, ...universe.sections].map(s => <button key={s ?? '__all'} aria-pressed={section === s} onClick={() => setSection(s)} className={cn("rounded-xl border px-4 py-2 text-sm", section === s && "bg-violet-600 text-white")}>{s ?? '전체'}</button>)}</nav>}
       <div className="relative z-10 -mt-5 px-3 sm:px-7"><div className="inline-flex max-w-full items-center gap-1 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-[0_12px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/95"><button onClick={() => setFeedMode("popular")} className={cn("inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold", feedMode === "popular" ? "bg-violet-50 text-violet-700 dark:bg-violet-500/15 dark:text-violet-200" : "text-slate-500 dark:text-white/50")}><Star className="size-4"/> 인기</button><Link href="/gallery" className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-500"><ImageIcon className="size-4"/> 갤러리</Link><a href="#universe-info" className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-500"><Info className="size-4"/> 정보</a></div></div>
       <section className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -94,6 +94,17 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
       </section>
     </div>
   </main>;
+}
+
+function StellarSystemsSection({ universeSlug, systems, canCreate }: { universeSlug: string; systems: StellarSystemRow[]; canCreate: boolean }) {
+  return <section className="mt-7 rounded-[2rem] border border-amber-200/60 bg-gradient-to-br from-amber-50/80 via-white/80 to-violet-50/70 p-5 dark:border-amber-300/10 dark:from-amber-400/[0.05] dark:via-white/[0.03] dark:to-violet-500/[0.05] sm:p-7">
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div><p className="text-[11px] font-black uppercase tracking-[.25em] text-amber-500">Stellar Systems</p><h2 className="mt-1 text-2xl font-black">항성계</h2><p className="mt-1 text-sm text-slate-500">이 Universe 안의 주제들이 항성 주위를 돌며 작은 세계를 이룹니다.</p></div>
+      {canCreate && <Link href={`/universe/${encodeURIComponent(universeSlug)}/system/create`} className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-amber-500/20"><Plus className="size-4"/> 항성계 만들기</Link>}
+    </div>
+    {systems.length === 0 ? <div className="mt-6 rounded-[1.6rem] border border-dashed border-amber-300/70 px-6 py-8 text-center dark:border-amber-300/15"><Sun className="mx-auto size-7 text-amber-500"/><p className="mt-3 font-black">아직 항성계가 없어요</p><p className="mt-1 text-sm text-slate-500">{canCreate ? "첫 항성을 점화해서 이 Universe에 구조를 만들어보세요." : "Universe 소유자가 첫 항성을 점화하면 여기에 나타납니다."}</p></div> :
+    <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{systems.map((system,index)=><Link key={system.id} href={`/universe/${encodeURIComponent(universeSlug)}/system/${encodeURIComponent(system.slug)}`} className="group relative overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white/80 p-5 transition hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-white/[0.04]"><div className="absolute -right-8 -top-8 size-28 rounded-full opacity-10 blur-xl" style={{backgroundColor:system.accent}}/><div className="relative flex items-center gap-4"><div className="grid size-12 shrink-0 place-items-center rounded-full text-xl shadow-lg" style={{background:`radial-gradient(circle at 35% 30%, white, ${system.accent})`}}>{system.icon}</div><div className="min-w-0"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-400">Orbit {String(index+1).padStart(2,"0")}</p><h3 className="truncate text-lg font-black group-hover:text-amber-600">{system.name}</h3></div></div><p className="relative mt-4 line-clamp-2 text-sm leading-6 text-slate-500">{system.description || "새로운 항성계가 점화되었습니다."}</p></Link>)}</div>}
+  </section>;
 }
 
 function Hero({ universe, sports }: { universe: UniverseRow; sports: SportsConfig | null }) { const banner = sports?.banner ? safeAsset(sports.banner) : undefined; return <section style={sports ? { borderTop: `4px solid ${sports.color}` } : undefined} className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/85 shadow-[0_20px_55px_rgba(148,163,184,0.14)] backdrop-blur-3xl dark:border-white/10 dark:bg-white/[0.045]">{banner && <div className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-15" style={{ backgroundImage: `url(${JSON.stringify(banner)})` }}/>}<div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[38%] sm:block"><div className="absolute right-[-70px] top-[-100px] size-80 rounded-full border border-violet-300/35"/><div className="absolute right-16 top-12 size-44 rounded-full border border-sky-300/35"/><div className="absolute right-[28%] top-[38%] size-3 rounded-full bg-violet-500 shadow-[0_0_28px_rgba(139,92,246,.7)]"/><div className="absolute right-[12%] top-[48%] h-px w-56 -rotate-12 bg-gradient-to-r from-transparent via-violet-400/70 to-transparent"/></div><div className="relative px-6 py-7 sm:px-9 sm:py-9 lg:px-10"><div className="max-w-3xl"><span className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-700 ring-1 ring-violet-100 dark:bg-violet-500/10 dark:text-violet-200"><Orbit className="size-3.5"/>{universe.category ?? "Universe"}</span>{sports?.logo && <div className="mt-4"><TeamLogo team={{ id: universe.slug, name: universe.name, logo: sports.logo, color: sports.color }}/></div>}<h1 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-5xl">{universe.icon} {universe.name}</h1><p className="mt-2 text-sm text-slate-500">{universe.visibility === 'private' ? '비공개 · 소유자만 접근' : '공개 유니버스'}</p><p className="mt-3 max-w-2xl text-base leading-7 text-slate-600 dark:text-white/55">{sports?.tagline ?? universe.description ?? "이 유니버스의 이야기가 곧 시작됩니다."}</p><div className="mt-5 flex flex-wrap items-center gap-5 text-sm font-bold text-slate-500"><span className="inline-flex items-center gap-2"><Users className="size-4"/> 멤버 {compactNumber(universe.subscriber_count ?? 0)}</span><span className="inline-flex items-center gap-2"><BookOpen className="size-4"/> 게시글 {compactNumber(universe.post_count ?? 0)}</span></div></div><Link href={`/universe/${encodeURIComponent(universe.slug)}/write`} className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white shadow-[0_12px_28px_rgba(124,58,237,.22)] sm:absolute sm:bottom-8 sm:right-9 sm:mt-0"><PenLine className="size-4"/> 글쓰기</Link></div></section>; }
