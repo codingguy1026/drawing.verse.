@@ -33,14 +33,15 @@ function hash(input: string) {
 
 function seededPoint(item: UniverseItem, index: number, total: number) {
   const h = hash(item.slug || item.id);
-  const ring = index % 3;
-  const baseRadius = [22, 34, 43][ring];
-  const radius = baseRadius + ((h % 700) / 700) * 6;
-  const angle = (index / Math.max(total, 1)) * TAU * 2.399 + (h % 360) * Math.PI / 180;
+  // Keep small galaxies deliberately readable: 1-6 universes get evenly spaced,
+  // guaranteed in-frame positions instead of hash-dependent clustering.
+  const safeTotal = Math.max(total, 1);
+  const angle = -Math.PI / 2 + (index / safeTotal) * TAU + ((h % 17) - 8) * 0.012;
+  const radius = safeTotal <= 2 ? 28 : safeTotal <= 6 ? 34 : 38 + (index % 2) * 5;
   return {
     x: 50 + Math.cos(angle) * radius,
-    y: 50 + Math.sin(angle) * radius * 0.72,
-    size: 58 + (h % 26),
+    y: 50 + Math.sin(angle) * radius * 0.68,
+    size: 66 + (h % 24),
     accent: accents[h % accents.length],
   };
 }
@@ -71,7 +72,7 @@ function GalaxyView({ items, onOpen }: { items: UniverseItem[]; onOpen:(item:Uni
     </div>
     {items.map((item,index)=>{
       const p=seededPoint(item,index,items.length);
-      return <button key={item.id} onClick={()=>onOpen(item)} className="group absolute z-20 -translate-x-1/2 -translate-y-1/2 text-left" style={{left:`${p.x}%`,top:`${p.y}%`}}>
+      return <button key={item.id} onClick={()=>onOpen(item)} className="group absolute z-40 -translate-x-1/2 -translate-y-1/2 text-left" style={{left:`${p.x}%`,top:`${p.y}%`}}>
         <span className="absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 blur-2xl transition group-hover:opacity-40" style={{background:p.accent}}/>
         <span className="relative grid rounded-full border border-white/20 shadow-2xl transition duration-300 group-hover:scale-110 group-hover:border-white/55" style={{width:p.size,height:p.size,background:`radial-gradient(circle at 34% 28%, #fff, ${p.accent} 34%, #11152c 100%)`}}>
           <span className="m-auto max-w-[70%] truncate text-[10px] font-black text-slate-950">{item.name.slice(0,7)}</span>
@@ -146,7 +147,7 @@ export default function CosmicGalaxyExplorer({ items=[] }: { items?:UniverseItem
   return <section className="relative isolate w-full overflow-hidden rounded-[2.4rem] border border-white/10 bg-[#03040b] text-white shadow-[0_35px_120px_rgba(0,0,0,.42)]">
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(128,96,241,.18),transparent_32%),radial-gradient(circle_at_18%_20%,rgba(255,122,122,.11),transparent_25%),radial-gradient(circle_at_82%_78%,rgba(103,232,249,.08),transparent_28%)]"/>
     <Stars/>
-    <header className="relative z-[80] flex flex-col gap-4 border-b border-white/[.07] bg-black/20 px-4 py-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <div className="relative z-[80] flex flex-col gap-4 border-b border-white/[.07] bg-black/55 px-4 py-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:px-6">
       <div className="min-w-0"><Breadcrumb focus={focus} onGalaxy={()=>setFocus({level:"galaxy"})} onUniverse={()=>universe&&setFocus({level:"universe",universe})}/><h2 className="mt-2 truncate text-2xl font-black tracking-[-.04em] sm:text-3xl">{title}</h2><p className="mt-1 text-xs text-white/40">{subtitle}</p></div>
       <div className="flex items-center gap-2">{focus.level!=="galaxy"&&<button onClick={()=>focus.level==="system"?setFocus({level:"universe",universe:focus.universe}):setFocus({level:"galaxy"})} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[.06] px-3 py-2 text-xs font-black text-white/70"><ArrowLeft className="size-4"/> 뒤로</button>}<span className="inline-flex items-center gap-2 rounded-full border border-violet-200/15 bg-violet-300/[.08] px-3 py-2 text-[10px] font-black uppercase tracking-[.16em] text-violet-200"><Compass className="size-3.5"/> Live Map</span></div>
     </header>
@@ -158,6 +159,6 @@ export default function CosmicGalaxyExplorer({ items=[] }: { items?:UniverseItem
       </AnimatePresence>
       {loadingSystems&&focus.level!=="galaxy"&&<div className="absolute inset-0 z-[70] grid place-items-center bg-black/20 backdrop-blur-sm"><motion.div animate={{rotate:360}} transition={{duration:1,repeat:Infinity,ease:"linear"}} className="size-9 rounded-full border-2 border-white/15 border-t-violet-200"/></div>}
     </div>
-    <footer className="relative z-50 flex flex-wrap items-center justify-between gap-3 border-t border-white/[.07] bg-black/20 px-5 py-3 text-[10px] font-bold text-white/35"><span>GALAXY → UNIVERSE → STELLAR SYSTEM</span><span className="flex items-center gap-1.5"><Sparkles className="size-3"/> 클릭해서 공간을 확대하세요</span></footer>
+    <div className="relative z-50 flex flex-wrap items-center justify-between gap-3 border-t border-white/[.07] bg-black/45 px-5 py-3 text-[10px] font-bold text-white/35"><span>GALAXY → UNIVERSE → STELLAR SYSTEM</span><span className="flex items-center gap-1.5"><Sparkles className="size-3"/> 클릭해서 공간을 확대하세요</span></div>
   </section>;
 }
