@@ -10,6 +10,7 @@ export default function PageAnimatePresence({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const isHome = pathname === "/";
 
   return (
     <AnimatePresence mode="wait">
@@ -19,7 +20,7 @@ export default function PageAnimatePresence({
         animate="animate"
         exit="exit"
         variants={pageTransitionVariants}
-        className="w-full h-full"
+        className={`w-full h-full${isHome ? "" : " dv-subpage-theme"}`}
       >
         {children}
       </motion.div>
