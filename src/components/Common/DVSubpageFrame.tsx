@@ -35,7 +35,8 @@ const verseItems: FrameItem[] = [
 
 const toolItems: FrameItem[] = [
   { label: "새 글", href: "/post/new", icon: PenLine, accent: "#ff6b72" },
-  { label: "새 Universe", href: "/universe/create", icon: Sparkles, accent: "#b89cff" },\n  { label: "항성계", href: "/universe", icon: Sun, accent: "#f59e0b" },
+  { label: "새 Universe", href: "/universe/create", icon: Sparkles, accent: "#b89cff" },
+  { label: "항성계", href: "/universe", icon: Sun, accent: "#f59e0b" },
   { label: "검색", href: "/search", icon: Search, accent: "#8a67e8" },
   { label: "My Space", href: "/me", icon: UserRound, accent: "#ff7a7a" },
 ];
@@ -56,7 +57,9 @@ function routeMeta(pathname: string) {
   if (pathname.startsWith("/gallery")) return { eyebrow: "ART ORBIT", title: "Gallery", tone: "coral" };
   if (pathname.startsWith("/community")) return { eyebrow: "SOCIAL SIGNAL", title: "Community", tone: "coral" };
   if (pathname.startsWith("/wormhole")) return { eyebrow: "CROSS VERSE", title: "Wormhole", tone: "lavender" };
-  if (pathname.includes("/system/create")) return { eyebrow: "STELLAR GENESIS", title: "Create System", tone: "coral" };\n  if (pathname.includes("/system/")) return { eyebrow: "STELLAR ORBIT", title: "Stellar System", tone: "lavender" };\n  if (pathname.startsWith("/universe/create")) return { eyebrow: "GENESIS", title: "Create Universe", tone: "coral" };
+  if (pathname.includes("/system/create")) return { eyebrow: "STELLAR GENESIS", title: "Create System", tone: "coral" };
+  if (pathname.includes("/system/")) return { eyebrow: "STELLAR ORBIT", title: "Stellar System", tone: "lavender" };
+  if (pathname.startsWith("/universe/create")) return { eyebrow: "GENESIS", title: "Create Universe", tone: "coral" };
   if (pathname.startsWith("/universe")) return { eyebrow: "VERSE MAP", title: "Universe", tone: "lavender" };
   if (pathname.startsWith("/post/new")) return { eyebrow: "TRANSMISSION", title: "Create Post", tone: "coral" };
   if (pathname.startsWith("/post/")) return { eyebrow: "TRANSMISSION", title: "Post", tone: "lavender" };
