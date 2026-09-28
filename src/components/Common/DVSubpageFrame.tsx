@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   Home,
@@ -107,7 +107,7 @@ function DockGroup({
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={`dv-frame-link${active ? " is-active" : ""}`}
-                style={{ "--dv-item-accent": item.accent } as React.CSSProperties}
+                style={{ "--dv-item-accent": item.accent } as CSSProperties}
               >
                 <span className="dv-frame-link-icon">
                   {active ? <span className="dv-frame-active-orbit" aria-hidden="true" /> : null}
