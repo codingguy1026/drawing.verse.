@@ -1870,7 +1870,7 @@
 }
 
 /* Medium screens keep a real sidebar, but collapse it to an icon dock. */
-@media (max-width: 1179px) and (min-width: 768px) {
+@media (max-width: 1279px) and (min-width: 768px) {
   .dv-subpage-frame:not(.dv-subpage-frame--focus) {
     width: min(calc(100% - 1.25rem), 92rem);
     grid-template-columns: 92px minmax(0, 1fr);
@@ -2465,5 +2465,69 @@
   .dv-frame-link {
     width: 43px !important;
     min-width: 43px !important;
+  }
+}
+
+
+/* =========================================================
+   HOME TABLET COMPOSITION PATCH
+   Keep the hero readable beside the orbit canvas and force
+   the compact icon dock on tablet / small-laptop widths.
+   ========================================================= */
+
+@media (min-width: 900px) and (max-width: 1279px) {
+  .dv-site-shell[data-route="/"] .dv-subpage-slot > div > main {
+    padding-inline: clamp(1rem, 2vw, 1.35rem);
+  }
+
+  .dv-home-hero {
+    min-height: 560px !important;
+    grid-template-columns: minmax(0, 1.18fr) minmax(250px, .82fr) !important;
+    gap: clamp(.75rem, 1.5vw, 1.25rem) !important;
+    padding-bottom: 2.75rem !important;
+  }
+
+  .dv-home-copy {
+    max-width: 650px;
+  }
+
+  .dv-home-title {
+    font-size: clamp(3.25rem, 5.15vw, 4rem) !important;
+    line-height: .94 !important;
+    letter-spacing: -.055em !important;
+  }
+
+  .dv-home-orbit {
+    height: clamp(400px, 40vw, 470px) !important;
+    max-width: 440px !important;
+  }
+
+  .dv-home-actions {
+    gap: .55rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 899px) {
+  .dv-home-hero {
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    padding-bottom: 2.75rem !important;
+  }
+
+  .dv-home-copy {
+    max-width: 680px;
+  }
+
+  .dv-home-title {
+    max-width: 680px;
+    font-size: clamp(3.2rem, 7.2vw, 4rem) !important;
+  }
+
+  .dv-home-orbit {
+    height: 430px !important;
+    max-width: 520px !important;
+    margin-top: .75rem !important;
   }
 }

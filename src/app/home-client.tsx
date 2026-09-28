@@ -367,7 +367,7 @@ export default function HomeClient() {
       </div>
 
       <main className="relative z-10 mx-auto w-full max-w-[1380px] px-4 pb-24 sm:px-6 lg:px-8">
-        <section className="relative min-h-[660px] overflow-visible pb-14 pt-2 sm:pt-3 lg:grid lg:grid-cols-[1.02fr_.98fr] lg:items-center lg:gap-10 lg:pb-20 lg:pt-3">
+        <section className="dv-home-hero relative min-h-[660px] overflow-visible pb-14 pt-2 sm:pt-3 lg:grid lg:grid-cols-[minmax(0,1.14fr)_minmax(280px,.86fr)] lg:items-center lg:gap-5 lg:pb-16 lg:pt-3 xl:grid-cols-[1.02fr_.98fr] xl:gap-10 xl:pb-20">
           {!userLoading && user && (
             <div className="absolute right-0 top-0 z-20">
               {isEditing ? (
@@ -406,7 +406,7 @@ export default function HomeClient() {
             </div>
           )}
 
-          <div className="relative z-10 max-w-[720px]">
+          <div className="dv-home-copy relative z-10 max-w-[720px]">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -420,7 +420,7 @@ export default function HomeClient() {
               <span className="h-px w-10 bg-gradient-to-r from-[#ff6b72]/60 to-[#b89cff]/20" />
             </motion.div>
 
-            <h1 className="max-w-[760px] text-[48px] font-black leading-[.92] tracking-[-.065em] text-slate-950 dark:text-white sm:text-[62px] md:text-[74px] lg:text-[76px] xl:text-[86px]">
+            <h1 className="dv-home-title max-w-[760px] text-[46px] font-black leading-[.92] tracking-[-.06em] text-slate-950 dark:text-white sm:text-[58px] md:text-[64px] lg:text-[62px] xl:text-[86px]">
               <EditableText
                 isEditing={isEditing}
                 value={heroTitle}
@@ -452,7 +452,7 @@ export default function HomeClient() {
               className="mt-8 max-w-[650px] text-[15px] font-medium leading-8 text-slate-500 dark:text-white/45 sm:text-base"
             />
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="dv-home-actions mt-8 flex flex-wrap items-center gap-3">
               <motion.div variants={squishyVariants} whileHover="hover" whileTap="tap">
                 <Link
                   href="/universe"
@@ -510,7 +510,7 @@ export default function HomeClient() {
             initial={{ opacity: 0, scale: 0.96, y: 18 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.08 }}
-            className="relative mx-auto mt-16 h-[500px] w-full max-w-[590px] lg:mt-0 lg:h-[570px]"
+            className="dv-home-orbit relative mx-auto mt-14 h-[470px] w-full max-w-[520px] lg:mt-0 lg:h-[500px] lg:max-w-[460px] xl:h-[570px] xl:max-w-[590px]"
           >
             <div className="absolute inset-[7%] rounded-full border border-[#b89cff]/15" />
             <div className="absolute inset-[16%] rounded-full border border-dashed border-[#ff7a7a]/20" />
