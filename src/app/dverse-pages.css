@@ -384,3 +384,370 @@
     scroll-behavior: auto !important;
   }
 }
+
+
+/* =========================================================
+   DRAWING VERSE — SUBPAGE LAYOUT SYSTEM
+   One navigation offset, one spacing rhythm, route-aware layouts.
+   ========================================================= */
+
+.dv-subpage-theme .dv-route-content {
+  min-height: calc(100vh - 88px);
+}
+
+.dv-subpage-theme .dv-route-content > :where(main, div)[class*="min-h-screen"] {
+  min-height: calc(100vh - 88px);
+}
+
+/* Shared content rhythm */
+.dv-subpage-theme :where(main, section, article, aside) {
+  scroll-margin-top: 118px;
+}
+
+.dv-subpage-theme :where(section, article, aside, form)[class*="rounded-"] {
+  border-radius: clamp(1.25rem, 2vw, 2rem);
+}
+
+.dv-subpage-theme :where(main, div)[class*="max-w-7xl"] {
+  max-width: 80rem;
+}
+
+.dv-subpage-theme :where(main, div)[class*="max-w-6xl"] {
+  max-width: 74rem;
+}
+
+/* Keep the fixed navbar offset in RootLayout, then remove the second giant top-gap
+   from pages that historically added pt-24 / pt-28 on their own. */
+.dv-subpage-theme[data-route="/community"] .dv-route-content > main,
+.dv-subpage-theme[data-route="/wormhole"] .dv-route-content > main,
+.dv-subpage-theme[data-route="/universe/write"] .dv-route-content > main,
+.dv-subpage-theme[data-route^="/universe/"][data-route$="/settings"] .dv-route-content > main,
+.dv-subpage-theme[data-route^="/universe/"][data-route*="/live/"] .dv-route-content > main {
+  padding-top: clamp(1.75rem, 3vw, 2.75rem) !important;
+}
+
+/* ---------- Gallery: editorial header + sticky controls + roomier art grid ---------- */
+.dv-subpage-theme[data-route="/gallery"] .dv-route-content > main > div {
+  max-width: 82rem;
+  padding-top: clamp(1.75rem, 3vw, 2.75rem) !important;
+  padding-bottom: 6rem !important;
+}
+
+.dv-subpage-theme[data-route="/gallery"] header {
+  margin-bottom: 2.25rem !important;
+}
+
+.dv-subpage-theme[data-route="/gallery"] header > h1 {
+  max-width: 42rem;
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  line-height: 0.98;
+}
+
+.dv-subpage-theme[data-route="/gallery"] header > p {
+  margin-top: 1.5rem !important;
+}
+
+.dv-subpage-theme[data-route="/gallery"] header + section {
+  position: sticky;
+  top: 108px;
+  z-index: 35;
+  margin-bottom: 2.25rem !important;
+  border-color: rgba(184, 156, 255, 0.22) !important;
+  box-shadow:
+    0 18px 44px rgba(77, 44, 111, 0.10),
+    inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+.dark .dv-subpage-theme[data-route="/gallery"] header + section {
+  background: rgba(18, 10, 34, 0.84) !important;
+  box-shadow: 0 20px 54px rgba(0,0,0,.32);
+}
+
+.dv-subpage-theme[data-route="/gallery"] section[class*="mb-24"] > .grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)) !important;
+  gap: clamp(1rem, 2vw, 1.6rem) !important;
+}
+
+@media (min-width: 1024px) {
+  .dv-subpage-theme[data-route="/gallery"] header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
+    grid-template-rows: auto auto auto;
+    align-items: end !important;
+    column-gap: clamp(2.5rem, 5vw, 5rem);
+    text-align: left !important;
+  }
+
+  .dv-subpage-theme[data-route="/gallery"] header > :first-child,
+  .dv-subpage-theme[data-route="/gallery"] header > h1,
+  .dv-subpage-theme[data-route="/gallery"] header > p {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .dv-subpage-theme[data-route="/gallery"] header > :last-child {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: end;
+    max-width: none !important;
+    margin-top: 0 !important;
+  }
+}
+
+/* ---------- Universe index: dashboard-like discovery layout ---------- */
+.dv-subpage-theme[data-route="/universe"] .dv-route-content > div > div[class*="max-w-6xl"] {
+  max-width: 78rem;
+  padding-top: clamp(1.75rem, 3vw, 2.75rem) !important;
+  padding-bottom: 6rem !important;
+}
+
+.dv-subpage-theme[data-route="/universe"] .dv-route-content section:first-child {
+  padding: clamp(1.5rem, 3vw, 2.5rem) !important;
+  min-height: 210px;
+  display: flex;
+  align-items: center;
+}
+
+.dv-subpage-theme[data-route="/universe"] .dv-route-content section:nth-of-type(2) {
+  position: sticky;
+  top: 108px;
+  z-index: 34;
+  border-color: rgba(184, 156, 255, 0.20) !important;
+  box-shadow: 0 16px 40px rgba(77,44,111,.09);
+}
+
+.dv-subpage-theme[data-route="/universe"] .dv-route-content section[class*="space-y"] > .grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 285px), 1fr)) !important;
+  gap: 1rem !important;
+}
+
+/* ---------- Universe detail / write / settings / live ---------- */
+.dv-subpage-theme[data-route^="/universe/"] .dv-route-content > main > div[class*="max-w-7xl"],
+.dv-subpage-theme[data-route^="/universe/"] .dv-route-content > main > div[class*="max-w-6xl"] {
+  width: min(100%, 78rem);
+  margin-inline: auto;
+}
+
+.dv-subpage-theme[data-route^="/universe/"]:not([data-route$="/write"]):not([data-route$="/settings"]) .dv-route-content > main {
+  padding-bottom: 5rem;
+}
+
+.dv-subpage-theme[data-route^="/universe/"][data-route$="/settings"] .dv-route-content > main > div[class*="max-w-3xl"] {
+  max-width: 58rem;
+}
+
+.dv-subpage-theme[data-route^="/universe/"][data-route$="/write"] .dv-route-content > main > div[class*="max-w-6xl"] {
+  max-width: 76rem;
+}
+
+.dv-subpage-theme[data-route^="/universe/"][data-route*="/live/"] .dv-route-content > main {
+  max-width: 72rem !important;
+  padding-inline: clamp(1rem, 3vw, 2rem) !important;
+  margin-inline: auto;
+}
+
+/* ---------- Community: wider conversation stage, less empty air ---------- */
+.dv-subpage-theme[data-route="/community"] .dv-route-content > main {
+  padding-inline: clamp(1rem, 3vw, 2rem) !important;
+  padding-bottom: 5rem;
+}
+
+.dv-subpage-theme[data-route="/community"] .dv-route-content > main > section[class*="max-w-3xl"] {
+  max-width: 61rem;
+}
+
+.dv-subpage-theme[data-route="/community"] .dv-route-content > main > section[class*="max-w-xl"] {
+  max-width: 42rem;
+  margin-top: 1.5rem;
+}
+
+.dv-subpage-theme[data-route="/community"] .dv-route-content > main > section > div[class*="space-y"] {
+  display: grid;
+  gap: clamp(1.25rem, 2vw, 2rem);
+}
+
+/* ---------- Wormhole: cinematic wide composition without the old pt-28 canyon ---------- */
+.dv-subpage-theme[data-route="/wormhole"] .dv-route-content > main {
+  padding-inline: clamp(1rem, 3vw, 2rem) !important;
+}
+
+.dv-subpage-theme[data-route="/wormhole"] .dv-route-content > main > div[class*="max-w-7xl"] {
+  max-width: 78rem;
+}
+
+.dv-subpage-theme[data-route="/wormhole"] .dv-route-content > main > div > section:first-of-type {
+  padding: clamp(1.5rem, 3.5vw, 3rem) !important;
+}
+
+@media (min-width: 1024px) {
+  .dv-subpage-theme[data-route="/wormhole"] .dv-route-content > main > div > section:first-of-type > div[class*="grid"] {
+    grid-template-columns: minmax(0, 1.25fr) minmax(220px, .75fr) !important;
+    gap: clamp(2rem, 5vw, 5rem) !important;
+  }
+}
+
+/* ---------- Me / profile: turn loose cards into a coherent personal dashboard ---------- */
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div[class*="space-y"] {
+  width: min(calc(100% - 2rem), 74rem);
+  margin-inline: auto;
+  padding-block: clamp(1.75rem, 3vw, 3.25rem) 5rem;
+}
+
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:first-child {
+  padding: clamp(1.4rem, 3vw, 2.25rem) !important;
+}
+
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(2) {
+  gap: clamp(.75rem, 1.5vw, 1rem) !important;
+}
+
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(3) {
+  padding: clamp(1rem, 2vw, 1.4rem) !important;
+}
+
+.dv-subpage-theme[data-route^="/users/"] .dv-route-content > main > div[class*="max-w-7xl"] {
+  max-width: 74rem;
+  padding-top: clamp(1.5rem, 3vw, 2.75rem) !important;
+  padding-bottom: 5rem !important;
+}
+
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content > main > div[class*="max-w-3xl"] {
+  max-width: 58rem;
+  padding-inline: clamp(1rem, 3vw, 2rem) !important;
+}
+
+/* ---------- Search: two-column result board instead of a bare vertical list ---------- */
+.dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] {
+  width: min(calc(100% - 2rem), 70rem);
+  max-width: 70rem;
+  margin-inline: auto;
+  padding: clamp(2rem, 4vw, 3.5rem) 0 5rem !important;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] > h1,
+.dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] > p {
+  grid-column: 1 / -1;
+}
+
+.dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] > h1 {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] > section {
+  min-width: 0;
+  padding: clamp(1.15rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--dv-border);
+  border-radius: 1.75rem;
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 44px rgba(77,44,111,.08);
+}
+
+.dark .dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] > section {
+  background: rgba(24,14,43,.72);
+}
+
+.dv-subpage-theme[data-route="/search"] section > h2 {
+  margin-bottom: .9rem;
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--dv-lavender-600);
+}
+
+.dv-subpage-theme[data-route="/search"] section li {
+  padding: .9rem 1rem;
+  border: 1px solid rgba(128,96,241,.10);
+  border-radius: 1rem;
+  background: rgba(255,255,255,.42);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.dark .dv-subpage-theme[data-route="/search"] section li {
+  background: rgba(255,255,255,.035);
+}
+
+.dv-subpage-theme[data-route="/search"] section li:hover {
+  transform: translateY(-2px);
+  border-color: rgba(184,156,255,.34);
+}
+
+/* ---------- Auth: consistent split-card proportions ---------- */
+.dv-subpage-theme[data-route="/login"] .dv-route-content > main,
+.dv-subpage-theme[data-route="/auth/login"] .dv-route-content > div,
+.dv-subpage-theme[data-route="/auth/register"] .dv-route-content > div,
+.dv-subpage-theme[data-route="/register"] .dv-route-content > :where(main, div),
+.dv-subpage-theme[data-route="/signup"] .dv-route-content > :where(main, div) {
+  min-height: calc(100vh - 92px) !important;
+  padding: clamp(1rem, 3vw, 2rem) !important;
+}
+
+.dv-subpage-theme[data-route="/login"] .dv-route-content section[class*="max-w-5xl"] {
+  max-width: 70rem;
+  min-height: min(700px, calc(100vh - 150px));
+}
+
+/* ---------- Posts / forms: readable central column ---------- */
+.dv-subpage-theme[data-route^="/post/"] .dv-route-content > main {
+  padding-top: clamp(1.75rem, 3vw, 2.75rem) !important;
+  padding-bottom: 5rem !important;
+}
+
+.dv-subpage-theme[data-route^="/post/"] .dv-route-content > main > div[class*="max-w-3xl"] {
+  max-width: 56rem;
+}
+
+.dv-subpage-theme[data-route="/universe/create"] .dv-route-content > main {
+  padding-top: clamp(1.75rem, 3vw, 2.75rem) !important;
+  padding-bottom: 5rem !important;
+}
+
+.dv-subpage-theme[data-route="/universe/create"] .dv-route-content > main > div[class*="max-w-2xl"] {
+  max-width: 54rem;
+}
+
+.dv-subpage-theme[data-route="/universe/create"] form,
+.dv-subpage-theme[data-route^="/universe/"][data-route$="/settings"] form {
+  padding: clamp(1.25rem, 3vw, 2rem) !important;
+}
+
+/* Desktop panels should feel anchored, not float randomly at arbitrary widths. */
+@media (min-width: 1024px) {
+  .dv-subpage-theme :where(section, article, aside)[class*="sticky"] {
+    top: 112px !important;
+  }
+}
+
+/* Mobile: collapse all complex desktop compositions into one clean reading lane. */
+@media (max-width: 767px) {
+  .dv-subpage-theme .dv-route-content {
+    min-height: calc(100vh - 88px);
+  }
+
+  .dv-subpage-theme[data-route="/gallery"] header + section,
+  .dv-subpage-theme[data-route="/universe"] .dv-route-content section:nth-of-type(2) {
+    position: relative;
+    top: auto;
+  }
+
+  .dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] {
+    grid-template-columns: 1fr;
+    width: min(calc(100% - 1.25rem), 70rem);
+  }
+
+  .dv-subpage-theme[data-route="/gallery"] .dv-route-content > main > div,
+  .dv-subpage-theme[data-route="/universe"] .dv-route-content > div > div[class*="max-w-6xl"],
+  .dv-subpage-theme[data-route="/me"] .dv-route-content > div[class*="space-y"] {
+    padding-top: 1.35rem !important;
+  }
+
+  .dv-subpage-theme[data-route="/gallery"] header > h1 {
+    font-size: clamp(2.55rem, 13vw, 4rem);
+  }
+}
