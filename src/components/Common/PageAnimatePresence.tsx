@@ -16,6 +16,7 @@ export default function PageAnimatePresence({
     <AnimatePresence mode="wait">
       <motion.div
         key={pathname}
+        data-route={pathname}
         initial="initial"
         animate="animate"
         exit="exit"

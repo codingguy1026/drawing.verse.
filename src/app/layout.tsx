@@ -77,7 +77,7 @@ export default function RootLayout({
 
             {/* ✅ main children rendering with soft transitions */}
             <PageAnimatePresence>
-              <div className="pt-[88px] sm:pt-[92px]">
+              <div className="dv-route-content pt-[88px] sm:pt-[92px]">
                 {children}
               </div>
             </PageAnimatePresence>
