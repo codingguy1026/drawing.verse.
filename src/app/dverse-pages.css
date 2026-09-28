@@ -1,0 +1,373 @@
+/* =========================================================
+   DRAWING VERSE — SUBPAGE BRAND SYSTEM
+   Applies only when PageAnimatePresence adds .dv-subpage-theme.
+   The home route (/) intentionally keeps its own visual system.
+   ========================================================= */
+
+.dv-subpage-theme {
+  /* Official DV logo palette */
+  --dv-coral-300: #ffb1b6;
+  --dv-coral-400: #ff7a7a;
+  --dv-coral-500: #ff5b5b;
+  --dv-coral-600: #ef4c5f;
+  --dv-coral-700: #e63d55;
+
+  --dv-lavender-200: #e0d3ff;
+  --dv-lavender-300: #d7c6ff;
+  --dv-lavender-400: #b89cff;
+  --dv-lavender-500: #9d7cf8;
+  --dv-lavender-600: #8a67e8;
+  --dv-lavender-700: #8060f1;
+
+  /* Tailwind v4 color-token remap.
+     Existing pages/components inherit the DV palette without structural rewrites. */
+  --color-slate-50: #fffafb;
+  --color-slate-100: #f7f1fa;
+  --color-slate-200: #eadff0;
+  --color-slate-300: #d8c8e2;
+  --color-slate-400: #a794b3;
+  --color-slate-500: #7f718b;
+  --color-slate-600: #665873;
+  --color-slate-700: #4d405a;
+  --color-slate-800: #362a43;
+  --color-slate-900: #251a33;
+  --color-slate-950: #160d22;
+
+  --color-violet-50: #fbf9ff;
+  --color-violet-100: #f2edff;
+  --color-violet-200: #e3d9ff;
+  --color-violet-300: #d2c1ff;
+  --color-violet-400: #b89cff;
+  --color-violet-500: #9d7cf8;
+  --color-violet-600: #8a67e8;
+  --color-violet-700: #8060f1;
+  --color-violet-800: #6546d0;
+  --color-violet-900: #4f32ad;
+  --color-violet-950: #2a1765;
+
+  --color-indigo-50: #fbf9ff;
+  --color-indigo-100: #f2edff;
+  --color-indigo-200: #e3d9ff;
+  --color-indigo-300: #d2c1ff;
+  --color-indigo-400: #b89cff;
+  --color-indigo-500: #9d7cf8;
+  --color-indigo-600: #8a67e8;
+  --color-indigo-700: #8060f1;
+  --color-indigo-800: #6546d0;
+  --color-indigo-900: #4f32ad;
+  --color-indigo-950: #2a1765;
+
+  --color-purple-50: #fbf9ff;
+  --color-purple-100: #f2edff;
+  --color-purple-200: #e3d9ff;
+  --color-purple-300: #d2c1ff;
+  --color-purple-400: #b89cff;
+  --color-purple-500: #9d7cf8;
+  --color-purple-600: #8a67e8;
+  --color-purple-700: #8060f1;
+  --color-purple-800: #6546d0;
+  --color-purple-900: #4f32ad;
+  --color-purple-950: #2a1765;
+
+  --color-blue-50: #faf8ff;
+  --color-blue-100: #f0ebff;
+  --color-blue-200: #e2d8ff;
+  --color-blue-300: #cfbcff;
+  --color-blue-400: #b89cff;
+  --color-blue-500: #9b7cf4;
+  --color-blue-600: #8060f1;
+  --color-blue-700: #6b4ed5;
+  --color-blue-800: #573cb5;
+  --color-blue-900: #422c8c;
+  --color-blue-950: #26185b;
+
+  --color-sky-50: #faf8ff;
+  --color-sky-100: #f0ebff;
+  --color-sky-200: #e2d8ff;
+  --color-sky-300: #cfbcff;
+  --color-sky-400: #b89cff;
+  --color-sky-500: #9b7cf4;
+  --color-sky-600: #8060f1;
+  --color-sky-700: #6b4ed5;
+  --color-sky-800: #573cb5;
+  --color-sky-900: #422c8c;
+  --color-sky-950: #26185b;
+
+  --color-cyan-50: #faf8ff;
+  --color-cyan-100: #f0ebff;
+  --color-cyan-200: #e2d8ff;
+  --color-cyan-300: #cfbcff;
+  --color-cyan-400: #b89cff;
+  --color-cyan-500: #9b7cf4;
+  --color-cyan-600: #8060f1;
+  --color-cyan-700: #6b4ed5;
+  --color-cyan-800: #573cb5;
+  --color-cyan-900: #422c8c;
+  --color-cyan-950: #26185b;
+
+  --color-pink-50: #fff7f7;
+  --color-pink-100: #ffe9ea;
+  --color-pink-200: #ffd0d3;
+  --color-pink-300: #ffb1b6;
+  --color-pink-400: #ff7a7a;
+  --color-pink-500: #ff5b5b;
+  --color-pink-600: #ef4c5f;
+  --color-pink-700: #e63d55;
+  --color-pink-800: #bd2d45;
+  --color-pink-900: #92243a;
+  --color-pink-950: #541122;
+
+  --color-fuchsia-50: #fff7f7;
+  --color-fuchsia-100: #ffe9ea;
+  --color-fuchsia-200: #ffd0d3;
+  --color-fuchsia-300: #ffb1b6;
+  --color-fuchsia-400: #ff7a7a;
+  --color-fuchsia-500: #ff5b5b;
+  --color-fuchsia-600: #ef4c5f;
+  --color-fuchsia-700: #e63d55;
+  --color-fuchsia-800: #bd2d45;
+  --color-fuchsia-900: #92243a;
+  --color-fuchsia-950: #541122;
+
+  --color-rose-50: #fff7f7;
+  --color-rose-100: #ffe9ea;
+  --color-rose-200: #ffd0d3;
+  --color-rose-300: #ffb1b6;
+  --color-rose-400: #ff7a7a;
+  --color-rose-500: #ff5b5b;
+  --color-rose-600: #ef4c5f;
+  --color-rose-700: #e63d55;
+  --color-rose-800: #bd2d45;
+  --color-rose-900: #92243a;
+  --color-rose-950: #541122;
+
+  --color-red-50: #fff7f7;
+  --color-red-100: #ffe9ea;
+  --color-red-200: #ffd0d3;
+  --color-red-300: #ffb1b6;
+  --color-red-400: #ff7a7a;
+  --color-red-500: #ff5b5b;
+  --color-red-600: #ef4c5f;
+  --color-red-700: #e63d55;
+  --color-red-800: #bd2d45;
+  --color-red-900: #92243a;
+  --color-red-950: #541122;
+
+  /* Existing DV utility variables */
+  --primary: #8060f1;
+  --primary-glow: rgba(128, 96, 241, 0.42);
+  --accent-cyan: #ff5b5b;
+  --dv-bg: rgba(255, 250, 252, 0.78);
+  --dv-surface: rgba(255, 255, 255, 0.78);
+  --dv-surface-2: rgba(248, 241, 252, 0.84);
+  --dv-text: #251a33;
+  --dv-muted: #75677f;
+  --dv-border: rgba(128, 96, 241, 0.18);
+  --dv-ring: rgba(184, 156, 255, 0.28);
+
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+  color: var(--dv-text);
+  background:
+    radial-gradient(900px 620px at -7% 6%, rgba(255, 91, 91, 0.13), transparent 62%),
+    radial-gradient(900px 700px at 106% 3%, rgba(184, 156, 255, 0.22), transparent 62%),
+    radial-gradient(1100px 720px at 52% 112%, rgba(128, 96, 241, 0.10), transparent 64%),
+    linear-gradient(180deg, #fffdfd 0%, #fbf7ff 48%, #fff9fb 100%);
+}
+
+.dark .dv-subpage-theme {
+  --dv-bg: rgba(12, 7, 25, 0.92);
+  --dv-surface: rgba(23, 14, 42, 0.76);
+  --dv-surface-2: rgba(30, 18, 53, 0.82);
+  --dv-text: #fbf7ff;
+  --dv-muted: #c6b8cf;
+  --dv-border: rgba(184, 156, 255, 0.18);
+  --dv-ring: rgba(184, 156, 255, 0.30);
+
+  color: var(--dv-text);
+  background:
+    radial-gradient(900px 680px at -6% 4%, rgba(230, 61, 85, 0.18), transparent 64%),
+    radial-gradient(980px 740px at 106% 1%, rgba(128, 96, 241, 0.24), transparent 64%),
+    radial-gradient(900px 720px at 52% 112%, rgba(184, 156, 255, 0.10), transparent 66%),
+    linear-gradient(180deg, #090513 0%, #10081f 48%, #08040f 100%);
+}
+
+/* Brand atmosphere: tiny orbit stars + two soft aurora bands. */
+.dv-subpage-theme::before,
+.dv-subpage-theme::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dv-subpage-theme::before {
+  z-index: 0;
+  opacity: 0.44;
+  background-image:
+    radial-gradient(circle at 17px 23px, rgba(128, 96, 241, 0.30) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 71px 89px, rgba(255, 91, 91, 0.24) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 136px 41px, rgba(184, 156, 255, 0.28) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 188px 132px, rgba(255, 255, 255, 0.65) 0 1px, transparent 1.7px);
+  background-size: 220px 170px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.72), transparent 88%);
+}
+
+.dark .dv-subpage-theme::before {
+  opacity: 0.58;
+}
+
+.dv-subpage-theme::after {
+  z-index: 0;
+  inset: 0 0 auto;
+  height: 380px;
+  background:
+    radial-gradient(ellipse at 26% 12%, rgba(255, 91, 91, 0.09), transparent 44%),
+    radial-gradient(ellipse at 72% 8%, rgba(184, 156, 255, 0.14), transparent 46%);
+  filter: blur(8px);
+}
+
+.dark .dv-subpage-theme::after {
+  background:
+    radial-gradient(ellipse at 25% 8%, rgba(255, 91, 91, 0.12), transparent 44%),
+    radial-gradient(ellipse at 73% 8%, rgba(128, 96, 241, 0.19), transparent 48%);
+}
+
+.dv-subpage-theme > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Many pages have their own full-screen neutral background.
+   On non-home routes, let the DV atmosphere become the page canvas. */
+.dv-subpage-theme > div > :where(main, section, div)[class*="min-h-screen"] {
+  background-color: transparent !important;
+}
+
+.dv-subpage-theme > div > :where(main, section, div)[class*="min-h-screen"][class*="bg-"] {
+  background-image: none !important;
+}
+
+/* Existing glass/surface helpers get a DV-specific finish. */
+.dv-subpage-theme :where(.surface, .dv-glass, .dv-glass-premium) {
+  border-color: var(--dv-border) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 122, 122, 0.08), transparent 34%),
+    radial-gradient(circle at 88% 0%, rgba(184, 156, 255, 0.10), transparent 36%),
+    var(--dv-surface) !important;
+  box-shadow:
+    0 22px 58px rgba(90, 52, 126, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.58) !important;
+}
+
+.dark .dv-subpage-theme :where(.surface, .dv-glass, .dv-glass-premium) {
+  box-shadow:
+    0 24px 70px rgba(2, 0, 8, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Borders that already use neutral/purple Tailwind colors inherit a softer brand tint. */
+.dv-subpage-theme :where(article, section, aside, form)[class*="rounded-"][class*="border"] {
+  box-shadow:
+    0 18px 46px rgba(90, 52, 126, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.dark .dv-subpage-theme :where(article, section, aside, form)[class*="rounded-"][class*="border"] {
+  box-shadow:
+    0 20px 54px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+/* Primary CTAs that were generic black/purple become unmistakably Drawing Verse. */
+.dv-subpage-theme :where(button, a)[class*="bg-slate-950"],
+.dv-subpage-theme :where(button, a)[class*="bg-violet-"],
+.dv-subpage-theme :where(button, a)[class*="bg-indigo-"],
+.dv-subpage-theme :where(button, a)[class*="bg-purple-"] {
+  background-color: transparent !important;
+  background-image: linear-gradient(105deg, #e63d55 0%, #ff5b5b 32%, #b89cff 70%, #8060f1 100%) !important;
+  color: #fff !important;
+  box-shadow:
+    0 10px 26px rgba(230, 61, 85, 0.16),
+    0 10px 32px rgba(128, 96, 241, 0.17);
+}
+
+.dv-subpage-theme :where(button, a)[class*="bg-slate-950"]:hover,
+.dv-subpage-theme :where(button, a)[class*="bg-violet-"]:hover,
+.dv-subpage-theme :where(button, a)[class*="bg-indigo-"]:hover,
+.dv-subpage-theme :where(button, a)[class*="bg-purple-"]:hover {
+  filter: saturate(1.06) brightness(1.03);
+  box-shadow:
+    0 13px 30px rgba(230, 61, 85, 0.22),
+    0 14px 38px rgba(128, 96, 241, 0.22);
+}
+
+/* Inputs keep their layout but gain the logo-orbit focus treatment. */
+.dv-subpage-theme :where(input, textarea, select) {
+  caret-color: var(--dv-coral-600);
+}
+
+.dv-subpage-theme :where(input, textarea, select):focus {
+  border-color: rgba(128, 96, 241, 0.48) !important;
+  box-shadow:
+    0 0 0 4px rgba(184, 156, 255, 0.11),
+    0 8px 24px rgba(128, 96, 241, 0.07);
+}
+
+/* Make pills, badges and icon chips feel related even when they come from older screens. */
+.dv-subpage-theme :where([class*="rounded-full"], [class*="rounded-2xl"])[class*="bg-violet-"],
+.dv-subpage-theme :where([class*="rounded-full"], [class*="rounded-2xl"])[class*="bg-indigo-"],
+.dv-subpage-theme :where([class*="rounded-full"], [class*="rounded-2xl"])[class*="bg-sky-"],
+.dv-subpage-theme :where([class*="rounded-full"], [class*="rounded-2xl"])[class*="bg-cyan-"] {
+  box-shadow: inset 0 0 0 1px rgba(128, 96, 241, 0.08);
+}
+
+.dv-subpage-theme :where([class*="rounded-full"], [class*="rounded-2xl"])[class*="bg-pink-"],
+.dv-subpage-theme :where([class*="rounded-full"], [class*="rounded-2xl"])[class*="bg-rose-"],
+.dv-subpage-theme :where([class*="rounded-full"], [class*="rounded-2xl"])[class*="bg-fuchsia-"] {
+  box-shadow: inset 0 0 0 1px rgba(230, 61, 85, 0.08);
+}
+
+/* Shared hover language: a tiny lift plus dual-color glow, never a layout-changing jump. */
+.dv-subpage-theme :where(a, button, article)[class*="hover:-translate-y"] {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+/* Brand selection on subpages only. */
+.dv-subpage-theme ::selection {
+  background: rgba(184, 156, 255, 0.28);
+  color: #251a33;
+}
+
+.dark .dv-subpage-theme ::selection {
+  background: rgba(255, 91, 91, 0.28);
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .dv-subpage-theme {
+    background:
+      radial-gradient(560px 420px at -12% 4%, rgba(255, 91, 91, 0.12), transparent 64%),
+      radial-gradient(620px 460px at 112% 2%, rgba(184, 156, 255, 0.19), transparent 64%),
+      linear-gradient(180deg, #fffdfd 0%, #fbf7ff 52%, #fff9fb 100%);
+  }
+
+  .dark .dv-subpage-theme {
+    background:
+      radial-gradient(560px 430px at -12% 2%, rgba(230, 61, 85, 0.17), transparent 64%),
+      radial-gradient(620px 470px at 112% 2%, rgba(128, 96, 241, 0.22), transparent 64%),
+      linear-gradient(180deg, #090513 0%, #10081f 52%, #08040f 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dv-subpage-theme *,
+  .dv-subpage-theme *::before,
+  .dv-subpage-theme *::after {
+    scroll-behavior: auto !important;
+  }
+}
