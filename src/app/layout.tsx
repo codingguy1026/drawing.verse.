@@ -6,7 +6,6 @@ import "./globals.css";
 import "./dverse-brand.css";
 import "./dverse-pages.css";
 
-import DVNav from "@/components/Common/DVNav";
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
 import PageAnimatePresence from "@/components/Common/PageAnimatePresence";
@@ -57,30 +56,18 @@ export default function RootLayout({
       >
         <FramerMotionProvider>
           <ThemeProvider>
-
-            {/* ✅ New DV Nav */}
-            <DVNav />
-
-            {/* ✅ 기상청 기반 자동 날씨 동기화 */}
             <WeatherAtmosphereSync />
-
-            {/* ✅ Notification center */}
             <NotificationCenter />
-
-            {/* ✅ Achievement unlock notification */}
             <AchievementToast />
 
-            {/* ✅ 전역 라우트 이동 감지 */}
             <Suspense fallback={null}>
               <GlobalRouteLoader />
             </Suspense>
 
-            {/* ✅ main children rendering with soft transitions */}
             <PageAnimatePresence>
               {children}
             </PageAnimatePresence>
 
-            {/* ✅ /me 프로필의 도전과제 보드 */}
             <ProfileAchievementsMount />
           </ThemeProvider>
         </FramerMotionProvider>
