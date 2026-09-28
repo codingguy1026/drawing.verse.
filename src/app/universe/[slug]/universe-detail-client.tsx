@@ -9,7 +9,8 @@ import type { SportsConfig } from "@/lib/sports/types";
 import { supabase } from "@/lib/supabase/client";
 
 type UniverseRow = { icon?: string; visibility?: string; sections?: string[]; rules?: string; id: number | string; slug: string; name: string; description: string | null; category: string | null; subscriber_count: number | null; post_count: number | null };
-type PostRow = { id: number | string; public_id?: string | null; title: string; author?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; universe_slug?: string | null };\ntype StellarSystemRow = { id: number | string; universe_slug: string; slug: string; name: string; description: string; icon: string; accent: string; owner_id: string; created_at: string };
+type PostRow = { id: number | string; public_id?: string | null; title: string; author?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; universe_slug?: string | null };
+type StellarSystemRow = { id: number | string; universe_slug: string; slug: string; name: string; description: string; icon: string; accent: string; owner_id: string; created_at: string };
 type FeedMode = "latest" | "popular";
 
 const cn = (...v: Array<string | false | null | undefined>) => v.filter(Boolean).join(" ");
@@ -24,7 +25,9 @@ function relativeDate(value?: string | null) {
 
 export default function UniverseDetailClient({ slug }: { slug: string }) {
   const [universe, setUniverse] = useState<UniverseRow | null>(null);
-  const [posts, setPosts] = useState<PostRow[]>([]);\n  const [systems, setSystems] = useState<StellarSystemRow[]>([]);\n  const [canCreateSystem, setCanCreateSystem] = useState(false);
+  const [posts, setPosts] = useState<PostRow[]>([]);
+  const [systems, setSystems] = useState<StellarSystemRow[]>([]);
+  const [canCreateSystem, setCanCreateSystem] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [section, setSection] = useState<string | null>(null);
@@ -53,7 +56,8 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
     setLoading(true); load();
     const channel = supabase.channel(`universe-detail-${slug}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "posts", filter: `universe_slug=eq.${slug}` }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "universes", filter: `slug=eq.${slug}` }, load)\n      .on("postgres_changes", { event: "*", schema: "public", table: "stellar_systems", filter: `universe_slug=eq.${slug}` }, load).subscribe();
+      .on("postgres_changes", { event: "*", schema: "public", table: "universes", filter: `slug=eq.${slug}` }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "stellar_systems", filter: `universe_slug=eq.${slug}` }, load).subscribe();
     return () => { ignore = true; supabase.removeChannel(channel); };
   }, [slug]);
 
@@ -85,7 +89,8 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
     <div className="relative mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6 sm:pt-10 lg:px-8 lg:pt-12">
       <nav className="mb-4 flex items-center justify-between gap-4"><Link href="/universe" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-violet-600 dark:text-white/55"><ArrowLeft className="size-4"/> 모든 유니버스</Link><button onClick={toggleSubscription} disabled={!subscriptionReady || subscriptionBusy} className={cn("inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition disabled:opacity-50", subscribed ? "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-400/20 dark:bg-violet-500/10 dark:text-violet-200" : "border-slate-200 bg-white/80 text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-white/70")}>{subscribed ? <BellOff className="size-4"/> : <Bell className="size-4"/>}{subscriptionBusy ? "처리 중..." : subscribed ? "구독 중" : "구독하기"}</button></nav>
       <Hero universe={universe} sports={sportsConfig}/>
-      {sportsConfig && <SportsPanel key={slug} config={sportsConfig}/>}\n      <StellarSystemsSection universeSlug={universe.slug} systems={systems} canCreate={canCreateSystem}/>
+      {sportsConfig && <SportsPanel key={slug} config={sportsConfig}/>}
+      <StellarSystemsSection universeSlug={universe.slug} systems={systems} canCreate={canCreateSystem}/>
       {!!universe.sections?.length && <nav aria-label="게시글 섹션" className="my-6 flex flex-wrap gap-2">{[null, ...universe.sections].map(s => <button key={s ?? '__all'} aria-pressed={section === s} onClick={() => setSection(s)} className={cn("rounded-xl border px-4 py-2 text-sm", section === s && "bg-violet-600 text-white")}>{s ?? '전체'}</button>)}</nav>}
       <div className="relative z-10 -mt-5 px-3 sm:px-7"><div className="inline-flex max-w-full items-center gap-1 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-[0_12px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/95"><button onClick={() => setFeedMode("popular")} className={cn("inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold", feedMode === "popular" ? "bg-violet-50 text-violet-700 dark:bg-violet-500/15 dark:text-violet-200" : "text-slate-500 dark:text-white/50")}><Star className="size-4"/> 인기</button><Link href="/gallery" className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-500"><ImageIcon className="size-4"/> 갤러리</Link><a href="#universe-info" className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-500"><Info className="size-4"/> 정보</a></div></div>
       <section className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
