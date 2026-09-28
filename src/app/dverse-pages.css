@@ -2118,3 +2118,249 @@
     animation: none !important;
   }
 }
+
+
+/* =========================================================
+   MOBILE SHELL STABILITY PATCH
+   Keep the orbit dock, remove nested-sticky and width collisions.
+   ========================================================= */
+
+@media (max-width: 767px) {
+  html,
+  body,
+  .dv-site-shell,
+  .dv-subpage-frame,
+  .dv-subpage-stage,
+  .dv-subpage-slot,
+  .dv-route-content {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  .dv-subpage-frame:not(.dv-subpage-frame--focus) {
+    display: block;
+    padding: .4rem 0 0;
+    overflow-x: clip;
+  }
+
+  .dv-subpage-rail {
+    position: sticky;
+    top: max(.4rem, env(safe-area-inset-top));
+    z-index: 120;
+    width: calc(100% - .75rem);
+    max-width: calc(100vw - .75rem);
+    height: 62px;
+    min-height: 62px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 21px;
+  }
+
+  .dv-frame-brand {
+    width: 52px;
+    min-width: 52px;
+    height: 52px;
+    min-height: 52px;
+    flex-basis: 52px;
+    margin: .25rem .05rem .25rem .25rem;
+  }
+
+  .dv-frame-brand-mark {
+    width: 46px;
+    height: 43px;
+    flex-basis: 46px;
+  }
+
+  .dv-frame-nav-scroll {
+    width: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding: .28rem .35rem;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+  }
+
+  .dv-frame-group-items {
+    width: max-content;
+  }
+
+  .dv-frame-link-wrap {
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+  }
+
+  .dv-frame-link {
+    width: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    padding: .18rem;
+  }
+
+  .dv-frame-link-icon {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+  }
+
+  .dv-subpage-stage {
+    display: block;
+    padding-top: .45rem;
+    overflow: visible;
+  }
+
+  /* Do not stack two sticky bars on a phone. The dock alone stays sticky. */
+  .dv-subpage-contextbar {
+    position: relative;
+    top: auto !important;
+    z-index: 20;
+    width: calc(100% - .75rem);
+    max-width: calc(100vw - .75rem);
+    min-height: 48px;
+    margin: 0 auto .45rem;
+    padding: .5rem .65rem;
+    border-radius: 17px;
+  }
+
+  .dv-context-copy {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .dv-context-copy > div {
+    min-width: 0;
+  }
+
+  .dv-context-copy p,
+  .dv-context-copy strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dv-context-signal {
+    width: 7px;
+    height: 27px;
+  }
+
+  .dv-context-path {
+    flex: 0 1 42%;
+    max-width: 42%;
+    min-width: 0;
+    padding: .38rem .48rem;
+  }
+
+  .dv-subpage-slot {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow-x: clip;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .dv-subpage-slot > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .dv-subpage-slot :where(main, section, article, aside, form, header, footer, div) {
+    min-width: 0;
+  }
+
+  .dv-subpage-slot :where(img, video, canvas, svg) {
+    max-width: 100%;
+  }
+
+  .dv-subpage-slot :where(input, textarea, select, button) {
+    max-width: 100%;
+  }
+
+  /* Wide data/content regions may scroll internally instead of stretching the whole site. */
+  .dv-subpage-slot :where(table, pre) {
+    max-width: 100%;
+  }
+
+  .dv-subpage-slot pre {
+    overflow-x: auto;
+  }
+
+  /* Old full-screen page wrappers must fit the new shell rather than the viewport. */
+  .dv-subpage-slot > :where(main, div)[class*="w-screen"],
+  .dv-subpage-slot > :where(main, div)[class*="min-w-screen"] {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Home: remove desktop-scale minimum hero height and keep orbit art inside the canvas. */
+  .dv-site-shell[data-route="/"] .dv-subpage-slot > div {
+    overflow-x: clip;
+  }
+
+  .dv-site-shell[data-route="/"] .dv-subpage-slot > div > main {
+    width: 100%;
+    max-width: 100%;
+    padding-inline: .75rem;
+  }
+
+  .dv-site-shell[data-route="/"] .dv-subpage-slot > div > main > section:first-child {
+    min-height: 0 !important;
+    padding-top: .75rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  /* Auth cards get breathing room without desktop paddings eating the viewport. */
+  .dv-subpage-frame--focus {
+    width: 100%;
+    max-width: 100%;
+    padding: .4rem 0 0;
+    overflow-x: clip;
+  }
+
+  .dv-focus-brandbar {
+    position: relative;
+    top: auto;
+    width: calc(100% - .75rem);
+    margin: 0 auto .45rem;
+  }
+
+  .dv-subpage-frame--focus .dv-subpage-slot {
+    width: 100%;
+  }
+
+  .dv-subpage-theme[data-route="/login"] .dv-route-content > main,
+  .dv-subpage-theme[data-route="/auth/login"] .dv-route-content > div,
+  .dv-subpage-theme[data-route="/auth/register"] .dv-route-content > div,
+  .dv-subpage-theme[data-route="/register"] .dv-route-content > :where(main, div),
+  .dv-subpage-theme[data-route="/signup"] .dv-route-content > :where(main, div) {
+    padding: .75rem !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .dv-context-path {
+    display: none;
+  }
+
+  .dv-frame-brand {
+    width: 48px;
+    min-width: 48px;
+    flex-basis: 48px;
+  }
+
+  .dv-frame-brand-mark {
+    width: 43px;
+    height: 40px;
+    flex-basis: 43px;
+  }
+
+  .dv-frame-link {
+    width: 43px;
+    min-width: 43px;
+  }
+}
