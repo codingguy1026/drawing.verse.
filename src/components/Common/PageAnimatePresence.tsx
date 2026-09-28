@@ -22,13 +22,9 @@ export default function PageAnimatePresence({
         animate="animate"
         exit="exit"
         variants={pageTransitionVariants}
-        className={`w-full min-h-screen${isHome ? "" : " dv-subpage-theme"}`}
+        className={`dv-site-shell min-h-screen w-full${isHome ? "" : " dv-subpage-theme"}`}
       >
-        {isHome ? (
-          <div className="pt-[88px] sm:pt-[92px]">{children}</div>
-        ) : (
-          <DVSubpageFrame>{children}</DVSubpageFrame>
-        )}
+        <DVSubpageFrame>{children}</DVSubpageFrame>
       </motion.div>
     </AnimatePresence>
   );
