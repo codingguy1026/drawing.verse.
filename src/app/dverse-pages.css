@@ -280,11 +280,18 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
-/* Primary CTAs that were generic black/purple become unmistakably Drawing Verse. */
-.dv-subpage-theme :where(button, a)[class*="bg-slate-950"],
-.dv-subpage-theme :where(button, a)[class*="bg-violet-"],
-.dv-subpage-theme :where(button, a)[class*="bg-indigo-"],
-.dv-subpage-theme :where(button, a)[class*="bg-purple-"] {
+/* Primary CTAs that were generic black/purple become unmistakably Drawing Verse.
+   Exact class-token matching avoids turning hover-only accents into permanent CTAs. */
+.dv-subpage-theme :where(button, a)[class~="bg-slate-950"],
+.dv-subpage-theme :where(button, a)[class~="bg-violet-500"],
+.dv-subpage-theme :where(button, a)[class~="bg-violet-600"],
+.dv-subpage-theme :where(button, a)[class~="bg-violet-700"],
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-500"],
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-600"],
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-700"],
+.dv-subpage-theme :where(button, a)[class~="bg-purple-500"],
+.dv-subpage-theme :where(button, a)[class~="bg-purple-600"],
+.dv-subpage-theme :where(button, a)[class~="bg-purple-700"] {
   background-color: transparent !important;
   background-image: linear-gradient(105deg, #e63d55 0%, #ff5b5b 32%, #b89cff 70%, #8060f1 100%) !important;
   color: #fff !important;
@@ -293,10 +300,16 @@
     0 10px 32px rgba(128, 96, 241, 0.17);
 }
 
-.dv-subpage-theme :where(button, a)[class*="bg-slate-950"]:hover,
-.dv-subpage-theme :where(button, a)[class*="bg-violet-"]:hover,
-.dv-subpage-theme :where(button, a)[class*="bg-indigo-"]:hover,
-.dv-subpage-theme :where(button, a)[class*="bg-purple-"]:hover {
+.dv-subpage-theme :where(button, a)[class~="bg-slate-950"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-violet-500"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-violet-600"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-violet-700"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-500"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-600"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-700"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-purple-500"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-purple-600"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-purple-700"]:hover {
   filter: saturate(1.06) brightness(1.03);
   box-shadow:
     0 13px 30px rgba(230, 61, 85, 0.22),
