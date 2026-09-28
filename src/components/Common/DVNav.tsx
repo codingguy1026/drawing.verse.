@@ -189,19 +189,22 @@ export default function DVNav({
   return (
     <header
       style={accentStyle}
-      className="fixed inset-x-0 top-0 z-[2147483000] px-3 pt-1 sm:px-5 sm:pt-1"
+      className="fixed inset-x-0 top-0 z-[2147483000] px-3 pt-3 sm:px-5 sm:pt-4"
     >
       <nav
         className={cn(
-          "dv-verse-dock relative mx-auto max-w-[1440px] overflow-visible rounded-[26px] border backdrop-blur-2xl",
+          "dv-verse-dock relative mx-auto max-w-[1380px] overflow-visible rounded-[28px] border backdrop-blur-2xl",
+          "transform-gpu [transform-style:preserve-3d] [perspective:1200px]",
           "transition-[background-color,border-color,box-shadow,transform] duration-300",
           "border-slate-200/70 bg-white/[0.78] dark:border-white/[0.12] dark:bg-[#060811]/[0.74]",
           scrolled
-            ? "shadow-[0_20px_64px_rgba(15,23,42,0.16)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.58)]"
-            : "shadow-[0_12px_42px_rgba(76,29,149,0.10)] dark:shadow-[0_16px_58px_rgba(0,0,0,0.36)]"
+            ? "-translate-y-0.5 shadow-[0_28px_78px_rgba(15,23,42,0.22),0_10px_24px_rgba(128,96,241,0.12)] dark:shadow-[0_32px_92px_rgba(0,0,0,0.68),0_10px_30px_rgba(128,96,241,0.18)]"
+            : "shadow-[0_24px_64px_rgba(76,29,149,0.16),0_8px_20px_rgba(15,23,42,0.10)] dark:shadow-[0_28px_76px_rgba(0,0,0,0.48),0_8px_28px_rgba(128,96,241,0.12)]"
         )}
       >
-        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[26px]">
+        <div className="pointer-events-none absolute inset-x-4 -bottom-3 h-8 rounded-[28px] bg-slate-950/10 blur-xl [transform:translateZ(-28px)] dark:bg-black/45" />
+        <div className="pointer-events-none absolute inset-x-7 -bottom-2 h-4 rounded-[999px] border border-violet-400/20 bg-[linear-gradient(90deg,rgba(255,107,114,.08),rgba(184,156,255,.18),rgba(34,211,238,.08))] shadow-[0_12px_24px_rgba(76,29,149,.12)] [transform:translateZ(-16px)] dark:border-white/[0.06]" />
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[28px]">
           <div className="absolute -left-16 -top-20 h-44 w-44 rounded-full bg-violet-400/15 blur-3xl dark:bg-violet-500/20" />
           <div className="absolute -right-10 -top-24 h-52 w-52 rounded-full bg-cyan-300/10 blur-3xl dark:bg-cyan-400/15" />
           <div className="absolute left-1/2 top-0 h-px w-[58%] -translate-x-1/2 dv-nav-beam" />
@@ -446,7 +449,7 @@ export default function DVNav({
                             transition={{ duration: 0.16, ease: "easeOut" }}
                             style={{
                               position: "fixed",
-                              top: 88,
+                              top: 104,
                               right: "max(12px, calc((100vw - 1440px) / 2 + 16px))",
                               left: "auto",
                               width: "min(19rem, calc(100vw - 1.5rem))",
