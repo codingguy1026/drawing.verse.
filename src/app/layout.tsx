@@ -77,9 +77,7 @@ export default function RootLayout({
 
             {/* ✅ main children rendering with soft transitions */}
             <PageAnimatePresence>
-              <div className="dv-route-content pt-[88px] sm:pt-[92px]">
-                {children}
-              </div>
+              {children}
             </PageAnimatePresence>
 
             {/* ✅ /me 프로필의 도전과제 보드 */}

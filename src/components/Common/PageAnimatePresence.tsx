@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { pageTransitionVariants } from "@/lib/animations";
+import DVSubpageFrame from "@/components/Common/DVSubpageFrame";
 
 export default function PageAnimatePresence({
   children,
@@ -21,9 +22,13 @@ export default function PageAnimatePresence({
         animate="animate"
         exit="exit"
         variants={pageTransitionVariants}
-        className={`w-full h-full${isHome ? "" : " dv-subpage-theme"}`}
+        className={`w-full min-h-screen${isHome ? "" : " dv-subpage-theme"}`}
       >
-        {children}
+        {isHome ? (
+          <div className="pt-[88px] sm:pt-[92px]">{children}</div>
+        ) : (
+          <DVSubpageFrame>{children}</DVSubpageFrame>
+        )}
       </motion.div>
     </AnimatePresence>
   );
