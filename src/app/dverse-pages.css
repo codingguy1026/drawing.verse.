@@ -2364,3 +2364,106 @@
     min-width: 43px;
   }
 }
+
+
+/* =========================================================
+   MOBILE DOCK MENU VISIBILITY FIX
+   Never allow the horizontal nav viewport to collapse to 0px.
+   ========================================================= */
+
+@media (max-width: 767px) {
+  .dv-subpage-rail {
+    display: flex !important;
+    align-items: center;
+  }
+
+  .dv-frame-nav-scroll {
+    display: flex !important;
+    width: auto !important;
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    height: 100%;
+    align-items: center;
+    gap: .25rem;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: .28rem .4rem !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .dv-frame-nav-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dv-frame-group {
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: max-content;
+  }
+
+  .dv-frame-group + .dv-frame-group {
+    margin: 0 !important;
+  }
+
+  .dv-frame-group-items {
+    position: relative;
+    display: flex !important;
+    width: max-content !important;
+    min-width: max-content;
+    align-items: center;
+    gap: .24rem;
+  }
+
+  .dv-frame-link-wrap {
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: 46px;
+    min-width: 46px;
+  }
+
+  .dv-frame-link {
+    display: flex !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 46px;
+    min-height: 46px !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .dv-frame-link-icon {
+    display: grid !important;
+    width: 36px !important;
+    height: 36px !important;
+    flex: 0 0 36px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .dv-frame-link-icon > svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+  }
+
+  /* The rail clips decorative layers, not the actual scrolling menu. */
+  .dv-subpage-rail {
+    overflow: visible !important;
+  }
+
+  .dv-rail-stars {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 390px) {
+  .dv-frame-link-wrap,
+  .dv-frame-link {
+    width: 43px !important;
+    min-width: 43px !important;
+  }
+}
