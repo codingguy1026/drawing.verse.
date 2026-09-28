@@ -4,6 +4,7 @@ import { Inter, Noto_Sans_KR } from "next/font/google";
 import "./tailwind.css";
 import "./globals.css";
 import "./dverse-brand.css";
+import "./dverse-pages.css";
 
 import DVNav from "@/components/Common/DVNav";
 import { ThemeProvider } from "@/lib/ThemeProvider";
