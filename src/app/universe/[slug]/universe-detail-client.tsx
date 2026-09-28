@@ -39,9 +39,10 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
   useEffect(() => {
     let ignore = false;
     async function load() {
-      const [u, p, a] = await Promise.all([
+      const [u, p, systemsResult, a] = await Promise.all([
         supabase.from("universes").select("*").eq("slug", slug).maybeSingle(),
         supabase.from("posts").select("*").eq("universe_slug", slug).order("created_at", { ascending: false }).limit(30),
+        supabase.from("stellar_systems").select("*").eq("universe_slug", slug).order("created_at", { ascending: true }),
         supabase.auth.getUser(),
       ]);
       if (ignore) return;
