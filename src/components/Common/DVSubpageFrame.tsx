@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ComponentType, ReactNode } from "react";
 import {
   Images,
   Link2,
@@ -16,7 +17,7 @@ import {
 type FrameItem = {
   label: string;
   href: string;
-  icon: React.ComponentType<{ className?: string; size?: number }>;
+  icon: ComponentType<{ className?: string; size?: number }>;
 };
 
 const exploreItems: FrameItem[] = [
@@ -92,7 +93,7 @@ function RailGroup({ label, items, pathname }: { label: string; items: FrameItem
   );
 }
 
-export default function DVSubpageFrame({ children }: { children: React.ReactNode }) {
+export default function DVSubpageFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const meta = routeMeta(pathname);
   const focusMode =
