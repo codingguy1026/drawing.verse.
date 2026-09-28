@@ -13,6 +13,7 @@ import {
   PenLine,
   Search,
   Sparkles,
+  Sun,
   UserRound,
 } from "lucide-react";
 import ThemeToggle from "@/components/Common/ThemeToggle";
