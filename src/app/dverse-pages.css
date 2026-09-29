@@ -1873,7 +1873,7 @@
 @media (max-width: 1279px) and (min-width: 768px) {
   .dv-subpage-frame:not(.dv-subpage-frame--focus) {
     width: min(calc(100% - 1.25rem), 92rem);
-    grid-template-columns: 92px minmax(0, 1fr);
+    grid-template-columns: 104px minmax(0, 1fr);
     gap: .7rem;
     padding-top: .7rem;
   }
@@ -1886,18 +1886,40 @@
   }
 
   .dv-frame-brand {
-    min-height: 74px;
+    display: flex !important;
+    min-height: 96px;
     justify-content: center;
-    padding: .45rem;
+    flex-direction: column;
+    gap: .2rem;
+    padding: .42rem .3rem .48rem;
+    text-align: center;
   }
 
   .dv-frame-brand-mark {
-    width: 58px;
-    height: 54px;
-    flex-basis: 58px;
+    width: 56px;
+    height: 50px;
+    flex-basis: 50px;
   }
 
-  .dv-frame-brand-copy,
+  .dv-frame-brand-copy {
+    display: grid !important;
+    width: 100%;
+    place-items: center;
+    overflow: visible;
+  }
+
+  .dv-frame-brand-copy strong {
+    max-width: 92px;
+    white-space: normal;
+    font-size: .66rem;
+    line-height: 1.05;
+    letter-spacing: -.035em;
+  }
+
+  .dv-frame-brand-copy small {
+    display: none;
+  }
+
   .dv-frame-group-label,
   .dv-frame-link-copy,
   .dv-frame-utility > div:last-child,
