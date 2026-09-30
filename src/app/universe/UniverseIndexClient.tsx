@@ -45,7 +45,7 @@ export default function UniverseIndexClient() {
   const card2 = "bg-slate-950/40";
   const border = "border-white/10";
   const text = "text-white";
-  const subText = "text-white/50";
+  const subText = "text-white/70";
   const inputBg = "bg-[#050214]";
 
   useEffect(() => {
@@ -296,7 +296,7 @@ export default function UniverseIndexClient() {
                 )}
                 title="정렬 변경"
               >
-                <ArrowUpDown className="h-4 w-4 text-white/50" />
+                <ArrowUpDown className="h-4 w-4 text-white/80" />
                 {sort === "popular" ? "인기순" : sort === "posts" ? "게시글순" : "이름순"}
               </button>
             </div>
