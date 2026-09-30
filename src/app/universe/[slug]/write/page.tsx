@@ -33,6 +33,12 @@ type SavedDraft = {
   savedAt: string;
 };
 
+type ProfileIdentity = {
+  display_name: string | null;
+  nickname: string | null;
+  avatar_url: string | null;
+};
+
 export default function UniverseWritePage() {
   const params = useParams();
   const router = useRouter();
@@ -45,6 +51,7 @@ export default function UniverseWritePage() {
 
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<ProfileIdentity | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingUniverse, setIsLoadingUniverse] = useState(true);
   const [canPost, setCanPost] = useState(true);
@@ -88,11 +95,23 @@ export default function UniverseWritePage() {
 
       setUser(authData.user);
 
-      const { data: universe, error } = await supabase
-        .from("universes")
-        .select("name,icon,sections,owner_id,allow_member_posts")
-        .eq("slug", universeSlug)
-        .maybeSingle<UniverseSettings>();
+      const [
+        { data: universe, error },
+        { data: profileData },
+      ] = await Promise.all([
+        supabase
+          .from("universes")
+          .select("name,icon,sections,owner_id,allow_member_posts")
+          .eq("slug", universeSlug)
+          .maybeSingle<UniverseSettings>(),
+        supabase
+          .from("profiles")
+          .select("display_name,nickname,avatar_url")
+          .eq("id", authData.user.id)
+          .maybeSingle<ProfileIdentity>(),
+      ]);
+
+      setProfile(profileData ?? null);
 
       if (error || !universe) {
         setLoadError("유니버스를 불러오지 못했어요.");
@@ -292,10 +311,10 @@ export default function UniverseWritePage() {
           category,
           universe_slug: universeSlug,
           author:
-            user.user_metadata?.full_name ||
-            user.user_metadata?.display_name ||
+            profile?.display_name?.trim() ||
+            profile?.nickname?.trim() ||
             user.email?.split("@")[0] ||
-            "Anonymous",
+            "사용자",
           image_url: imageUrl,
           user_id: user.id,
         })
@@ -421,6 +440,25 @@ export default function UniverseWritePage() {
                   생각을 정리하려고 애쓰지 않아도 돼요. 제목 하나에서 시작해서
                   이 Verse에 새로운 별 하나를 남겨보세요.
                 </p>
+                <div className="mt-4 flex items-center gap-3 text-sm">
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt=""
+                      className="size-9 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="grid size-9 place-items-center rounded-full bg-slate-200 font-black text-slate-600 dark:bg-white/10 dark:text-white/70">
+                      {(profile?.display_name || profile?.nickname || user?.email || "?").slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs text-slate-400">이 프로필로 게시</p>
+                    <p className="font-black">
+                      {profile?.display_name || profile?.nickname || user?.email?.split("@")[0] || "사용자"}
+                    </p>
+                  </div>
+                </div>
               </header>
 
               {!canPost && !isLoadingUniverse && (
