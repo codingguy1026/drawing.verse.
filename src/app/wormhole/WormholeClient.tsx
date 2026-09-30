@@ -160,7 +160,7 @@ function PostCard({ post }: { post: PostRow }) {
         {post.title}
       </h3>
       <div className="mt-3 flex items-center justify-between gap-3 text-[11px] font-bold text-slate-400">
-        <span className="truncate">{post.author ?? "익명"}</span>
+        <span className="truncate">{post.author ?? "알 수 없는 사용자"}</span>
         <span className="flex shrink-0 gap-3">
           <span className="inline-flex items-center gap-1"><Flame className="size-3.5" />{post.like_count ?? 0}</span>
           <span className="inline-flex items-center gap-1"><MessageCircle className="size-3.5" />{post.comment_count ?? 0}</span>
