@@ -74,10 +74,10 @@ function getInitial(name: string | null | undefined) {
   const trimmed = name?.trim();
 
   if (!trimmed) {
-    return "익";
+    return "?";
   }
 
-  return trimmed[0]?.toUpperCase() ?? "익";
+  return trimmed[0]?.toUpperCase() ?? "?";
 }
 
 function getSafeNumber(value: number | null | undefined) {
@@ -92,7 +92,7 @@ function GalleryCard({
   viewMode: ViewMode;
 }) {
   const title = item.title?.trim() || "Untitled Space";
-  const author = item.author?.trim() || "익명";
+  const author = item.author?.trim() || "알 수 없는 사용자";
   const likes = getSafeNumber(item.like_count);
   const comments = getSafeNumber(item.comment_count);
   const views = getSafeNumber(item.view_count);
