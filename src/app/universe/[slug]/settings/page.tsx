@@ -115,7 +115,7 @@ export default async function UniverseSettingsPage({
                 <p className="text-sm font-bold">Universe 삭제</p>
                 <p className="mt-1 text-xs text-slate-500">삭제 기능은 아직 연결하지 않습니다.</p>
               </div>
-              <button disabled className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-400 disabled:cursor-not-allowed dark:border-white/10">
+              <button disabled className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 disabled:cursor-not-allowed dark:border-white/10 dark:text-white/65">
                 준비 중
               </button>
             </div>
