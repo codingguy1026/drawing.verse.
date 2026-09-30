@@ -346,7 +346,7 @@ function ProfileHero({
                         {isOwner ? (
                             <Link
                                 href={`/users/${profile.id}/edit`}
-                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-200 via-white to-fuchsia-200 px-4 py-3 text-sm font-black text-white dark:text-[#080a18] shadow-[0_12px_35px_rgba(216,180,254,0.22)] transition hover:scale-[1.02]"
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-200 via-white to-fuchsia-200 px-4 py-3 text-sm font-black text-slate-950 shadow-[0_12px_35px_rgba(216,180,254,0.22)] transition hover:scale-[1.02]"
                             >
                                 <PenLine size={17} /> 편집
                             </Link>
@@ -361,7 +361,7 @@ function ProfileHero({
                             type="button"
                             disabled
                             title="준비 중인 기능이에요."
-                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-400 opacity-70 dark:border-white/10 dark:bg-white/5 dark:text-white/40"
+                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-600 opacity-80 dark:border-white/10 dark:bg-white/5 dark:text-white/65"
                         >
                             <MessageCircle size={17} /> 대화 · 준비 중
                         </button>
@@ -370,7 +370,7 @@ function ProfileHero({
                             type="button"
                             disabled
                             title="준비 중인 기능이에요."
-                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-400 opacity-70 dark:border-white/10 dark:bg-white/5 dark:text-white/40"
+                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-600 opacity-80 dark:border-white/10 dark:bg-white/5 dark:text-white/65"
                         >
                             <Share2 size={17} /> 공유 · 준비 중
                         </button>
@@ -379,7 +379,7 @@ function ProfileHero({
                             type="button"
                             disabled
                             title="준비 중인 기능이에요."
-                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-400 opacity-70 dark:border-white/10 dark:bg-white/5 dark:text-white/40"
+                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-600 opacity-80 dark:border-white/10 dark:bg-white/5 dark:text-white/65"
                         >
                             <Star size={17} /> 저장 · 준비 중
                         </button>
