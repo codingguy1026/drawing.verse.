@@ -12,6 +12,7 @@ type PostRow = {
     title: string;
     content: string | null;
     author: string | null;
+    user_id?: string | null;
     universe_slug: string | null;
     category: string | null;
     created_at: string | null;
@@ -19,6 +20,13 @@ type PostRow = {
     comment_count: number | null;
     view_count?: number | null;
     image_url?: string | null;
+};
+
+type ProfileRow = {
+    id: string;
+    display_name: string | null;
+    nickname: string | null;
+    avatar_url: string | null;
 };
 
 type CommentRow = {
@@ -60,6 +68,7 @@ export default function PostDetail({ params }: PostDetailProps) {
     const { slug, postId } = React.use(params);
     const router = useRouter();
     const [post, setPost] = React.useState<PostRow | null>(null);
+    const [authorProfile, setAuthorProfile] = React.useState<ProfileRow | null>(null);
     const [relatedPosts, setRelatedPosts] = React.useState<PostRow[]>([]);
     const [comments, setComments] = React.useState<CommentRow[]>([]);
     const [commentAuthor, setCommentAuthor] = React.useState("");
@@ -107,14 +116,24 @@ export default function PostDetail({ params }: PostDetailProps) {
                 router.replace(`/universe/${slug}/${loadedPost.public_id}`);
             }
 
-            const [{ data: related }, { data: loadedComments }, { data: authData }] = await Promise.all([
+            const authorProfilePromise = loadedPost.user_id
+                ? supabase
+                    .from("profiles")
+                    .select("id,display_name,nickname,avatar_url")
+                    .eq("id", loadedPost.user_id)
+                    .maybeSingle<ProfileRow>()
+                : Promise.resolve({ data: null, error: null });
+
+            const [{ data: related }, { data: loadedComments }, { data: authData }, { data: loadedAuthorProfile }] = await Promise.all([
                 supabase.from("posts").select("*").eq("universe_slug", slug).neq("id", numericPostId).order("created_at", { ascending: false }).limit(4),
                 supabase.from("comments").select("*").eq("post_id", numericPostId).order("created_at", { ascending: true }),
                 supabase.auth.getUser(),
+                authorProfilePromise,
             ]);
 
             if (ignore) return;
             setPost(loadedPost);
+            setAuthorProfile((loadedAuthorProfile as ProfileRow | null) ?? null);
             setRelatedPosts((related || []) as PostRow[]);
             setComments((loadedComments || []) as CommentRow[]);
 
@@ -275,7 +294,11 @@ export default function PostDetail({ params }: PostDetailProps) {
         );
     }
 
-    const authorName = post.author || "알 수 없는 사용자";
+    const authorName =
+        authorProfile?.display_name?.trim() ||
+        authorProfile?.nickname?.trim() ||
+        post.author ||
+        "알 수 없는 사용자";
 
     return (
         <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 dark:bg-[#050711] dark:text-white sm:px-6">
@@ -293,8 +316,22 @@ export default function PostDetail({ params }: PostDetailProps) {
                     <h1 className="mt-5 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{post.title}</h1>
 
                     <div className="mt-5 flex items-center gap-3 border-b border-slate-200 pb-6 dark:border-white/10">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 font-bold dark:bg-white/10">{getInitial(authorName)}</div>
-                        <div><p className="flex items-center gap-1.5 text-sm font-semibold"><UserRound className="h-4 w-4 text-slate-400"/>{authorName}</p><p className="mt-0.5 text-xs text-slate-400">{slug} Universe</p></div>
+                        {authorProfile?.avatar_url ? (
+                            <img src={authorProfile.avatar_url} alt="" className="size-10 rounded-full object-cover" />
+                        ) : (
+                            <div className="flex size-10 items-center justify-center rounded-full bg-slate-100 font-bold dark:bg-white/10">{getInitial(authorName)}</div>
+                        )}
+                        <div className="min-w-0">
+                            {post.user_id ? (
+                                <Link href={`/users/${post.user_id}`} className="flex items-center gap-1.5 text-sm font-semibold hover:underline">
+                                    <UserRound className="h-4 w-4 text-slate-400"/>
+                                    <span className="truncate">{authorName}</span>
+                                </Link>
+                            ) : (
+                                <p className="flex items-center gap-1.5 text-sm font-semibold"><UserRound className="h-4 w-4 text-slate-400"/>{authorName}</p>
+                            )}
+                            <p className="mt-0.5 text-xs text-slate-400">{slug} Universe</p>
+                        </div>
                     </div>
 
                     <div className="whitespace-pre-line break-words py-8 text-[16px] leading-8 text-slate-700 dark:text-slate-200">{post.content || "본문이 비어 있어요."}</div>
