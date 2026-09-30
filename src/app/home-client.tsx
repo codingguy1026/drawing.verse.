@@ -236,7 +236,7 @@ export default function HomeClient() {
           id: item.id,
           publicId: item.public_id || item.id,
           title: item.title,
-          meta: `${item.author || "익명"} · ${new Date(item.created_at).toLocaleDateString("ko-KR")}`,
+          meta: `${item.author || "알 수 없는 사용자"} · ${new Date(item.created_at).toLocaleDateString("ko-KR")}`,
           stats: `좋아요 ${item.like_count || 0} · 댓글 ${item.comment_count || 0}`,
           universe: item.universe_slug || "unknown",
           type: item.category || "전체",
@@ -475,7 +475,7 @@ export default function HomeClient() {
 
               <Link
                 href="/community"
-                className="px-3 py-3 text-sm font-black text-slate-400 transition hover:text-slate-900 dark:text-white/35 dark:hover:text-white"
+                className="px-3 py-3 text-sm font-black text-slate-600 transition hover:text-slate-900 dark:text-white/70 dark:hover:text-white"
               >
                 Community →
               </Link>
