@@ -9,7 +9,8 @@ import type { SportsConfig } from "@/lib/sports/types";
 import { supabase } from "@/lib/supabase/client";
 
 type UniverseRow = { icon?: string; visibility?: string; sections?: string[]; rules?: string; id: number | string; slug: string; name: string; description: string | null; category: string | null; subscriber_count: number | null; post_count: number | null };
-type PostRow = { id: number | string; public_id?: string | null; title: string; author?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; universe_slug?: string | null };
+type PostRow = { id: number | string; public_id?: string | null; title: string; author?: string | null; user_id?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; universe_slug?: string | null };
+type ProfileRow = { id: string; display_name: string | null; nickname: string | null; avatar_url: string | null };
 type StellarSystemRow = { id: number | string; universe_slug: string; slug: string; name: string; description: string; icon: string; accent: string; owner_id: string; created_at: string };
 type FeedMode = "latest" | "popular";
 
@@ -26,6 +27,7 @@ function relativeDate(value?: string | null) {
 export default function UniverseDetailClient({ slug }: { slug: string }) {
   const [universe, setUniverse] = useState<UniverseRow | null>(null);
   const [posts, setPosts] = useState<PostRow[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, ProfileRow>>({});
   const [systems, setSystems] = useState<StellarSystemRow[]>([]);
   const [canCreateSystem, setCanCreateSystem] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,24 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
       ]);
       if (ignore) return;
       if (u.error || !u.data) { setNotFound(true); setLoading(false); return; }
-      setUniverse(u.data as UniverseRow); setPosts((p.data as PostRow[] | null) ?? []); setSystems((systemsResult.data as StellarSystemRow[] | null) ?? []); setCanCreateSystem(Boolean(a.data.user && (u.data as UniverseRow & { owner_id?: string }).owner_id === a.data.user.id)); setNotFound(false);
+
+      const nextPosts = (p.data as PostRow[] | null) ?? [];
+      const authorIds = [...new Set(nextPosts.map((post) => post.user_id).filter((id): id is string => Boolean(id)))];
+      let nextProfiles: Record<string, ProfileRow> = {};
+
+      if (authorIds.length > 0) {
+        const { data: profileRows } = await supabase
+          .from("profiles")
+          .select("id,display_name,nickname,avatar_url")
+          .in("id", authorIds);
+
+        nextProfiles = Object.fromEntries(
+          ((profileRows as ProfileRow[] | null) ?? []).map((profile) => [profile.id, profile])
+        );
+      }
+
+      if (ignore) return;
+      setUniverse(u.data as UniverseRow); setPosts(nextPosts); setProfiles(nextProfiles); setSystems((systemsResult.data as StellarSystemRow[] | null) ?? []); setCanCreateSystem(Boolean(a.data.user && (u.data as UniverseRow & { owner_id?: string }).owner_id === a.data.user.id)); setNotFound(false);
       if (a.data.user) {
         const s = await supabase.from("universe_subscriptions").select("universe_slug").eq("user_id", a.data.user.id).eq("universe_slug", slug).maybeSingle();
         if (!ignore) { if (s.error) setSubscriptionReady(false); else setSubscribed(Boolean(s.data)); }
@@ -95,7 +114,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
       {!!universe.sections?.length && <nav aria-label="게시글 섹션" className="my-6 flex flex-wrap gap-2">{[null, ...universe.sections].map(s => <button key={s ?? '__all'} aria-pressed={section === s} onClick={() => setSection(s)} className={cn("rounded-xl border px-4 py-2 text-sm", section === s && "bg-violet-600 text-white")}>{s ?? '전체'}</button>)}</nav>}
       <div className="relative z-10 -mt-5 px-3 sm:px-7"><div className="inline-flex max-w-full items-center gap-1 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-[0_12px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/95"><button onClick={() => setFeedMode("popular")} className={cn("inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold", feedMode === "popular" ? "bg-violet-50 text-violet-700 dark:bg-violet-500/15 dark:text-violet-200" : "text-slate-600 dark:text-white/75")}><Star className="size-4"/> 인기</button><Link href="/gallery" className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-white/75"><ImageIcon className="size-4"/> 갤러리</Link><a href="#universe-info" className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-white/75"><Info className="size-4"/> 정보</a></div></div>
       <section className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="min-w-0 space-y-10"><section><div className="mb-4 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[11px] font-black uppercase tracking-[0.26em] text-violet-500">Community Feed</p><h2 className="mt-1.5 text-2xl font-black tracking-tight sm:text-3xl">{feedMode === "popular" ? "인기 게시글" : "최신 게시글"}</h2></div><div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/5"><button onClick={() => setFeedMode("latest")} className={cn("rounded-full px-4 py-2 text-xs font-bold", feedMode === "latest" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-slate-600 dark:text-white/75")}>최신</button><button onClick={() => setFeedMode("popular")} className={cn("rounded-full px-4 py-2 text-xs font-bold", feedMode === "popular" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-slate-600 dark:text-white/75")}>인기</button></div></div>{sortedPosts.length === 0 ? <EmptyFeed slug={universe.slug} hasAnyPosts={posts.length > 0}/> : <div className="border-y border-slate-200 dark:border-white/10">{sortedPosts.map((post,i) => <PostRowItem key={post.id} post={post} last={i===sortedPosts.length-1}/>)}</div>}</section></div>
+        <div className="min-w-0 space-y-10"><section><div className="mb-4 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[11px] font-black uppercase tracking-[0.26em] text-violet-500">Community Feed</p><h2 className="mt-1.5 text-2xl font-black tracking-tight sm:text-3xl">{feedMode === "popular" ? "인기 게시글" : "최신 게시글"}</h2></div><div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/5"><button onClick={() => setFeedMode("latest")} className={cn("rounded-full px-4 py-2 text-xs font-bold", feedMode === "latest" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-slate-600 dark:text-white/75")}>최신</button><button onClick={() => setFeedMode("popular")} className={cn("rounded-full px-4 py-2 text-xs font-bold", feedMode === "popular" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-slate-600 dark:text-white/75")}>인기</button></div></div>{sortedPosts.length === 0 ? <EmptyFeed slug={universe.slug} hasAnyPosts={posts.length > 0}/> : <div className="border-y border-slate-200 dark:border-white/10">{sortedPosts.map((post,i) => <PostRowItem key={post.id} post={post} profile={post.user_id ? profiles[post.user_id] : undefined} last={i===sortedPosts.length-1}/>)}</div>}</section></div>
         <aside id="universe-info" className="space-y-5 lg:sticky lg:top-24 lg:h-fit"><InfoPanel universe={universe} posts={posts}/><RulesPanel/>{universe.rules && <p className="whitespace-pre-wrap rounded-2xl border p-5 text-sm">{universe.rules}</p>}</aside>
       </section>
     </div>
@@ -128,10 +147,12 @@ function EmptyFeed({ slug, hasAnyPosts }: { slug: string; hasAnyPosts: boolean }
     </div>}
   </div>;
 }
-function PostRowItem({ post, last }: { post: PostRow; last: boolean }) {
+function PostRowItem({ post, profile, last }: { post: PostRow; profile?: ProfileRow; last: boolean }) {
   const href = post.universe_slug
     ? `/universe/${post.universe_slug}/${post.public_id || post.id}`
     : "#";
+
+  const authorName = profile?.display_name?.trim() || profile?.nickname?.trim() || post.author || "알 수 없는 사용자";
 
   return (
     <Link
@@ -146,7 +167,16 @@ function PostRowItem({ post, last }: { post: PostRow; last: boolean }) {
             <span className="text-slate-400">{relativeDate(post.created_at)}</span>
           </div>
           <h3 className="mt-2 truncate text-lg font-black group-hover:text-violet-600">{post.title}</h3>
-          <p className="mt-2 text-xs text-slate-400">{post.author ?? "알 수 없는 사용자"}</p>
+          <div className="mt-3 flex items-center gap-2">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="size-7 rounded-full object-cover" />
+            ) : (
+              <div className="grid size-7 place-items-center rounded-full bg-slate-100 text-[11px] font-black text-slate-500 dark:bg-white/10 dark:text-white/70">
+                {authorName.slice(0, 1).toUpperCase()}
+              </div>
+            )}
+            <p className="truncate text-xs font-bold text-slate-600 dark:text-white/70">{authorName}</p>
+          </div>
         </div>
         <div className="flex gap-3 text-xs font-bold text-slate-400">
           <span className="inline-flex items-center gap-1"><Flame className="size-3.5"/>{post.like_count ?? 0}</span>
