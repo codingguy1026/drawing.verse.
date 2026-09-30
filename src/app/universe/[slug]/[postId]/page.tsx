@@ -45,7 +45,7 @@ function formatDate(value?: string | null) {
 }
 
 function getInitial(name?: string | null) {
-    return name?.trim()?.slice(0, 1) || "익";
+    return name?.trim()?.slice(0, 1) || "?";
 }
 
 function sortComments(comments: CommentRow[]) {
@@ -62,7 +62,7 @@ export default function PostDetail({ params }: PostDetailProps) {
     const [post, setPost] = React.useState<PostRow | null>(null);
     const [relatedPosts, setRelatedPosts] = React.useState<PostRow[]>([]);
     const [comments, setComments] = React.useState<CommentRow[]>([]);
-    const [commentAuthor, setCommentAuthor] = React.useState("드가이");
+    const [commentAuthor, setCommentAuthor] = React.useState("");
     const [commentContent, setCommentContent] = React.useState("");
     const [commentSaving, setCommentSaving] = React.useState(false);
     const [loading, setLoading] = React.useState(true);
@@ -119,15 +119,32 @@ export default function PostDetail({ params }: PostDetailProps) {
             setComments((loadedComments || []) as CommentRow[]);
 
             if (authData.user) {
-                const { data: starData } = await supabase
-                    .from("post_stars")
-                    .select("id")
-                    .eq("post_id", numericPostId)
-                    .eq("user_id", authData.user.id)
-                    .maybeSingle();
-                if (!ignore) setIsStarred(!!starData);
+                const [{ data: starData }, { data: profileData }] = await Promise.all([
+                    supabase
+                        .from("post_stars")
+                        .select("id")
+                        .eq("post_id", numericPostId)
+                        .eq("user_id", authData.user.id)
+                        .maybeSingle(),
+                    supabase
+                        .from("profiles")
+                        .select("display_name,nickname")
+                        .eq("id", authData.user.id)
+                        .maybeSingle(),
+                ]);
+                if (!ignore) {
+                    setIsStarred(!!starData);
+                    const profile = profileData as { display_name?: string | null; nickname?: string | null } | null;
+                    setCommentAuthor(
+                        profile?.display_name?.trim() ||
+                        profile?.nickname?.trim() ||
+                        authData.user.email?.split("@")[0] ||
+                        "사용자"
+                    );
+                }
             } else {
                 setIsStarred(false);
+                setCommentAuthor("");
             }
 
             setLoading(false);
@@ -180,10 +197,22 @@ export default function PostDetail({ params }: PostDetailProps) {
         const content = commentContent.trim();
         if (!numericPostId || !content) return;
 
+        const { data: authData } = await supabase.auth.getUser();
+        if (!authData.user) {
+            window.location.href = "/auth/login";
+            return;
+        }
+
+        const author = commentAuthor.trim();
+        if (!author) {
+            alert("프로필 이름을 불러오지 못했어요.");
+            return;
+        }
+
         setCommentSaving(true);
         const { data, error } = await supabase.from("comments").insert({
             post_id: numericPostId,
-            author: commentAuthor.trim() || "익명",
+            author,
             content,
         }).select("*").single();
 
@@ -246,7 +275,7 @@ export default function PostDetail({ params }: PostDetailProps) {
         );
     }
 
-    const authorName = post.author || "익명";
+    const authorName = post.author || "알 수 없는 사용자";
 
     return (
         <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 dark:bg-[#050711] dark:text-white sm:px-6">
@@ -282,15 +311,17 @@ export default function PostDetail({ params }: PostDetailProps) {
 
                 <section id="comments" className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
                     <div className="flex items-center justify-between gap-4"><h2 className="text-xl font-bold">댓글</h2><span className="text-sm text-slate-400">{comments.length}개</span></div>
-                    <form onSubmit={submitComment} className="mt-5 grid gap-3 sm:grid-cols-[140px_minmax(0,1fr)_80px]">
-                        <input value={commentAuthor} onChange={(e) => setCommentAuthor(e.target.value)} placeholder="닉네임" className="rounded-xl border border-slate-200 bg-transparent px-3 py-2.5 text-sm outline-none dark:border-white/10"/>
-                        <input value={commentContent} onChange={(e) => setCommentContent(e.target.value)} placeholder="댓글을 입력해줘" className="rounded-xl border border-slate-200 bg-transparent px-3 py-2.5 text-sm outline-none dark:border-white/10"/>
-                        <button type="submit" disabled={commentSaving || !commentContent.trim()} className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-40 dark:bg-white dark:text-slate-950">{commentSaving ? "저장 중" : "등록"}</button>
+                    <form onSubmit={submitComment} className="mt-5 grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)_80px]">
+                        <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/80">
+                            {commentAuthor || "로그인 필요"}
+                        </div>
+                        <input value={commentContent} onChange={(e) => setCommentContent(e.target.value)} placeholder={commentAuthor ? "댓글을 입력해줘" : "로그인 후 댓글 작성 가능"} className="rounded-xl border border-slate-200 bg-transparent px-3 py-2.5 text-sm outline-none dark:border-white/10"/>
+                        <button type="submit" disabled={commentSaving || !commentContent.trim() || !commentAuthor} className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60 dark:bg-white dark:text-slate-950">{commentSaving ? "저장 중" : "등록"}</button>
                     </form>
 
                     <div className="mt-6 divide-y divide-slate-100 dark:divide-white/5">
                         {comments.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">아직 댓글이 없어. 첫 댓글을 남겨봐!</p> : comments.map((comment) => (
-                            <article key={comment.id} className="py-4 first:pt-0"><div className="flex items-center justify-between gap-3"><span className="font-semibold">{comment.author || "익명"}</span><time className="text-xs text-slate-400">{formatDate(comment.created_at)}</time></div><p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-slate-600 dark:text-slate-300">{comment.content}</p></article>
+                            <article key={comment.id} className="py-4 first:pt-0"><div className="flex items-center justify-between gap-3"><span className="font-semibold">{comment.author || "알 수 없는 사용자"}</span><time className="text-xs text-slate-400">{formatDate(comment.created_at)}</time></div><p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-slate-600 dark:text-slate-300">{comment.content}</p></article>
                         ))}
                     </div>
                 </section>
