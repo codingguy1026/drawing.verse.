@@ -2531,3 +2531,306 @@
     margin-top: .75rem !important;
   }
 }
+
+/* =========================================================
+   CRAFT REFINEMENT
+   Reduce template-like glass/card repetition without changing the
+   Drawing Verse palette, navigation, or cosmic interaction language.
+   ========================================================= */
+.dv-subpage-theme {
+  --dv-radius-sm: 10px;
+  --dv-radius-md: 16px;
+  --dv-shadow-raised: 0 10px 28px rgba(61, 38, 87, .08);
+}
+
+/* Controls share one practical radius; pills remain reserved for status,
+   avatars and compact segmented navigation. */
+.dv-subpage-theme :where(input, textarea, select) {
+  border-radius: var(--dv-radius-sm) !important;
+}
+
+.dv-subpage-theme :where(button, a)[class*="rounded-2xl"]:not([class*="rounded-full"]) {
+  border-radius: var(--dv-radius-sm) !important;
+}
+
+/* The app chrome should feel anchored, rather than like stacked glass cards. */
+.dv-subpage-contextbar {
+  border-radius: var(--dv-radius-md);
+  box-shadow: 0 4px 16px rgba(61, 38, 87, .07);
+  backdrop-filter: blur(12px);
+}
+
+.dv-subpage-slot {
+  border-radius: var(--dv-radius-md);
+}
+
+/* Universe discovery is a directory: compact header, functional toolbar,
+   and two-column editorial rows instead of a uniform three-card dashboard. */
+.dv-subpage-theme[data-route="/universe"] .dv-route-content > div > div[class*="max-w-6xl"] {
+  row-gap: 1.25rem;
+}
+
+.dv-subpage-theme[data-route="/universe"] [data-ui="universe-header"] {
+  min-height: 0;
+  padding: 1.5rem 0 1.25rem !important;
+  overflow: visible;
+  border: 0 !important;
+  border-bottom: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.dv-subpage-theme[data-route="/universe"] [data-ui="universe-header"] > div:first-child {
+  display: none;
+}
+
+.dv-subpage-theme[data-route="/universe"] [data-ui="universe-toolbar"] {
+  position: relative;
+  top: auto !important;
+  padding: .75rem 0 1rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.dv-subpage-theme[data-route="/universe"] .dv-route-content section[class*="space-y"] > .grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0 1.5rem !important;
+  border-top: 1px solid var(--dv-border);
+}
+
+.dv-subpage-theme[data-route="/universe"] [data-ui="universe-row"] {
+  min-height: 138px;
+  padding: 1.15rem .25rem;
+  border: 0 !important;
+  border-bottom: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.dv-subpage-theme[data-route="/universe"] [data-ui="universe-row"] > div:first-child {
+  display: none;
+}
+
+/* Gallery artwork remains image-led; metadata no longer competes with art. */
+.dv-subpage-theme[data-route="/gallery"] article {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none;
+  transition-duration: 180ms !important;
+}
+
+.dv-subpage-theme[data-route="/gallery"] article:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(128, 96, 241, .28) !important;
+  box-shadow: var(--dv-shadow-raised) !important;
+}
+
+/* Verse Talk is a conversation surface, not a feature-card landing page. */
+.dv-subpage-theme[data-route="/community"] .dv-route-content main > section > div > div:first-child {
+  text-align: left;
+}
+
+.dv-subpage-theme[data-route="/community"] .dv-route-content main > section > div > div:nth-child(2) {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: var(--dv-shadow-raised) !important;
+  backdrop-filter: none !important;
+}
+
+.dv-subpage-theme[data-route="/community"] .dv-route-content main > section > div > div:nth-child(2) > div:first-child {
+  display: block;
+  border-block: 1px solid var(--dv-border);
+}
+
+.dv-subpage-theme[data-route="/community"] .dv-route-content main > section > div > div:nth-child(2) > div:first-child > div {
+  padding: .85rem 0;
+  border: 0 !important;
+  border-bottom: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.dv-subpage-theme[data-route="/community"] .dv-route-content main > section > div > div:nth-child(2) > div:first-child > div:last-child {
+  border-bottom: 0 !important;
+}
+
+/* Posts read as one continuous thread: dividers carry hierarchy while the
+   author, timestamp and conversation remain visually central. */
+.dv-subpage-theme[data-route^="/post/"] article,
+.dv-subpage-theme[data-route^="/post/"] section[id="comments"] {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 767px) {
+  .dv-subpage-theme[data-route="/universe"] .dv-route-content section[class*="space-y"] > .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dv-subpage-theme[data-route="/universe"] [data-ui="universe-header"] {
+    padding-inline: .25rem !important;
+  }
+}
+
+/* =========================================================
+   PRODUCT SURFACE REFINEMENT
+   Home is the visual reference: content first, quiet surfaces, meaningful
+   accents. Route scoping preserves the distinct job of every screen.
+   ========================================================= */
+.dv-subpage-theme [data-ui="universe-detail"] > div:first-child { opacity: .35; }
+.dv-subpage-theme [data-ui="universe-identity"] {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme [data-ui="stellar-systems"] {
+  border-radius: var(--dv-radius-md) !important;
+  background: rgba(255,255,255,.46) !important;
+  box-shadow: none !important;
+}
+.dark .dv-subpage-theme [data-ui="stellar-systems"] { background: rgba(255,255,255,.025) !important; }
+.dv-subpage-theme [data-ui="stellar-systems"] > div:last-child > a {
+  border-radius: var(--dv-radius-sm) !important;
+  box-shadow: none !important;
+}
+
+/* Personal space keeps identity prominent and presents activity as a ledger. */
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:first-child {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+}
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:first-child > div:first-child { opacity: .25; }
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(2) {
+  gap: 0 !important;
+  overflow: hidden;
+  border-block: 1px solid var(--dv-border);
+}
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(2) > div {
+  border: 0 !important;
+  border-right: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(3) {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(3) [class*="rounded-2xl"][class*="border"] {
+  border-inline: 0 !important;
+  border-top: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+/* Public profiles retain banner/avatar identity; repeated content shares edges. */
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:first-of-type {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+}
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:first-of-type [class*="grid-cols-4"] {
+  gap: 0 !important;
+  overflow: hidden;
+  border-block: 1px solid var(--dv-border);
+}
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:first-of-type [class*="grid-cols-4"] > div {
+  border: 0 !important;
+  border-right: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:nth-of-type(2) > div:first-child {
+  padding: 0 0 .75rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:nth-of-type(2) a[class*="rounded-"] {
+  border-radius: var(--dv-radius-sm) !important;
+  box-shadow: none !important;
+}
+
+/* Search is an index, not a pair of promotional cards. */
+.dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] > section {
+  padding: 1.25rem 0;
+  border: 0;
+  border-top: 1px solid var(--dv-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.dv-subpage-theme[data-route="/search"] section li {
+  padding: .9rem 0;
+  border: 0;
+  border-bottom: 1px solid rgba(128,96,241,.1);
+  border-radius: 0;
+  background: transparent;
+}
+.dv-subpage-theme[data-route="/search"] section li:hover { transform: none; padding-left: .4rem; }
+
+/* Legacy post detail becomes one article followed by one conversation thread. */
+.dv-subpage-theme[data-route^="/post/"] .board {
+  width: min(calc(100% - 2rem), 54rem);
+  margin-inline: auto;
+  padding-block: 2rem 5rem;
+}
+.dv-subpage-theme[data-route^="/post/"] .board > .surface {
+  border-radius: var(--dv-radius-md) !important;
+  background: rgba(255,255,255,.72) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dark .dv-subpage-theme[data-route^="/post/"] .board > .surface { background: rgba(255,255,255,.035) !important; }
+
+/* Creation/settings pages use form structure instead of extra card decoration. */
+.dv-subpage-theme[data-route="/universe/create"] form,
+.dv-subpage-theme[data-route^="/universe/"][data-route$="/settings"] form {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route^="/universe/"][data-route$="/settings"] section + section {
+  border-top: 1px solid var(--dv-border);
+}
+
+/* Navigation keeps its location, logo and active orbit, but loses ambient layers. */
+.dv-verse-dock {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: 0 8px 26px rgba(61,38,87,.09) !important;
+  backdrop-filter: blur(14px) !important;
+}
+.dv-verse-dock > div[class*="-bottom-"],
+.dv-verse-dock > div[class*="overflow-hidden"][class*="absolute"] { display: none; }
+
+/* Notification color now communicates unread state rather than decoration. */
+.dv-notification-panel {
+  border-radius: var(--dv-radius-md) !important;
+  backdrop-filter: none !important;
+}
+
+@media (max-width: 767px) {
+  .dv-subpage-theme[data-route^="/post/"] .board { width: calc(100% - 1rem); padding-block: .5rem 3rem; }
+  .dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(2) > div,
+  .dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:first-of-type [class*="grid-cols-4"] > div {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--dv-border) !important;
+  }
+}

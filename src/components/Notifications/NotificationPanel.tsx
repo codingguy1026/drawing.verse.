@@ -85,7 +85,7 @@ export default function NotificationPanel({
               width: "min(384px, calc(100vw - 24px))",
               zIndex: 9999,
             }}
-            className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/95 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#090916]/95 dark:shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
+            className="dv-notification-panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_16px_44px_rgba(15,23,42,0.14)] dark:border-white/10 dark:bg-[#090916]/95 dark:shadow-[0_18px_52px_rgba(0,0,0,0.38)]"
           >
             <div className="flex items-center justify-between border-b border-slate-200/70 px-4 py-4 dark:border-white/10">
               <div>
@@ -113,7 +113,7 @@ export default function NotificationPanel({
               </button>
             </div>
 
-            <div className="max-h-[min(460px,65vh)] overflow-y-auto p-2">
+            <div className="max-h-[min(460px,65vh)] overflow-y-auto">
               {loading ? (
                 <div className="px-4 py-12 text-center text-xs font-semibold text-slate-400 dark:text-white/40">
                   알림을 불러오는 중...
@@ -129,10 +129,10 @@ export default function NotificationPanel({
                   const Icon = iconMap[item.type] ?? Bell;
                   const content = (
                     <div
-                      className={`flex gap-3 rounded-2xl border px-3 py-3 transition ${
+                      className={`flex gap-3 border-b px-4 py-3.5 transition ${
                         item.read
-                          ? "border-transparent bg-transparent hover:bg-slate-50 dark:hover:bg-white/[0.05]"
-                          : "border-violet-200/70 bg-violet-50/80 hover:bg-violet-100/80 dark:border-violet-400/20 dark:bg-violet-400/[0.08] dark:hover:bg-violet-400/[0.12]"
+                          ? "border-slate-100 bg-transparent hover:bg-slate-50 dark:border-white/[0.06] dark:hover:bg-white/[0.05]"
+                          : "border-violet-100 bg-violet-50/65 hover:bg-violet-50 dark:border-violet-400/10 dark:bg-violet-400/[0.07] dark:hover:bg-violet-400/[0.1]"
                       }`}
                     >
                       <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-violet-600 shadow-sm dark:bg-white/10 dark:text-violet-300">
