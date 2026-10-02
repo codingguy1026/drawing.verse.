@@ -162,8 +162,8 @@ function GalleryCard({
           </h3>
         </Link>
 
-        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          Drawing Verse의 작은 별조각 같은 작품이에요. 클릭해서 더 자세히 감상해 보세요.
+        <p className="mt-2 text-xs font-medium text-slate-400 dark:text-slate-500">
+          {item.category || "아트워크"} · 조회 {views}
         </p>
 
         <div className="mt-auto flex items-center justify-between pt-5">

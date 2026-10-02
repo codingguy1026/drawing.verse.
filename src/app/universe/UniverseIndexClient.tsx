@@ -178,6 +178,7 @@ export default function UniverseIndexClient() {
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 pt-28 pb-16 space-y-8">
         {/* HERO */}
         <section
+          data-ui="universe-header"
           className={cn(
             "relative overflow-hidden rounded-3xl border",
             border,
@@ -197,10 +198,10 @@ export default function UniverseIndexClient() {
                 U N I V E R S E · I N D E X
               </p>
               <h1 className="mt-2 text-3xl md:text-4xl font-black tracking-tight">
-                유니버스 탐색 🚀
+                유니버스 탐색
               </h1>
               <p className="mt-2 text-sm text-white/60">
-                원하는 세계를 골라서 들어가자. 구독하면 더 빨리 찾아올 수 있어 😎
+                주제와 활동을 살펴보고, 오래 머물고 싶은 세계를 구독하세요.
               </p>
             </div>
 
@@ -240,6 +241,7 @@ export default function UniverseIndexClient() {
 
         {/* TOOLBAR */}
         <section
+          data-ui="universe-toolbar"
           className={cn(
             "rounded-3xl border backdrop-blur-2xl p-4",
             border,
@@ -304,8 +306,7 @@ export default function UniverseIndexClient() {
 
           {!hasSubTable && (
             <div className="mt-3 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200/80">
-              ⚠️ <b>구독 테이블(universe_subscriptions)</b>이 없거나 권한이 없어서 구독 버튼이 비활성일 수 있어요.
-              (UI는 유지됨)
+              <b>구독 기능을 사용할 수 없어요.</b> 잠시 후 다시 시도해 주세요.
             </div>
           )}
         </section>
@@ -315,7 +316,7 @@ export default function UniverseIndexClient() {
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-white/80">
-                ⭐ 내가 구독한 유니버스
+                내가 구독한 유니버스
               </h2>
               <span className="text-xs text-white/40">
                 {subscribedList.length}개
@@ -340,7 +341,7 @@ export default function UniverseIndexClient() {
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-white/80">
-              ✨ 유니버스 목록
+              유니버스 목록
             </h2>
             <span className="text-xs text-white/40">
               {loading ? "불러오는 중…" : `${list.length}개`}
@@ -362,9 +363,9 @@ export default function UniverseIndexClient() {
             </div>
           ) : list.length === 0 ? (
             <div className={cn("rounded-3xl border p-10 text-center", border, card2)}>
-              <p className="text-sm text-white/60">결과가 없어요 🫠</p>
+              <p className="text-sm text-white/60">조건에 맞는 유니버스가 없어요.</p>
               <p className="mt-2 text-xs text-white/40">
-                검색어/카테고리/내 구독 토글을 바꿔봐!
+                검색어나 카테고리, 구독 필터를 바꿔 보세요.
               </p>
             </div>
           ) : (
@@ -398,7 +399,7 @@ function UniverseCard({
   hasSubTable: boolean;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-2xl shadow-[0_0_30px_rgba(15,23,42,0.6)]">
+    <div data-ui="universe-row" className="group relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-2xl shadow-[0_0_30px_rgba(15,23,42,0.6)]">
       <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition">
         <div className="absolute -top-24 -left-14 h-40 w-40 rounded-full bg-violet-500/15 blur-3xl" />
         <div className="absolute -bottom-24 -right-14 h-40 w-40 rounded-full bg-sky-500/10 blur-3xl" />

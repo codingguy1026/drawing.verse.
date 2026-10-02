@@ -150,7 +150,7 @@ export default function CosmicGalaxyExplorer({ items=[] }: { items?:UniverseItem
     <div className="relative z-[80] flex flex-col gap-4 border-b border-white/[.07] bg-black/55 px-4 py-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:px-6">
       <div className="min-w-0"><Breadcrumb focus={focus} onGalaxy={()=>setFocus({level:"galaxy"})} onUniverse={()=>universe&&setFocus({level:"universe",universe})}/><h2 className="mt-2 truncate text-2xl font-black tracking-[-.04em] sm:text-3xl">{title}</h2><p className="mt-1 text-xs text-white/40">{subtitle}</p></div>
       <div className="flex items-center gap-2">{focus.level!=="galaxy"&&<button onClick={()=>focus.level==="system"?setFocus({level:"universe",universe:focus.universe}):setFocus({level:"galaxy"})} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[.06] px-3 py-2 text-xs font-black text-white/70"><ArrowLeft className="size-4"/> 뒤로</button>}<span className="inline-flex items-center gap-2 rounded-full border border-violet-200/15 bg-violet-300/[.08] px-3 py-2 text-[10px] font-black uppercase tracking-[.16em] text-violet-200"><Compass className="size-3.5"/> Live Map</span></div>
-    </header>
+    </div>
     <div className="relative h-[620px] overflow-hidden sm:h-[700px] lg:h-[760px]">
       <AnimatePresence mode="wait" initial={!reduced}>
         {focus.level==="galaxy"&&<GalaxyView items={items} onOpen={item=>setFocus({level:"universe",universe:item})}/>}
