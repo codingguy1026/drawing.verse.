@@ -2677,3 +2677,160 @@
     padding-inline: .25rem !important;
   }
 }
+
+/* =========================================================
+   PRODUCT SURFACE REFINEMENT
+   Home is the visual reference: content first, quiet surfaces, meaningful
+   accents. Route scoping preserves the distinct job of every screen.
+   ========================================================= */
+.dv-subpage-theme [data-ui="universe-detail"] > div:first-child { opacity: .35; }
+.dv-subpage-theme [data-ui="universe-identity"] {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme [data-ui="stellar-systems"] {
+  border-radius: var(--dv-radius-md) !important;
+  background: rgba(255,255,255,.46) !important;
+  box-shadow: none !important;
+}
+.dark .dv-subpage-theme [data-ui="stellar-systems"] { background: rgba(255,255,255,.025) !important; }
+.dv-subpage-theme [data-ui="stellar-systems"] > div:last-child > a {
+  border-radius: var(--dv-radius-sm) !important;
+  box-shadow: none !important;
+}
+
+/* Personal space keeps identity prominent and presents activity as a ledger. */
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:first-child {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+}
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:first-child > div:first-child { opacity: .25; }
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(2) {
+  gap: 0 !important;
+  overflow: hidden;
+  border-block: 1px solid var(--dv-border);
+}
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(2) > div {
+  border: 0 !important;
+  border-right: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(3) {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(3) [class*="rounded-2xl"][class*="border"] {
+  border-inline: 0 !important;
+  border-top: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+/* Public profiles retain banner/avatar identity; repeated content shares edges. */
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:first-of-type {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+}
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:first-of-type [class*="grid-cols-4"] {
+  gap: 0 !important;
+  overflow: hidden;
+  border-block: 1px solid var(--dv-border);
+}
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:first-of-type [class*="grid-cols-4"] > div {
+  border: 0 !important;
+  border-right: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:nth-of-type(2) > div:first-child {
+  padding: 0 0 .75rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--dv-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:nth-of-type(2) a[class*="rounded-"] {
+  border-radius: var(--dv-radius-sm) !important;
+  box-shadow: none !important;
+}
+
+/* Search is an index, not a pair of promotional cards. */
+.dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.dv-subpage-theme[data-route="/search"] .dv-route-content > div[class*="max-w-4xl"] > section {
+  padding: 1.25rem 0;
+  border: 0;
+  border-top: 1px solid var(--dv-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.dv-subpage-theme[data-route="/search"] section li {
+  padding: .9rem 0;
+  border: 0;
+  border-bottom: 1px solid rgba(128,96,241,.1);
+  border-radius: 0;
+  background: transparent;
+}
+.dv-subpage-theme[data-route="/search"] section li:hover { transform: none; padding-left: .4rem; }
+
+/* Legacy post detail becomes one article followed by one conversation thread. */
+.dv-subpage-theme[data-route^="/post/"] .board {
+  width: min(calc(100% - 2rem), 54rem);
+  margin-inline: auto;
+  padding-block: 2rem 5rem;
+}
+.dv-subpage-theme[data-route^="/post/"] .board > .surface {
+  border-radius: var(--dv-radius-md) !important;
+  background: rgba(255,255,255,.72) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dark .dv-subpage-theme[data-route^="/post/"] .board > .surface { background: rgba(255,255,255,.035) !important; }
+
+/* Creation/settings pages use form structure instead of extra card decoration. */
+.dv-subpage-theme[data-route="/universe/create"] form,
+.dv-subpage-theme[data-route^="/universe/"][data-route$="/settings"] form {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-subpage-theme[data-route^="/universe/"][data-route$="/settings"] section + section {
+  border-top: 1px solid var(--dv-border);
+}
+
+/* Navigation keeps its location, logo and active orbit, but loses ambient layers. */
+.dv-verse-dock {
+  border-radius: var(--dv-radius-md) !important;
+  box-shadow: 0 8px 26px rgba(61,38,87,.09) !important;
+  backdrop-filter: blur(14px) !important;
+}
+.dv-verse-dock > div[class*="-bottom-"],
+.dv-verse-dock > div[class*="overflow-hidden"][class*="absolute"] { display: none; }
+
+/* Notification color now communicates unread state rather than decoration. */
+.dv-notification-panel {
+  border-radius: var(--dv-radius-md) !important;
+  backdrop-filter: none !important;
+}
+
+@media (max-width: 767px) {
+  .dv-subpage-theme[data-route^="/post/"] .board { width: calc(100% - 1rem); padding-block: .5rem 3rem; }
+  .dv-subpage-theme[data-route="/me"] .dv-route-content > div > section:nth-child(2) > div,
+  .dv-subpage-theme[data-route^="/profile/"] .dv-route-content main > div > section:first-of-type [class*="grid-cols-4"] > div {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--dv-border) !important;
+  }
+}
