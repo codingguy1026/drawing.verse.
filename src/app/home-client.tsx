@@ -357,7 +357,7 @@ export default function HomeClient() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f8f7fb] text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-slate-100">
-      <div className="pointer-events-none absolute inset-0">
+      <div className="hidden" aria-hidden="true">
         <div className="absolute inset-x-[-12%] top-0 h-[430px] bg-[radial-gradient(ellipse_at_18%_12%,rgba(255,107,114,.18),transparent_34%),radial-gradient(ellipse_at_82%_6%,rgba(184,156,255,.20),transparent_38%),linear-gradient(180deg,rgba(128,96,241,.05),transparent_78%)] blur-[18px] dark:bg-[radial-gradient(ellipse_at_18%_10%,rgba(255,107,114,.16),transparent_36%),radial-gradient(ellipse_at_82%_4%,rgba(128,96,241,.22),transparent_40%),linear-gradient(180deg,rgba(99,60,180,.10),transparent_80%)]" />
         <div className="absolute inset-x-0 top-0 h-[260px] bg-gradient-to-b from-white/22 via-transparent to-transparent dark:from-[#171224]/35 dark:via-transparent" />
         <div className="absolute left-[-12%] top-[-10%] h-[560px] w-[560px] rounded-full bg-[#ff6b72]/10 blur-[140px] dark:bg-[#ff6b72]/12" />
@@ -382,7 +382,7 @@ export default function HomeClient() {
                   </button>
                   <button
                     onClick={handleCancel}
-                    className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-xs font-black text-slate-600 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.07] dark:text-white"
+                    className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-600 dark:border-white/10 dark:bg-[#111016] dark:text-white"
                   >
                     <CloseIcon size={14} />
                     취소
@@ -391,7 +391,7 @@ export default function HomeClient() {
               ) : (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/75 px-4 py-2 text-xs font-black text-slate-500 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-violet-300 hover:text-violet-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-white/65"
+                  className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-500 transition-colors hover:border-violet-300 hover:text-violet-600 dark:border-white/10 dark:bg-[#111016] dark:text-white/65"
                 >
                   <Pencil size={14} />
                   홈 수정
@@ -466,7 +466,7 @@ export default function HomeClient() {
               <motion.div variants={squishyVariants} whileHover="hover" whileTap="tap">
                 <Link
                   href="/universe/create"
-                  className="inline-flex h-12 items-center gap-2 rounded-full border border-[#b89cff]/30 bg-[linear-gradient(105deg,rgba(255,107,114,.10),rgba(184,156,255,.14))] px-6 text-sm font-black text-[#8050de] shadow-[0_10px_30px_rgba(128,96,241,.08)] transition hover:border-[#ff7a7a]/40 dark:text-[#d9ccff]"
+                  className="inline-flex h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700 transition-colors hover:border-[#b89cff] hover:text-[#8060f1] dark:border-white/15 dark:bg-[#111016] dark:text-white/75"
                 >
                   <Sparkles size={15} />
                   Create Universe
@@ -497,7 +497,7 @@ export default function HomeClient() {
                 ) : (
                   <span
                     key={idx}
-                    className="rounded-full border border-slate-200/75 bg-white/55 px-3 py-1.5 text-[11px] font-bold text-slate-400 backdrop-blur-sm dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-white/35"
+                    className="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-400 dark:border-white/10 dark:bg-[#111016] dark:text-white/35"
                   >
                     #{tag}
                   </span>
@@ -556,10 +556,10 @@ export default function HomeClient() {
                 >
                   <Link
                     href={href}
-                    className="group block w-[150px] rounded-[20px] border border-white/80 bg-white/72 p-3.5 shadow-[0_16px_44px_rgba(15,23,42,.09)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-[#b89cff]/40 hover:shadow-[0_18px_50px_rgba(128,96,241,.14)] dark:border-white/10 dark:bg-[#0b0d17]/72"
+                    className="group block w-[150px] rounded-xl border border-slate-200 bg-white p-3.5 transition-colors hover:border-[#b89cff]/50 dark:border-white/10 dark:bg-[#111016]"
                   >
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[linear-gradient(135deg,#ff7a7a,#b89cff)] text-white shadow-[0_6px_18px_rgba(128,96,241,.18)]">
+                      <span className="grid h-7 w-7 place-items-center rounded-md bg-[#ff6b72] text-white">
                         <Orbit size={13} />
                       </span>
                       <span className="text-[9px] font-black text-slate-300 dark:text-white/20">
@@ -579,7 +579,7 @@ export default function HomeClient() {
               );
             })}
 
-            <div className="absolute bottom-3 left-1/2 w-[min(92%,420px)] -translate-x-1/2 rounded-[22px] border border-slate-200/70 bg-white/70 p-3 shadow-[0_18px_50px_rgba(15,23,42,.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#090b13]/75">
+            <div className="absolute bottom-3 left-1/2 w-[min(92%,420px)] -translate-x-1/2 rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#111016]">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[9px] font-black uppercase tracking-[.22em] text-[#8a61dd]">
