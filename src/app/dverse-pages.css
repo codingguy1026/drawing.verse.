@@ -2834,3 +2834,107 @@
     border-bottom: 1px solid var(--dv-border) !important;
   }
 }
+
+
+/* =========================================================
+   DRAWING VERSE — HUMAN-FIRST VISUAL PASS
+   Keep the brand, remove generic AI/SaaS visual habits.
+   ========================================================= */
+
+.dv-subpage-theme {
+  --dv-bg: #fbfafc;
+  --dv-surface: #ffffff;
+  --dv-surface-2: #f7f4f8;
+  --dv-border: rgba(37, 26, 51, 0.12);
+  --dv-ring: rgba(128, 96, 241, 0.18);
+  background: #fbfafc;
+}
+
+.dark .dv-subpage-theme {
+  --dv-bg: #0b0910;
+  --dv-surface: #121016;
+  --dv-surface-2: #17131d;
+  --dv-border: rgba(255, 255, 255, 0.10);
+  --dv-ring: rgba(184, 156, 255, 0.20);
+  background: #0b0910;
+}
+
+/* Decorative atmosphere should never compete with actual content. */
+.dv-subpage-theme::before,
+.dv-subpage-theme::after {
+  display: none;
+}
+
+/* Prefer real surfaces over glassmorphism. */
+.dv-subpage-theme :where(.surface, .dv-glass, .dv-glass-premium) {
+  background: var(--dv-surface) !important;
+  border-color: var(--dv-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.dv-subpage-theme :where(article, section, aside, form)[class*="rounded-"][class*="border"] {
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+.dv-subpage-theme :where([class*="backdrop-blur"]) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Buttons are solid controls, not miniature hero banners. */
+.dv-subpage-theme :where(button, a)[class~="bg-slate-950"] {
+  background: #251a33 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.dark .dv-subpage-theme :where(button, a)[class~="bg-slate-950"] {
+  background: #f7f3fa !important;
+  color: #251a33 !important;
+}
+
+.dv-subpage-theme :where(button, a)[class~="bg-violet-500"],
+.dv-subpage-theme :where(button, a)[class~="bg-violet-600"],
+.dv-subpage-theme :where(button, a)[class~="bg-violet-700"],
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-500"],
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-600"],
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-700"],
+.dv-subpage-theme :where(button, a)[class~="bg-purple-500"],
+.dv-subpage-theme :where(button, a)[class~="bg-purple-600"],
+.dv-subpage-theme :where(button, a)[class~="bg-purple-700"] {
+  background: #8060f1 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.dv-subpage-theme :where(button, a)[class~="bg-violet-500"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-violet-600"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-violet-700"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-500"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-600"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-indigo-700"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-purple-500"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-purple-600"]:hover,
+.dv-subpage-theme :where(button, a)[class~="bg-purple-700"]:hover {
+  filter: brightness(.97);
+  box-shadow: none !important;
+}
+
+/* Focus is visible but restrained. */
+.dv-subpage-theme :where(input, textarea, select):focus {
+  box-shadow: 0 0 0 3px var(--dv-ring) !important;
+}
+
+/* Kill the generic floating-card interaction language. */
+.dv-subpage-theme :where(a, button, article)[class*="hover:-translate-y"]:hover {
+  transform: none !important;
+}
+
+/* Smaller radii make dense community/product screens feel authored, not generated. */
+.dv-subpage-theme :where(input, textarea, select)[class*="rounded-2xl"],
+.dv-subpage-theme :where(button, a)[class*="rounded-2xl"] {
+  border-radius: 10px !important;
+}
