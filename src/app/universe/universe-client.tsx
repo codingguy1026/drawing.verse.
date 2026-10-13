@@ -15,7 +15,7 @@ const CosmicGalaxyExplorer = dynamic(
   { ssr: false, loading: () => <div className="dvux-map-loading">항성계를 불러오는 중…</div> }
 );
 
-type LiveUniverse = UniverseItem & { createdAt: string };
+type LiveUniverse = UniverseItem & { createdAt: string; icon?: string };
 type UniverseRow = {
   id: string | number;
   slug: string;
@@ -26,6 +26,7 @@ type UniverseRow = {
   post_count: number | null;
   created_at: string | null;
   tags?: string[] | null;
+  icon?: string | null;
 };
 
 type SortMode = "popular" | "newest" | "active";
@@ -95,7 +96,7 @@ function Planet({ universe }: { universe: LiveUniverse }) {
     <div className="dvux-world-art" style={{ "--dvux-planet-main": main, "--dvux-planet-shade": shade } as CSSProperties}>
       <div className="dvux-art-orbit dvux-art-orbit-one" />
       <div className="dvux-art-orbit dvux-art-orbit-two" />
-      <div className="dvux-art-planet">{categorySymbol(universe.category)}</div>
+      <div className="dvux-art-planet">{universe.icon?.trim() || categorySymbol(universe.category)}</div>
       <span className="dvux-art-light dvux-art-light-one" />
       <span className="dvux-art-light dvux-art-light-two" />
     </div>
@@ -142,7 +143,7 @@ export default function UniversePage() {
       try {
         const { data, error } = await supabase
           .from("universes")
-          .select("id,slug,name,description,category,subscriber_count,post_count,created_at,tags")
+          .select("*")
           .order("created_at", { ascending: false });
         if (error) throw error;
         const records = (data ?? []) as UniverseRow[];
@@ -158,6 +159,7 @@ export default function UniversePage() {
             createdAt: row.created_at ?? "",
             updatedAt: row.created_at ?? "",
             tags: Array.isArray(row.tags) ? row.tags : [],
+            icon: row.icon ?? "",
           })));
         }
         const { data: auth, error: authError } = await supabase.auth.getUser();
