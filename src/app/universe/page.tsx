@@ -1,3 +1,4 @@
+import "./cosmic-explorer.css";
 import type { Metadata } from "next";
 import UniverseClient from "./universe-client";
 
