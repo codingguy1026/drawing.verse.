@@ -16,6 +16,8 @@ import {
 
 type Profile = {
   nickname: string | null;
+  display_name?: string | null;
+  avatar_url?: string | null;
   bio?: string | null;
 };
 
@@ -159,18 +161,8 @@ export default function MePage() {
         if (!q2.error && q2.data) return q2.data as PostRow[];
       }
 
-      // 3) 필터 불가면 그냥 최신 10개라도(빈화면 방지)
-      const q3 = await supabase
-        .from("posts")
-        .select("id,title,universe_slug,created_at,like_count,comment_count")
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (!q3.error && q3.data) {
-        setNote("⚠️ posts 테이블에 author_id/author 기준이 없어서, 전체 최신글을 임시로 보여줘요.");
-        return q3.data as PostRow[];
-      }
-
+      // 소유자 필터를 확인할 수 없다면, 다른 사용자의 글을 내 게시글로 표시하지 않아요.
+      setNote("게시글 소유자 정보를 확인할 수 없어 목록을 불러오지 않았어요.");
       return [];
     }
 
@@ -235,7 +227,7 @@ export default function MePage() {
       // profile
       const profRes = await supabase
         .from("profiles")
-        .select("nickname,bio")
+        .select("nickname,display_name,avatar_url,bio")
         .eq("id", userId)
         .maybeSingle();
 
@@ -266,7 +258,9 @@ export default function MePage() {
       if (!ignore) {
         setProfile({
           nickname: nick,
-          bio: (profRes.data as any)?.bio ?? null,
+          display_name: profRes.data?.display_name ?? null,
+          avatar_url: profRes.data?.avatar_url ?? null,
+          bio: profRes.data?.bio ?? null,
         });
 
         setSubs(subsList);
@@ -293,7 +287,7 @@ export default function MePage() {
     };
   }, [router]);
 
-  const nickname = profile.nickname ?? "Traveler";
+  const nickname = profile.display_name ?? profile.nickname ?? "Traveler";
   const avatar = useMemo(() => (nickname[0] ?? authEmail?.[0] ?? "D").toUpperCase(), [nickname, authEmail]);
 
   const score = stats.postCount * 10 + stats.commentCount * 3 + stats.likeReceived * 1;
@@ -314,7 +308,12 @@ export default function MePage() {
         <div className="relative flex min-w-0 flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 items-start gap-4 sm:items-center">
             <div className="dv-me-avatar relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border sm:h-20 sm:w-20">
-              <span className="text-lg font-black text-white">{avatar}</span>
+              {profile.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.avatar_url} alt={`${nickname} 프로필 이미지`} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-lg font-black text-white">{avatar}</span>
+              )}
               <span className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-violet-500/20 blur-xl" />
             </div>
 
