@@ -267,7 +267,7 @@ function ProfileHero({
     }
 
     return (
-        <section className="relative overflow-hidden rounded-[2rem] border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.06] shadow-[0_35px_100px_rgba(0,0,0,0.35)] ring-1 ring-slate-200 dark:ring-white/5 backdrop-blur-2xl">
+        <section data-ui="user-profile-hero" className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.06]">
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(99,102,241,0.35),rgba(236,72,153,0.18),rgba(34,211,238,0.18))]" />
 
 
@@ -340,7 +340,7 @@ function ProfileHero({
                     </div>
                 </div>
 
-                <aside className="flex flex-col justify-between gap-5 rounded-[1.75rem] border border-slate-200 dark:border-white/10 bg-white/55 dark:bg-[#080a18]/55 p-5 backdrop-blur-xl">
+                <aside data-ui="user-profile-actions" className="flex flex-col justify-between gap-5 rounded-2xl border border-slate-200 bg-white/80 p-5 dark:border-white/10 dark:bg-[#141325]">
 
                     <div className="grid grid-cols-2 gap-3">
                         {isOwner ? (
@@ -655,7 +655,7 @@ export default async function UserDetailPage({ params }: PageProps) {
                     }}
                 />
 
-                <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <section data-ui="user-profile-stats" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <StatCard
                         label="팔로워"
                         value={compactNumber(profile.followers_count)}
@@ -737,7 +737,7 @@ export default async function UserDetailPage({ params }: PageProps) {
                         </h2>
 
                         <Link
-                            href="/universes"
+                            href="/universe"
                             className="inline-flex items-center gap-1 text-sm font-bold text-cyan-700 dark:text-cyan-100"
                         >
                             탐색하기 <ChevronRight size={16} />
