@@ -19,7 +19,6 @@ import {
     Settings,
     Sparkles,
     UserRound,
-    Users,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import FollowButton from "@/components/users/FollowButton";
