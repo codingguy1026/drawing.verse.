@@ -32,6 +32,7 @@ type ProfileRow = {
 type CommentRow = {
     id: number;
     post_id: number;
+    user_id?: string | null;
     author: string | null;
     content: string;
     created_at: string | null;
@@ -71,6 +72,7 @@ export default function PostDetail({ params }: PostDetailProps) {
     const [authorProfile, setAuthorProfile] = React.useState<ProfileRow | null>(null);
     const [relatedPosts, setRelatedPosts] = React.useState<PostRow[]>([]);
     const [comments, setComments] = React.useState<CommentRow[]>([]);
+    const [commentProfiles, setCommentProfiles] = React.useState<Record<string, ProfileRow>>({});
     const [commentAuthor, setCommentAuthor] = React.useState("");
     const [commentContent, setCommentContent] = React.useState("");
     const [commentSaving, setCommentSaving] = React.useState(false);
@@ -132,10 +134,27 @@ export default function PostDetail({ params }: PostDetailProps) {
             ]);
 
             if (ignore) return;
+            const nextComments = (loadedComments || []) as CommentRow[];
+            const commentUserIds = [...new Set(nextComments.map((comment) => comment.user_id).filter((id): id is string => Boolean(id)))];
+            let nextCommentProfiles: Record<string, ProfileRow> = {};
+
+            if (commentUserIds.length > 0) {
+                const { data: commentProfileRows } = await supabase
+                    .from("profiles")
+                    .select("id,display_name,nickname,avatar_url")
+                    .in("id", commentUserIds);
+
+                nextCommentProfiles = Object.fromEntries(
+                    ((commentProfileRows as ProfileRow[] | null) ?? []).map((profile) => [profile.id, profile])
+                );
+            }
+
+            if (ignore) return;
             setPost(loadedPost);
             setAuthorProfile((loadedAuthorProfile as ProfileRow | null) ?? null);
             setRelatedPosts((related || []) as PostRow[]);
-            setComments((loadedComments || []) as CommentRow[]);
+            setComments(nextComments);
+            setCommentProfiles(nextCommentProfiles);
 
             if (authData.user) {
                 const [{ data: starData }, { data: profileData }] = await Promise.all([
@@ -147,19 +166,22 @@ export default function PostDetail({ params }: PostDetailProps) {
                         .maybeSingle(),
                     supabase
                         .from("profiles")
-                        .select("display_name,nickname")
+                        .select("id,display_name,nickname,avatar_url")
                         .eq("id", authData.user.id)
                         .maybeSingle(),
                 ]);
                 if (!ignore) {
                     setIsStarred(!!starData);
-                    const profile = profileData as { display_name?: string | null; nickname?: string | null } | null;
+                    const profile = profileData as ProfileRow | null;
                     setCommentAuthor(
                         profile?.display_name?.trim() ||
                         profile?.nickname?.trim() ||
                         authData.user.email?.split("@")[0] ||
                         "사용자"
                     );
+                    if (profile) {
+                        setCommentProfiles((current) => ({ ...current, [authData.user!.id]: profile }));
+                    }
                 }
             } else {
                 setIsStarred(false);
@@ -194,6 +216,17 @@ export default function PostDetail({ params }: PostDetailProps) {
                     if (payload.eventType === "INSERT") {
                         const next = payload.new as CommentRow;
                         setComments((prev) => prev.some((item) => item.id === next.id) ? prev : sortComments([...prev, next]));
+
+                        if (next.user_id) {
+                            supabase
+                                .from("profiles")
+                                .select("id,display_name,nickname,avatar_url")
+                                .eq("id", next.user_id)
+                                .maybeSingle<ProfileRow>()
+                                .then(({ data }) => {
+                                    if (data) setCommentProfiles((current) => ({ ...current, [data.id]: data }));
+                                });
+                        }
                     } else if (payload.eventType === "UPDATE") {
                         const next = payload.new as CommentRow;
                         setComments((prev) => sortComments(prev.map((item) => item.id === next.id ? next : item)));
@@ -231,6 +264,7 @@ export default function PostDetail({ params }: PostDetailProps) {
         setCommentSaving(true);
         const { data, error } = await supabase.from("comments").insert({
             post_id: numericPostId,
+            user_id: authData.user.id,
             author,
             content,
         }).select("*").single();
@@ -357,9 +391,31 @@ export default function PostDetail({ params }: PostDetailProps) {
                     </form>
 
                     <div className="mt-6 divide-y divide-slate-100 dark:divide-white/5">
-                        {comments.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">아직 댓글이 없어. 첫 댓글을 남겨봐!</p> : comments.map((comment) => (
-                            <article key={comment.id} className="py-4 first:pt-0"><div className="flex items-center justify-between gap-3"><span className="font-semibold">{comment.author || "알 수 없는 사용자"}</span><time className="text-xs text-slate-400">{formatDate(comment.created_at)}</time></div><p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-slate-600 dark:text-slate-300">{comment.content}</p></article>
-                        ))}
+                        {comments.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">아직 댓글이 없어. 첫 댓글을 남겨봐!</p> : comments.map((comment) => {
+                            const profile = comment.user_id ? commentProfiles[comment.user_id] : undefined;
+                            const name = profile?.display_name?.trim() || profile?.nickname?.trim() || comment.author || "알 수 없는 사용자";
+
+                            return (
+                                <article key={comment.id} className="flex gap-3 py-4 first:pt-0">
+                                    {profile?.avatar_url ? (
+                                        <img src={profile.avatar_url} alt="" className="size-9 shrink-0 rounded-full object-cover" />
+                                    ) : (
+                                        <div className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-xs font-bold dark:bg-white/10">{getInitial(name)}</div>
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            {comment.user_id ? (
+                                                <Link href={`/users/${comment.user_id}`} className="truncate text-sm font-semibold hover:underline">{name}</Link>
+                                            ) : (
+                                                <span className="truncate text-sm font-semibold">{name}</span>
+                                            )}
+                                            <time className="shrink-0 text-xs text-slate-400">{formatDate(comment.created_at)}</time>
+                                        </div>
+                                        <p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-slate-600 dark:text-slate-300">{comment.content}</p>
+                                    </div>
+                                </article>
+                            );
+                        })}
                     </div>
                 </section>
 
