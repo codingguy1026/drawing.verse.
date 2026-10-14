@@ -1,0 +1,406 @@
+/*
+ * Drawing Verse / Studio Refinement 2026
+ *
+ * A small, reversible design layer rather than a replacement theme.
+ * Keeps the DV logo, coral/lavender identity, cosmic artwork and existing routes.
+ * The selectors are intentionally scoped to the application shell.
+ */
+
+.dv-site-shell {
+  --dv-studio-coral: #ef5867;
+  --dv-studio-lavender: #9272ef;
+  --dv-studio-ink: #2b2238;
+  --dv-studio-muted: #665d73;
+  --dv-studio-line: rgba(110, 85, 146, .16);
+  --dv-studio-outline: rgba(128, 96, 241, .62);
+  font-family: var(--font-inter), var(--font-noto), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -.012em;
+  text-rendering: optimizeLegibility;
+}
+
+.dark .dv-site-shell {
+  --dv-studio-ink: #f4edf9;
+  --dv-studio-muted: #c6bdd2;
+  --dv-studio-line: rgba(199, 174, 245, .19);
+  --dv-studio-outline: rgba(215, 198, 255, .92);
+}
+
+/* Keyboard navigation is always visible above the fixed/sticky chrome. */
+.dv-skip-link {
+  position: fixed;
+  z-index: 2147483647;
+  inset: 12px auto auto 12px;
+  padding: 12px 18px;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  background: #39265f;
+  color: #fff;
+  font: 750 14px/1.3 ui-sans-serif, system-ui, sans-serif;
+  box-shadow: 0 10px 30px #10072055;
+  transform: translateY(-180%);
+  transition: transform .18s ease;
+}
+.dv-skip-link:focus { transform: translateY(0); }
+
+.dv-site-shell :where(a, button, input, textarea, select, [role="button"]):focus-visible {
+  outline: 2px solid var(--dv-studio-outline);
+  outline-offset: 3px;
+}
+
+.dv-site-shell :where(button, input, textarea, select) {
+  font: inherit;
+}
+
+.dv-site-shell :where(input, textarea, select)::placeholder {
+  opacity: 1;
+}
+
+.dv-site-shell :where(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+/* Frame: more editorial hierarchy, less competition with the content. */
+.dv-subpage-frame:not(.dv-subpage-frame--focus) {
+  gap: clamp(12px, 1.45vw, 22px);
+}
+
+.dv-subpage-rail {
+  border-radius: 23px;
+  border-color: var(--dv-studio-line);
+  box-shadow: 0 12px 44px rgba(45, 30, 75, .11), inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+.dark .dv-subpage-rail {
+  border-color: var(--dv-studio-line);
+  box-shadow: 0 18px 52px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.055);
+}
+
+.dv-frame-brand {
+  gap: 10px;
+  padding: 22px 16px 17px;
+}
+
+.dv-frame-brand strong {
+  font-size: 15px;
+  font-weight: 830;
+  letter-spacing: -.035em;
+}
+
+.dv-frame-brand small {
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+.dv-frame-group-label {
+  margin-bottom: 8px;
+  color: #746682;
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+.dark .dv-frame-group-label { color: #ac9dbf; }
+
+.dv-frame-link {
+  min-height: 45px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 690;
+}
+
+.dv-frame-link:not(.is-active) {
+  color: #5d526a;
+}
+
+.dark .dv-frame-link:not(.is-active) {
+  color: #d0c7df;
+}
+
+.dv-frame-link.is-active {
+  border-color: rgba(128,96,241,.25);
+  background: linear-gradient(100deg, rgba(255,107,114,.13), rgba(184,156,255,.18));
+}
+
+.dark .dv-frame-link.is-active {
+  border-color: rgba(184,156,255,.27);
+  background: linear-gradient(100deg, rgba(255,107,114,.16), rgba(184,156,255,.19));
+}
+
+.dv-frame-link:hover .dv-frame-link-icon {
+  transform: scale(1.045);
+}
+.dv-frame-link-icon { transition: transform .18s ease; }
+.dv-frame-rail-footer { padding-top: 14px; }
+.dv-frame-rail-footer p { font-size: 10px; }
+
+.dv-subpage-contextbar {
+  min-height: 64px;
+  border-radius: 15px;
+  border-color: var(--dv-studio-line);
+  padding: 12px 19px;
+}
+
+.dv-context-copy { gap: 12px; }
+.dv-context-signal { width: 5px; height: 32px; }
+.dv-context-copy p {
+  font-size: 10px;
+  letter-spacing: .13em;
+  color: #786987;
+}
+.dark .dv-context-copy p { color: #bbaecb; }
+.dv-context-copy strong {
+  margin-top: 5px;
+  font-size: 17px;
+  font-weight: 790;
+}
+
+.dv-context-path {
+  max-width: min(45%, 360px);
+  font-size: 11px;
+  color: #665575;
+  border-radius: 9px;
+}
+
+.dv-subpage-slot {
+  border-color: var(--dv-studio-line);
+  border-radius: 20px;
+}
+
+/* Maintain the original universe explorer's night-sky palette.
+   Improve hierarchy instead of turning it into a new product. */
+.dv-site-shell .dv-universe-redesign {
+  --dvux-muted: #bbc3d6;
+  --dvux-border: #384054;
+  --dvux-panel: #161d2e;
+}
+
+.dv-site-shell .dvux-content {
+  max-width: 1380px;
+  padding-inline: clamp(16px, 2.5vw, 34px);
+}
+
+.dv-site-shell .dvux-topbar {
+  padding-top: 7px;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.dv-site-shell .dvux-topbar-heading span {
+  color: #e6c0d5;
+  font-size: 11px;
+  letter-spacing: .11em;
+}
+
+.dv-site-shell .dvux-topbar-heading strong {
+  font-size: clamp(22px, 2.2vw, 27px);
+}
+
+.dv-site-shell .dvux-search {
+  border-color: #4b5369;
+  border-radius: 11px;
+  background: #1a2132;
+}
+
+.dv-site-shell .dvux-search input {
+  font-size: 13px;
+  color: #fff;
+}
+
+.dv-site-shell .dvux-search input::placeholder { color: #bcc4d7; }
+.dv-site-shell .dvux-search:focus-within {
+  border-color: #e6b5d0;
+  box-shadow: 0 0 0 3px #e6b5d022;
+}
+
+.dv-site-shell .dvux-hero {
+  min-height: 320px;
+  border-color: #656184;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 74% 40%, #394b8a 0%, #1f315b 33%, transparent 66%),
+    linear-gradient(115deg, #121b3a, #131a31 58%, #172349);
+  box-shadow: inset 0 1px 0 #ffffff25, 0 24px 60px #04071155;
+}
+
+.dv-site-shell .dvux-hero-copy {
+  padding-block: clamp(32px, 4vw, 54px);
+}
+
+.dv-site-shell .dvux-hero h1 {
+  max-width: 650px;
+  line-height: 1.17;
+}
+
+.dv-site-shell .dvux-hero-copy p {
+  color: #e0e3f3;
+  font-size: 14px;
+  line-height: 1.82;
+}
+
+.dv-site-shell .dvux-button {
+  min-height: 42px;
+  font-size: 13px;
+  border-radius: 11px;
+}
+
+.dv-site-shell .dvux-button-primary {
+  color: #281929 !important;
+  background: #f8c2cf;
+  border-color: #f8c2cf;
+}
+
+.dv-site-shell .dvux-button-primary:hover { background: #ffdae2; }
+
+.dv-site-shell .dvux-stat {
+  border-radius: 13px;
+  padding: 17px 18px;
+  background: #181f31;
+}
+
+.dv-site-shell .dvux-stat span {
+  color: #c0c9db;
+  font-size: 12px;
+}
+
+.dv-site-shell .dvux-section-head h2 { font-size: clamp(23px, 2.5vw, 29px); }
+.dv-site-shell .dvux-section-head p { font-size: 13px; }
+.dv-site-shell .dvux-eyebrow { letter-spacing: .12em; font-size: 11px; }
+
+.dv-site-shell .dvux-filter {
+  color: #d8dbea;
+  font-size: 12px;
+  border-color: #53576f;
+}
+
+.dv-site-shell .dvux-filter.is-active {
+  border-color: #ddb5d0;
+  background: #4f3654;
+  color: #fff2f6;
+}
+
+.dv-site-shell .dvux-card {
+  overflow: hidden;
+  border-radius: 17px;
+  border-color: #414861;
+  background: #171e2f;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.dv-site-shell .dvux-card:hover,
+.dv-site-shell .dvux-card:focus-within {
+  border-color: #b9a1e4;
+  box-shadow: 0 14px 34px #05071377;
+  transform: translateY(-2px);
+}
+
+.dv-site-shell .dvux-card-desc {
+  font-size: 13px;
+  color: #c6cedf;
+}
+
+.dv-site-shell .dvux-card-meta { color: #ccd5e5; }
+.dv-site-shell .dvux-card-meta span { font-size: 12px; }
+.dv-site-shell .dvux-chip { font-size: 11px; }
+.dv-site-shell .dvux-aside-card { border-color: #45475e; }
+.dv-site-shell .dvux-popular-info small { color: #bbc1d3; font-size: 11px; }
+.dv-site-shell .dvux-result-count { color: #c8cfdf; }
+
+/* Home: keep the orbital illustration, but give the editorial story more room. */
+.dv-site-shell[data-route="/"] .dv-home-hero {
+  isolation: isolate;
+}
+
+.dv-site-shell[data-route="/"] .dv-home-copy {
+  padding-left: clamp(0px, 1vw, 10px);
+}
+
+.dv-site-shell[data-route="/"] .dv-home-copy::before {
+  content: "";
+  position: absolute;
+  top: 72px;
+  left: -12px;
+  width: 3px;
+  height: 95px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff6b72, #b89cff);
+  opacity: .8;
+}
+
+.dv-site-shell[data-route="/"] .dv-home-title {
+  text-wrap: pretty;
+}
+
+.dv-site-shell[data-route="/"] .dv-home-actions a {
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.dv-site-shell[data-route="/"] .dv-home-actions a:focus-visible {
+  outline-offset: 5px;
+}
+
+.dv-site-shell[data-route="/"] .dv-home-orbit::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+  inset: 11%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(184,156,255,.11), transparent 69%);
+  filter: blur(27px);
+}
+
+/* Shared: readable forms and intentional control states across routes. */
+.dv-subpage-theme .dv-route-content :where(input, textarea, select)::placeholder {
+  color: #776d83;
+}
+.dark .dv-subpage-theme .dv-route-content :where(input, textarea, select)::placeholder {
+  color: #b9b0c6;
+}
+
+.dv-subpage-theme .dv-route-content :where(input, textarea, select):focus-visible {
+  outline-color: var(--dv-studio-outline);
+  box-shadow: 0 0 0 3px rgba(146,114,239,.17);
+}
+
+.dv-subpage-theme .dv-route-content :where(button, a)[aria-pressed="true"] {
+  border-color: rgba(146,114,239,.4);
+}
+
+.dv-site-shell[data-route="/gallery"] .dv-route-content :where(article, a)[class*="group"]:focus-within {
+  outline: 2px solid var(--dv-studio-outline);
+  outline-offset: 2px;
+}
+
+/* Responsive sizing stays inside the existing mobile navigation strategy. */
+@media (max-width: 900px) {
+  .dv-site-shell .dvux-result-layout { gap: 18px; }
+  .dv-subpage-contextbar { padding-inline: 14px; }
+  .dv-site-shell[data-route="/"] .dv-home-copy::before { display: none; }
+}
+
+@media (max-width: 640px) {
+  .dv-site-shell .dvux-content { padding-inline: 15px; }
+  .dv-site-shell .dvux-hero { border-radius: 17px; min-height: 295px; }
+  .dv-site-shell .dvux-hero-copy { padding: 27px 21px; }
+  .dv-site-shell .dvux-hero-copy p { font-size: 13px; }
+  .dv-site-shell .dvux-stat { padding: 12px 10px; }
+  .dv-site-shell .dvux-stat span { font-size: 11px; }
+  .dv-site-shell .dvux-card:hover { transform: none; }
+  .dv-subpage-contextbar { min-height: 56px; border-radius: 13px; }
+  .dv-context-copy strong { font-size: 15px; }
+  .dv-context-path { max-width: 48%; font-size: 10px; }
+  .dv-subpage-slot { border-radius: 15px; }
+  .dv-site-shell[data-route="/"] .dv-home-copy { padding-left: 0; }
+}
+
+/* Respect users who prefer less motion without disabling functionality. */
+@media (prefers-reduced-motion: reduce) {
+  .dv-skip-link { transition: none; }
+  .dv-site-shell .dvux-card,
+  .dv-site-shell .dv-frame-link,
+  .dv-site-shell .dv-frame-link-icon,
+  .dv-site-shell .dv-home-actions a {
+    transition-duration: .01ms !important;
+    animation: none !important;
+  }
+  .dv-site-shell .dvux-card:hover { transform: none; }
+}

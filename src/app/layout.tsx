@@ -5,6 +5,7 @@ import "./tailwind.css";
 import "./globals.css";
 import "./dverse-brand.css";
 import "./dverse-pages.css";
+import "./dverse-studio.css";
 
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
@@ -54,6 +55,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-screen overflow-x-hidden bg-slate-50 font-sans text-slate-900 selection:bg-violet-500/30 transition-colors duration-300 dark:bg-[#03050a] dark:text-white"
       >
+        <a href="#dv-main-content" className="dv-skip-link">본문으로 바로가기</a>
         <FramerMotionProvider>
           <ThemeProvider>
             <WeatherAtmosphereSync />
