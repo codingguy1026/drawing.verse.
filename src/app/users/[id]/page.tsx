@@ -62,17 +62,16 @@ type Post = {
     content: string | null;
     universe_slug: string | null;
     created_at: string | null;
-    likes_count?: number | null;
-    comments_count?: number | null;
-    views_count?: number | null;
+    like_count?: number | null;
+    comment_count?: number | null;
+    view_count?: number | null;
 };
 
 type Artwork = {
     id: string;
     title: string | null;
-    image_url: string | null;
-    tag: string | null;
-    score?: number | null;
+    thumbnail_url: string | null;
+    category: string | null;
     created_at: string | null;
 };
 
@@ -81,7 +80,7 @@ type Universe = {
     name: string | null;
     slug: string | null;
     description: string | null;
-    members_count?: number | null;
+    subscriber_count?: number | null;
 };
 
 function getSupabaseAdmin() {
@@ -427,15 +426,15 @@ function RecentPosts({ posts }: { posts: Post[] }) {
 
                     <div className="mt-4 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
                         <span className="inline-flex items-center gap-1">
-                            <Heart size={15} /> {compactNumber(post.likes_count)}
+                            <Heart size={15} /> {compactNumber(post.like_count)}
                         </span>
 
                         <span className="inline-flex items-center gap-1">
-                            <MessageCircle size={15} /> {compactNumber(post.comments_count)}
+                            <MessageCircle size={15} /> {compactNumber(post.comment_count)}
                         </span>
 
                         <span className="inline-flex items-center gap-1">
-                            <Eye size={15} /> {compactNumber(post.views_count)}
+                            <Eye size={15} /> {compactNumber(post.view_count)}
                         </span>
                     </div>
                 </article>
@@ -463,9 +462,9 @@ function GalleryGrid({ artworks }: { artworks: Artwork[] }) {
                     className="group overflow-hidden rounded-[1.75rem] border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.06] p-3 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/[0.08]"
                 >
                     <div className="relative aspect-[4/3] overflow-hidden rounded-[1.35rem] bg-gradient-to-br from-indigo-300/30 via-fuchsia-300/20 to-cyan-200/25">
-                        {art.image_url ? (
+                        {art.thumbnail_url ? (
                             <Image
-                                src={art.image_url}
+                                src={art.thumbnail_url}
                                 alt={art.title || "artwork"}
                                 fill
                                 className="object-cover transition duration-500 group-hover:scale-105"
@@ -476,12 +475,15 @@ function GalleryGrid({ artworks }: { artworks: Artwork[] }) {
                         )}
 
                         <div className="absolute bottom-3 left-3 rounded-full bg-black/35 px-3 py-1 text-xs font-black text-slate-900 dark:text-white backdrop-blur-xl">
-                            #{art.tag || "dream"}
+                            #{art.category || "dream"}
                         </div>
 
-                        <div className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-black text-white dark:text-[#080a18]">
-                            ★ {art.score ?? "9.5"}
-                        </div>
+                        <Link
+                            href={`/gallery/${art.id}`}
+                            className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-black text-slate-900 dark:bg-white dark:text-[#080a18]"
+                        >
+                            작품 보기
+                        </Link>
                     </div>
 
                     <div className="p-3">
@@ -540,7 +542,7 @@ function UniverseGrid({ universes }: { universes: Universe[] }) {
                         <div className="mt-4 flex items-center justify-between rounded-2xl border border-slate-200 dark:border-white/10 bg-white/40 dark:bg-black/20 px-3 py-3">
                             <span className="text-sm font-bold text-slate-500 dark:text-slate-400">멤버</span>
                             <span className="font-black text-slate-900 dark:text-white">
-                                {compactNumber(verse.members_count)}
+                                {compactNumber(verse.subscriber_count)}
                             </span>
                         </div>
                     </div>
@@ -593,23 +595,24 @@ export default async function UserDetailPage({ params }: PageProps) {
             supabase
                 .from("posts")
                 .select(
-                    "id,title,content,universe_slug,created_at,likes_count,comments_count,views_count"
+                    "id,title,content,universe_slug,created_at,like_count,comment_count,view_count"
                 )
-                .eq("author_id", profile.id)
+                .eq("user_id", profile.id)
                 .order("created_at", { ascending: false })
                 .limit(3),
 
             supabase
                 .from("gallery")
-                .select("id,title,image_url,tag,score,created_at")
+                .select("id,title,thumbnail_url,category,created_at")
                 .eq("user_id", profile.id)
                 .order("created_at", { ascending: false })
                 .limit(6),
 
             supabase
                 .from("universes")
-                .select("id,name,slug,description,members_count")
-                .order("members_count", { ascending: false })
+                .select("id,name,slug,description,subscriber_count")
+                .eq("owner_id", profile.id)
+                .order("subscriber_count", { ascending: false })
                 .limit(3),
         ]);
 
