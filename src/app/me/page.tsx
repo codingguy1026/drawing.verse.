@@ -16,6 +16,8 @@ import {
 
 type Profile = {
   nickname: string | null;
+  display_name?: string | null;
+  avatar_url?: string | null;
   bio?: string | null;
 };
 
@@ -159,18 +161,8 @@ export default function MePage() {
         if (!q2.error && q2.data) return q2.data as PostRow[];
       }
 
-      // 3) 필터 불가면 그냥 최신 10개라도(빈화면 방지)
-      const q3 = await supabase
-        .from("posts")
-        .select("id,title,universe_slug,created_at,like_count,comment_count")
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (!q3.error && q3.data) {
-        setNote("⚠️ posts 테이블에 author_id/author 기준이 없어서, 전체 최신글을 임시로 보여줘요.");
-        return q3.data as PostRow[];
-      }
-
+      // 소유자 필터를 확인할 수 없다면, 다른 사용자의 글을 내 게시글로 표시하지 않아요.
+      setNote("게시글 소유자 정보를 확인할 수 없어 목록을 불러오지 않았어요.");
       return [];
     }
 
@@ -235,7 +227,7 @@ export default function MePage() {
       // profile
       const profRes = await supabase
         .from("profiles")
-        .select("nickname,bio")
+        .select("nickname,display_name,avatar_url,bio")
         .eq("id", userId)
         .maybeSingle();
 
@@ -266,7 +258,9 @@ export default function MePage() {
       if (!ignore) {
         setProfile({
           nickname: nick,
-          bio: (profRes.data as any)?.bio ?? null,
+          display_name: profRes.data?.display_name ?? null,
+          avatar_url: profRes.data?.avatar_url ?? null,
+          bio: profRes.data?.bio ?? null,
         });
 
         setSubs(subsList);
@@ -293,7 +287,7 @@ export default function MePage() {
     };
   }, [router]);
 
-  const nickname = profile.nickname ?? "Traveler";
+  const nickname = profile.display_name ?? profile.nickname ?? "Traveler";
   const avatar = useMemo(() => (nickname[0] ?? authEmail?.[0] ?? "D").toUpperCase(), [nickname, authEmail]);
 
   const score = stats.postCount * 10 + stats.commentCount * 3 + stats.likeReceived * 1;
@@ -303,24 +297,29 @@ export default function MePage() {
   const left = next === score ? 0 : Math.max(0, next - score);
 
   return (
-    <div className="space-y-6">
+    <div className="dv-me-page space-y-6">
       {/* Header / Profile Card */}
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-[0_0_30px_rgba(15,23,42,0.6)] backdrop-blur-2xl">
+      <section className="dv-me-hero relative overflow-hidden rounded-2xl border p-5 sm:p-7">
         <div className="pointer-events-none absolute inset-0">
           <div className={`absolute -top-24 -left-16 h-72 w-72 rounded-full bg-gradient-to-tr ${lvl.gradient} blur-3xl`} />
           <div className="absolute -bottom-24 -right-20 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
         </div>
 
-        <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center">
-              <span className="text-lg font-black text-white">{avatar}</span>
+        <div className="relative flex min-w-0 flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-start gap-4 sm:items-center">
+            <div className="dv-me-avatar relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border sm:h-20 sm:w-20">
+              {profile.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.avatar_url} alt={`${nickname} 프로필 이미지`} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-lg font-black text-white">{avatar}</span>
+              )}
               <span className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-violet-500/20 blur-xl" />
             </div>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-extrabold text-white tracking-tight">{nickname}</h1>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="break-words text-2xl font-extrabold tracking-tight sm:text-3xl">{nickname}</h1>
                 <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-slate-200">
                   <BadgeCheck className="h-3.5 w-3.5 text-violet-300" />
                   {lvl.name}
@@ -337,7 +336,7 @@ export default function MePage() {
                 <p className="mt-2 text-sm text-slate-300 max-w-xl line-clamp-2">{profile.bio}</p>
               ) : (
                 <p className="mt-2 text-sm text-slate-400">
-                  소개글이 비어있어요. <span className="text-violet-300">설정</span>에서 한 줄 추가해봐 😼✨
+                  아직 자기소개가 없어요. 나의 창작 세계를 소개해 보세요. ✨
                 </p>
               )}
             </div>
@@ -345,11 +344,11 @@ export default function MePage() {
 
           <div className="flex flex-col gap-3 md:items-end">
             <Link
-              href="/settings"
+              href={uid ? `/users/${uid}/edit` : "/me"}
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
             >
               <Settings className="h-4 w-4 text-slate-300" />
-              프로필/설정
+              프로필 편집
             </Link>
 
             <div className="w-full max-w-sm">
@@ -375,7 +374,7 @@ export default function MePage() {
       </section>
 
       {/* Stats */}
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="dv-me-stats grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={PencilLine} label="작성글" value={stats.postCount} />
         <StatCard icon={MessageCircle} label="댓글" value={stats.commentCount} />
         <StatCard icon={Heart} label="받은 좋아요" value={stats.likeReceived} />
@@ -383,8 +382,8 @@ export default function MePage() {
       </section>
 
       {/* Tabs */}
-      <section className="rounded-3xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-2xl shadow-[0_0_20px_rgba(15,23,42,0.45)]">
-        <div className="flex items-center gap-2">
+      <section className="dv-me-activity rounded-2xl border p-4 sm:p-6">
+        <div className="flex flex-wrap items-center gap-2">
           <TabButton active={tab === "posts"} onClick={() => setTab("posts")}>
             게시글
           </TabButton>
@@ -502,8 +501,10 @@ function TabButton({
 }) {
   return (
     <button
+      type="button"
+      aria-pressed={active}
       onClick={onClick}
-      className={`rounded-2xl px-3 py-2 text-sm font-bold transition ${
+      className={`dv-me-tab rounded-xl px-3 py-2 text-sm font-bold transition ${
         active
           ? "bg-white/10 text-white border border-white/10"
           : "bg-transparent text-slate-400 hover:text-white hover:bg-white/5"
@@ -524,7 +525,7 @@ function StatCard({
   value: number;
 }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-2xl shadow-[0_0_18px_rgba(15,23,42,0.35)]">
+    <div className="dv-me-stat rounded-2xl border p-4 sm:p-5">
       <div className="flex items-center gap-2 text-slate-300">
         <span className="h-9 w-9 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center">
           <Icon className="h-4 w-4 text-violet-300" />
@@ -539,7 +540,7 @@ function StatCard({
 
 function EmptyCard({ text }: { text: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-6 text-center text-sm text-slate-300">
+    <div className="dv-me-empty rounded-xl border px-4 py-8 text-center text-sm">
       {text}
     </div>
   );
@@ -547,9 +548,9 @@ function EmptyCard({ text }: { text: string }) {
 
 function SkeletonRow() {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-      <div className="h-4 w-2/3 rounded bg-white/10" />
-      <div className="mt-2 h-3 w-1/3 rounded bg-white/10" />
+    <div className="dv-me-skeleton rounded-xl border px-4 py-3">
+      <div className="h-4 w-2/3 rounded bg-slate-200 dark:bg-white/10" />
+      <div className="mt-2 h-3 w-1/3 rounded bg-slate-200 dark:bg-white/10" />
     </div>
   );
 }
