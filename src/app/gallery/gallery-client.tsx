@@ -30,12 +30,20 @@ type GalleryItem = {
   id: string;
   title: string | null;
   author: string | null;
+  user_id?: string | null;
   thumbnail_url: string | null;
   created_at: string;
   category?: string | null;
   view_count?: number | null;
   like_count?: number | null;
   comment_count?: number | null;
+};
+
+type ProfileRow = {
+  id: string;
+  display_name: string | null;
+  nickname: string | null;
+  avatar_url: string | null;
 };
 
 type SortMode = "latest" | "popular" | "likes";
@@ -86,13 +94,19 @@ function getSafeNumber(value: number | null | undefined) {
 
 function GalleryCard({
   item,
+  profile,
   viewMode,
 }: {
   item: GalleryItem;
+  profile?: ProfileRow;
   viewMode: ViewMode;
 }) {
   const title = item.title?.trim() || "Untitled Space";
-  const author = item.author?.trim() || "알 수 없는 사용자";
+  const author =
+    profile?.display_name?.trim() ||
+    profile?.nickname?.trim() ||
+    item.author?.trim() ||
+    "알 수 없는 사용자";
   const likes = getSafeNumber(item.like_count);
   const comments = getSafeNumber(item.comment_count);
   const views = getSafeNumber(item.view_count);
@@ -168,13 +182,21 @@ function GalleryCard({
 
         <div className="mt-auto flex items-center justify-between pt-5">
           <div className="flex min-w-0 items-center gap-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 text-[11px] font-black text-white shadow-lg shadow-indigo-500/20">
-              {getInitial(author)}
-            </div>
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="size-8 shrink-0 rounded-full object-cover" />
+            ) : (
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-black text-slate-600 dark:bg-white/10 dark:text-white/70">
+                {getInitial(author)}
+              </div>
+            )}
             <div className="min-w-0">
-              <p className="truncate text-xs font-black text-slate-700 dark:text-slate-200">
-                {author}
-              </p>
+              {item.user_id ? (
+                <Link href={`/users/${item.user_id}`} className="block truncate text-xs font-black text-slate-700 hover:underline dark:text-slate-200">
+                  {author}
+                </Link>
+              ) : (
+                <p className="truncate text-xs font-black text-slate-700 dark:text-slate-200">{author}</p>
+              )}
               <p className="text-[10px] font-bold text-slate-400">
                 {formatDate(item.created_at)}
               </p>
@@ -196,6 +218,7 @@ function GalleryCard({
 
 export default function GalleryPage() {
   const [items, setItems] = React.useState<GalleryItem[]>([]);
+  const [profiles, setProfiles] = React.useState<Record<string, ProfileRow>>({});
   const [loading, setLoading] = React.useState(true);
   const [errorMessage, setErrorMessage] = React.useState("");
   const [activeCategory, setActiveCategory] = React.useState("전체");
@@ -221,7 +244,25 @@ export default function GalleryPage() {
         }
 
         if (!ignore) {
-          setItems((data ?? []) as GalleryItem[]);
+          const nextItems = (data ?? []) as GalleryItem[];
+          setItems(nextItems);
+
+          const userIds = [...new Set(nextItems.map((item) => item.user_id).filter((id): id is string => Boolean(id)))];
+
+          if (userIds.length > 0) {
+            const { data: profileRows } = await supabase
+              .from("profiles")
+              .select("id,display_name,nickname,avatar_url")
+              .in("id", userIds);
+
+            if (!ignore) {
+              setProfiles(Object.fromEntries(
+                ((profileRows as ProfileRow[] | null) ?? []).map((profile) => [profile.id, profile])
+              ));
+            }
+          } else {
+            setProfiles({});
+          }
         }
       } catch (err) {
         console.error("Gallery load error:", err);
@@ -280,6 +321,34 @@ export default function GalleryPage() {
 
   const hasActiveFilter =
     activeCategory !== "전체" || searchQuery.trim().length > 0 || sortMode !== "latest";
+
+  const creators = React.useMemo(() => {
+    const map = new Map<string, { profile: ProfileRow; artworkCount: number; latestAt: number }>();
+
+    items.forEach((item) => {
+      if (!item.user_id) return;
+      const profile = profiles[item.user_id];
+      if (!profile) return;
+
+      const createdAt = new Date(item.created_at).getTime();
+      const current = map.get(item.user_id);
+
+      if (current) {
+        current.artworkCount += 1;
+        current.latestAt = Math.max(current.latestAt, Number.isFinite(createdAt) ? createdAt : 0);
+      } else {
+        map.set(item.user_id, {
+          profile,
+          artworkCount: 1,
+          latestAt: Number.isFinite(createdAt) ? createdAt : 0,
+        });
+      }
+    });
+
+    return [...map.values()]
+      .sort((a, b) => b.latestAt - a.latestAt)
+      .slice(0, 3);
+  }, [items, profiles]);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-white">
@@ -543,71 +612,49 @@ export default function GalleryPage() {
               )}
             >
               {filteredItems.map((item) => (
-                <GalleryCard key={item.id} item={item} viewMode={viewMode} />
+                <GalleryCard key={item.id} item={item} profile={item.user_id ? profiles[item.user_id] : undefined} viewMode={viewMode} />
               ))}
             </div>
           )}
         </section>
 
-        <section className="rounded-[48px] border border-white bg-slate-50/70 p-8 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.03] md:p-12 lg:p-16">
-          <div className="mb-12 flex flex-col items-center text-center">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg shadow-indigo-500/20">
-              <Star className="h-5 w-5" />
+        <section className="border-t border-slate-200 py-12 dark:border-white/10">
+          <div className="mb-7">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Creators</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight">최근 작품을 올린 창작자</h2>
+            <p className="mt-2 text-sm text-slate-500">샘플 계정 대신 실제 갤러리 활동이 있는 프로필만 표시합니다.</p>
+          </div>
+
+          {creators.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-500 dark:border-white/15">
+              아직 작품을 등록한 창작자가 없어요. 첫 작품이 올라오면 여기에 실제 프로필이 나타납니다.
             </div>
-
-            <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
-              이달의 창작자
-            </h2>
-
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-              우주를 그리는 가장 뜨거운 시선들이에요. 지금은 샘플 영역이고,
-              나중에 Supabase 프로필 테이블이랑 연결하면 진짜 맛있어져요.
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {[
-              { name: "NebulaArt", tags: ["스케치", "배경"], followers: "2.4k" },
-              { name: "CosmicDraw", tags: ["일러스트", "캐릭터"], followers: "1.8k" },
-              { name: "StarGazer", tags: ["웹툰", "시"], followers: "3.2k" },
-            ].map((artist) => (
-              <article
-                key={artist.name}
-                className="group relative flex flex-col items-center overflow-hidden rounded-[40px] border border-white bg-white p-8 text-center shadow-sm transition-all hover:-translate-y-2 hover:shadow-xl dark:border-white/10 dark:bg-[#0b0e14]/80"
-              >
-                <div className="absolute inset-x-0 top-0 h-1.5 w-full bg-gradient-to-r from-violet-500 via-indigo-500 to-sky-400 opacity-0 transition-opacity group-hover:opacity-100" />
-
-                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-gradient-to-br from-violet-500 to-indigo-500 text-2xl font-black text-white shadow-lg shadow-indigo-500/25">
-                  {artist.name[0]}
-                </div>
-
-                <h3 className="text-xl font-black dark:text-white">{artist.name}</h3>
-
-                <div className="mt-3 flex flex-wrap justify-center gap-2">
-                  {artist.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black text-slate-500 dark:bg-white/5 dark:text-slate-400"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <p className="mt-6 text-xs font-black text-slate-400">
-                  팔로워 {artist.followers}
-                </p>
-
-                <Link
-                  href={`/profile/${artist.name}`}
-                  className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 py-3 text-xs font-black text-white transition-all group-hover:bg-indigo-600 dark:bg-white dark:text-slate-950 dark:group-hover:bg-indigo-300"
-                >
-                  프로필 방문
-                  <ArrowRight className="h-3 w-3" />
-                </Link>
-              </article>
-            ))}
-          </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-3">
+              {creators.map(({ profile, artworkCount }) => {
+                const creatorName = profile.display_name?.trim() || profile.nickname?.trim() || "사용자";
+                return (
+                  <Link
+                    key={profile.id}
+                    href={`/users/${profile.id}`}
+                    className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-slate-300 dark:border-white/10 dark:bg-white/[0.03]"
+                  >
+                    {profile.avatar_url ? (
+                      <img src={profile.avatar_url} alt="" className="size-12 rounded-full object-cover" />
+                    ) : (
+                      <div className="grid size-12 place-items-center rounded-full bg-slate-100 font-black text-slate-600 dark:bg-white/10 dark:text-white/70">
+                        {getInitial(creatorName)}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-black">{creatorName}</p>
+                      <p className="mt-1 text-xs text-slate-500">갤러리 작품 {artworkCount}개</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </section>
       </div>
     </main>
