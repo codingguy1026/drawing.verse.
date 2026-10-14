@@ -97,92 +97,56 @@ export default function MePage() {
   useEffect(() => {
     let ignore = false;
 
-    async function safeCountPosts(userId: string, nick: string | null) {
-      // 1) author_id 있으면 그걸로
-      const try1 = await supabase
+    async function safeCountPosts(userId: string) {
+      const result = await supabase
         .from("posts")
         .select("id", { count: "exact", head: true })
-        .eq("author_id", userId);
+        .eq("user_id", userId);
 
-      if (!try1.error) return try1.count ?? 0;
-
-      // 2) 없으면 author(문자열)로
-      if (nick) {
-        const try2 = await supabase
-          .from("posts")
-          .select("id", { count: "exact", head: true })
-          .eq("author", nick);
-
-        if (!try2.error) return try2.count ?? 0;
-      }
-
-      return 0;
+      return result.error ? 0 : result.count ?? 0;
     }
 
-    async function safeSumLikes(userId: string, nick: string | null) {
-      // posts.like_count 합계(컬럼 없으면 0)
-      const try1 = await supabase
+    async function safeSumLikes(userId: string) {
+      const result = await supabase
         .from("posts")
-        .select("like_count, author_id, author");
+        .select("like_count")
+        .eq("user_id", userId);
 
-      if (try1.error || !try1.data) return 0;
+      if (result.error || !result.data) return 0;
 
-      const rows = try1.data as any[];
-      const filtered = rows.filter((r) => {
-        if (r.author_id && r.author_id === userId) return true;
-        if (!r.author_id && nick && r.author === nick) return true;
-        return false;
-      });
-
-      return filtered.reduce((acc, r) => acc + (Number(r.like_count ?? 0) || 0), 0);
+      return result.data.reduce(
+        (total, row) => total + (Number(row.like_count ?? 0) || 0),
+        0
+      );
     }
 
-    async function safeFetchPosts(userId: string, nick: string | null) {
-      // 최신 10개
-      // 1) author_id 필터
-      const q1 = await supabase
+    async function safeFetchPosts(userId: string) {
+      const result = await supabase
         .from("posts")
         .select("id,title,universe_slug,created_at,like_count,comment_count")
-        .eq("author_id", userId)
+        .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(10);
 
-      if (!q1.error && q1.data) return q1.data as PostRow[];
-
-      // 2) author 문자열 필터
-      if (nick) {
-        const q2 = await supabase
-          .from("posts")
-          .select("id,title,universe_slug,created_at,like_count,comment_count")
-          .eq("author", nick)
-          .order("created_at", { ascending: false })
-          .limit(10);
-
-        if (!q2.error && q2.data) return q2.data as PostRow[];
+      if (result.error || !result.data) {
+        setNote("내 게시글을 불러오지 못했어요.");
+        return [];
       }
 
-      // 소유자 필터를 확인할 수 없다면, 다른 사용자의 글을 내 게시글로 표시하지 않아요.
-      setNote("게시글 소유자 정보를 확인할 수 없어 목록을 불러오지 않았어요.");
-      return [];
+      return result.data as PostRow[];
     }
 
     async function safeFetchSubs(userId: string) {
-      // subscriptions 테이블이 있을 수도/없을 수도 → 방어
-      // 후보 이름 2개 시도
-      const candidates = ["subscriptions", "universe_subscriptions"];
-      let slugs: string[] = [];
+      const subscriptionResult = await supabase
+        .from("universe_subscriptions")
+        .select("universe_slug")
+        .eq("user_id", userId);
 
-      for (const table of candidates) {
-        const res = await (supabase as any)
-          .from(table)
-          .select("universe_slug")
-          .eq("user_id", userId);
+      if (subscriptionResult.error || !subscriptionResult.data) return [];
 
-        if (!res.error && res.data) {
-          slugs = (res.data as any[]).map((r) => r.universe_slug).filter(Boolean);
-          break;
-        }
-      }
+      const slugs = subscriptionResult.data
+        .map((row) => row.universe_slug)
+        .filter(Boolean);
 
       if (slugs.length === 0) return [];
 
@@ -193,14 +157,14 @@ export default function MePage() {
 
       if (uniRes.error || !uniRes.data) return [];
 
-      return (uniRes.data as any[]).map((u) => ({
-        id: u.id,
-        slug: u.slug,
-        name: u.name,
-        description: u.description,
-        category: u.category,
-        subscriberCount: u.subscriber_count ?? 0,
-        postCount: u.post_count ?? 0,
+      return uniRes.data.map((universe) => ({
+        id: universe.id,
+        slug: universe.slug,
+        name: universe.name,
+        description: universe.description ?? "",
+        category: universe.category ?? "기타",
+        subscriberCount: universe.subscriber_count ?? 0,
+        postCount: universe.post_count ?? 0,
       })) as Universe[];
     }
 
@@ -234,7 +198,7 @@ export default function MePage() {
       const nick = profRes.data?.nickname ?? null;
 
       // stats
-      const postCount = await safeCountPosts(userId, nick);
+      const postCount = await safeCountPosts(userId);
 
       // comments 테이블 없을 수 있음 → 안전하게 0 처리
       let commentCount = 0;
@@ -247,13 +211,13 @@ export default function MePage() {
         if (!c1.error) commentCount = c1.count ?? 0;
       }
 
-      const likeReceived = await safeSumLikes(userId, nick);
+      const likeReceived = await safeSumLikes(userId);
 
       // subs
       const subsList = await safeFetchSubs(userId);
 
       // posts list
-      const myPosts = await safeFetchPosts(userId, nick);
+      const myPosts = await safeFetchPosts(userId);
 
       if (!ignore) {
         setProfile({
