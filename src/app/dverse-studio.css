@@ -47,10 +47,6 @@
   outline-offset: 3px;
 }
 
-.dv-site-shell :where(button, input, textarea, select) {
-  font: inherit;
-}
-
 .dv-site-shell :where(input, textarea, select)::placeholder {
   opacity: 1;
 }
