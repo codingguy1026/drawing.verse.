@@ -56,6 +56,15 @@ type GalleryItem = {
     view_count?: number | null;
 };
 
+type UniverseItem = {
+    id: string | number;
+    slug: string;
+    name: string;
+    description?: string | null;
+    subscriber_count?: number | null;
+    post_count?: number | null;
+};
+
 type TabKey = "posts" | "gallery" | "universes";
 
 function cn(...values: Array<string | false | null | undefined>) {
@@ -112,59 +121,51 @@ function formatShortDate(value: string | null | undefined) {
 }
 
 async function loadPosts(profile: Profile) {
-    const byAuthorId = await supabase
+    const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("author_id", profile.id)
+        .eq("user_id", profile.id)
         .order("created_at", { ascending: false })
         .limit(12);
 
-    if (!byAuthorId.error) {
-        return (byAuthorId.data ?? []) as PostItem[];
+    if (error) {
+        console.error("Profile posts load error:", error);
+        return [];
     }
 
-    const fallbackName = profile.display_name || profile.username;
-
-    const byAuthorName = await supabase
-        .from("posts")
-        .select("*")
-        .eq("author", fallbackName)
-        .order("created_at", { ascending: false })
-        .limit(12);
-
-    if (!byAuthorName.error) {
-        return (byAuthorName.data ?? []) as PostItem[];
-    }
-
-    return [];
+    return (data ?? []) as PostItem[];
 }
 
 async function loadGallery(profile: Profile) {
-    const byAuthorId = await supabase
+    const { data, error } = await supabase
         .from("gallery")
         .select("*")
-        .eq("author_id", profile.id)
+        .eq("user_id", profile.id)
         .order("created_at", { ascending: false })
         .limit(12);
 
-    if (!byAuthorId.error) {
-        return (byAuthorId.data ?? []) as GalleryItem[];
+    if (error) {
+        console.error("Profile gallery load error:", error);
+        return [];
     }
 
-    const fallbackName = profile.display_name || profile.username;
+    return (data ?? []) as GalleryItem[];
+}
 
-    const byAuthorName = await supabase
-        .from("gallery")
-        .select("*")
-        .eq("author", fallbackName)
+async function loadUniverses(profile: Profile) {
+    const { data, error } = await supabase
+        .from("universes")
+        .select("id,slug,name,description,subscriber_count,post_count")
+        .eq("owner_id", profile.id)
         .order("created_at", { ascending: false })
         .limit(12);
 
-    if (!byAuthorName.error) {
-        return (byAuthorName.data ?? []) as GalleryItem[];
+    if (error) {
+        console.error("Profile universes load error:", error);
+        return [];
     }
 
-    return [];
+    return (data ?? []) as UniverseItem[];
 }
 
 function EmptyState({
@@ -276,7 +277,7 @@ export default function ProfilePage() {
         };
     }, [username]);
 
-    const displayName = profile?.display_name || profile?.username || "Unknown Orbit";
+    const displayName = profile?.display_name || profile?.nickname || "Unknown Orbit";
     const totalLikes =
         posts.reduce((sum, post) => sum + getSafeNumber(post.like_count), 0) +
         gallery.reduce((sum, item) => sum + getSafeNumber(item.like_count), 0);
@@ -289,7 +290,7 @@ export default function ProfilePage() {
     }> = [
             { key: "posts", label: "게시글", count: posts.length, icon: FileText },
             { key: "gallery", label: "갤러리", count: gallery.length, icon: ImageIcon },
-            { key: "universes", label: "유니버스", count: 0, icon: Rocket },
+            { key: "universes", label: "유니버스", count: universes.length, icon: Rocket },
         ];
 
     if (loading) {
@@ -415,7 +416,7 @@ export default function ProfilePage() {
                                     <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-bold text-slate-400">
                                         <span className="flex items-center gap-1.5">
                                             <AtSign className="h-4 w-4" />
-                                            {profile?.username}
+                                            {profile?.nickname || "unknown"}
                                         </span>
 
                                         <span className="flex items-center gap-1.5">
