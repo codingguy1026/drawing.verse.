@@ -400,3 +400,284 @@
   }
   .dv-site-shell .dvux-card:hover { transform: none; }
 }
+
+
+/* ================================================================
+ * PROFILE REPAIR
+ * Three profile routes existed with incompatible light/dark tokens
+ * and broad legacy card resets. Restore contrast and clear grouping
+ * without changing profile data or the Drawing Verse brand.
+ * ================================================================ */
+
+/* /me: light mode used white text over near-white surfaces. */
+.dv-site-shell[data-route="/me"] .dv-me-page {
+  max-width: 1100px;
+  min-width: 0;
+  margin-inline: auto;
+  padding: clamp(14px, 2.4vw, 28px);
+  color: #30263c;
+}
+.dv-site-shell[data-route="/me"] .dv-me-hero {
+  background: linear-gradient(132deg, #fff 38%, #fbf6ff 100%) !important;
+  border-color: #e9dded !important;
+  border-radius: 22px !important;
+  box-shadow: 0 10px 40px rgba(70,43,105,.065) !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-avatar {
+  background: linear-gradient(135deg, #ff8f9d, #b89cff);
+  border-color: #fff;
+  box-shadow: 0 6px 20px rgba(108,83,158,.17);
+}
+.dv-site-shell[data-route="/me"] .dv-me-hero h1 {
+  color: #271d34 !important;
+  line-height: 1.2;
+}
+.dv-site-shell[data-route="/me"] .dv-me-hero h1 + span {
+  background: #f3eaff !important;
+  color: #6243a5 !important;
+  border-color: #d9c8f4 !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-hero h1 + span svg { color: #6243a5 !important; }
+.dv-site-shell[data-route="/me"] .dv-me-page :is(.text-white, .text-slate-200, .text-slate-300) {
+  color: #30263c !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-page :is(.text-slate-400, .text-slate-500) {
+  color: #6a5e76 !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-page :is(.text-violet-300, .text-sky-300) {
+  color: #6943b9 !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-avatar .text-white { color: #fff !important; }
+.dv-site-shell[data-route="/me"] .dv-me-hero .text-white { color: #30263c !important; }
+.dv-site-shell[data-route="/me"] .dv-me-hero .dv-me-avatar .text-white { color: #fff !important; }
+.dv-site-shell[data-route="/me"] .dv-me-hero p { overflow-wrap: anywhere; }
+.dv-site-shell[data-route="/me"] .dv-me-hero a {
+  border-color: #e1d4ee !important;
+  background: #f4edfd !important;
+  color: #4b3474 !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-hero a:hover { background: #ece0fd !important; }
+
+.dv-site-shell[data-route="/me"] .dv-me-stats {
+  gap: 12px !important;
+  overflow: visible !important;
+  border: 0 !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-stats > .dv-me-stat {
+  border: 1px solid #e9dded !important;
+  border-radius: 17px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-stat > .flex { color: #62546e !important; }
+.dv-site-shell[data-route="/me"] .dv-me-activity {
+  border-color: #e9dded !important;
+  background: #fff !important;
+  border-radius: 19px !important;
+  box-shadow: none !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-tab[aria-pressed="true"] {
+  background: #f1e8fe !important;
+  color: #543783 !important;
+  border-color: #d9c7f2 !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-tab[aria-pressed="false"] {
+  color: #655776 !important;
+  border: 1px solid transparent;
+}
+.dv-site-shell[data-route="/me"] .dv-me-tab[aria-pressed="false"]:hover {
+  background: #f7f2fc !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-empty,
+.dv-site-shell[data-route="/me"] .dv-me-skeleton {
+  border-color: #e4ddec !important;
+  background: #faf8fc !important;
+  color: #655776 !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-activity .space-y-2 > div,
+.dv-site-shell[data-route="/me"] .dv-me-activity .grid > a {
+  border: 1px solid #e8dfec !important;
+  border-radius: 12px !important;
+  background: #fcfafd !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-activity .space-y-2 > div:hover,
+.dv-site-shell[data-route="/me"] .dv-me-activity .grid > a:hover {
+  border-color: #c6b0ea !important;
+  background: #faf5ff !important;
+}
+.dv-site-shell[data-route="/me"] .dv-me-activity .text-amber-200 { color: #854d0e !important; }
+
+/* /me dark theme: preserve deep ink and brighter foregrounds. */
+.dark .dv-site-shell[data-route="/me"] .dv-me-page { color: #f5efff; }
+.dark .dv-site-shell[data-route="/me"] .dv-me-hero {
+  background: linear-gradient(125deg, #191425, #221a31) !important;
+  border-color: #3d324d !important;
+  box-shadow: none !important;
+}
+.dark .dv-site-shell[data-route="/me"] .dv-me-hero h1 { color: #fff !important; }
+.dark .dv-site-shell[data-route="/me"] .dv-me-hero h1 + span {
+  background: #38284f !important;
+  color: #e4d6ff !important;
+  border-color: #65527b !important;
+}
+.dark .dv-site-shell[data-route="/me"] .dv-me-page :is(.text-white, .text-slate-200, .text-slate-300) {
+  color: #f5effb !important;
+}
+.dark .dv-site-shell[data-route="/me"] .dv-me-page :is(.text-slate-400, .text-slate-500) {
+  color: #c6b8d1 !important;
+}
+.dark .dv-site-shell[data-route="/me"] .dv-me-page :is(.text-violet-300, .text-sky-300) {
+  color: #dac6ff !important;
+}
+.dark .dv-site-shell[data-route="/me"] .dv-me-hero a {
+  border-color: #66537d !important;
+  background: #36264b !important;
+  color: #f5eafd !important;
+}
+.dark .dv-site-shell[data-route="/me"] .dv-me-hero a:hover { background: #45305e !important; }
+.dark .dv-site-shell[data-route="/me"] .dv-me-stats > .dv-me-stat,
+.dark .dv-site-shell[data-route="/me"] .dv-me-activity {
+  border-color: #3d324d !important;
+  background: #191425 !important;
+}
+.dark .dv-site-shell[data-route="/me"] .dv-me-stat > .flex { color: #d4c7de !important; }
+.dark .dv-site-shell[data-route="/me"] .dv-me-tab[aria-pressed="true"] {
+  background: #443058 !important;
+  color: #fcefff !important;
+  border-color: #796191 !important;
+}
+.dark .dv-site-shell[data-route="/me"] .dv-me-tab[aria-pressed="false"] { color: #cbc0d5 !important; }
+.dark .dv-site-shell[data-route="/me"] .dv-me-tab[aria-pressed="false"]:hover { background: #30253e !important; }
+.dark .dv-site-shell[data-route="/me"] .dv-me-empty,
+.dark .dv-site-shell[data-route="/me"] .dv-me-skeleton,
+.dark .dv-site-shell[data-route="/me"] .dv-me-activity .space-y-2 > div,
+.dark .dv-site-shell[data-route="/me"] .dv-me-activity .grid > a {
+  border-color: #3c324b !important;
+  background: #241b31 !important;
+  color: #e8dff0 !important;
+}
+.dark .dv-site-shell[data-route="/me"] .dv-me-activity .space-y-2 > div:hover,
+.dark .dv-site-shell[data-route="/me"] .dv-me-activity .grid > a:hover {
+  background: #2e243e !important;
+  border-color: #705a91 !important;
+}
+
+/* Public username profiles: banner/avatar overlap is intentional,
+   but activity dividers should never collapse the stat cards. */
+.dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-card"] {
+  border-radius: 24px !important;
+  background: #fff !important;
+  border-color: #e9dded !important;
+  box-shadow: 0 12px 44px #40266c0b !important;
+}
+.dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-card"] > div:first-child {
+  height: clamp(170px, 22vw, 235px);
+  background: linear-gradient(117deg, #dc778f, #8969dc 58%, #4c5fa5);
+}
+.dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-card"] > div:nth-child(2) {
+  position: relative;
+  z-index: 1;
+}
+.dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-stats"] {
+  gap: 12px !important;
+  overflow: visible !important;
+  border: 0 !important;
+}
+.dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-stats"] > div {
+  border: 1px solid #e9dded !important;
+  border-radius: 13px !important;
+  background: #faf8fd !important;
+  padding: 17px !important;
+}
+.dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-tabs"] {
+  border-radius: 13px !important;
+  background: #fff !important;
+  border-color: #e9dded !important;
+}
+.dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-tabs"] > button {
+  min-height: 42px;
+  border-radius: 9px !important;
+}
+.dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-tabs"] > button .rounded-full {
+  font-variant-numeric: tabular-nums;
+}
+.dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-card"] h1 {
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+}
+.dark .dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-card"],
+.dark .dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-tabs"] {
+  background: #191425 !important;
+  border-color: #3c324e !important;
+  box-shadow: none !important;
+}
+.dark .dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-stats"] > div {
+  background: #251d34 !important;
+  border-color: #3c324e !important;
+}
+
+/* User ID profiles: remove the redundant nested app navigation.
+   The persistent DV rail/contextbar already provides those controls. */
+.dv-site-shell[data-route^="/users/"] .dv-route-content > main > div > nav {
+  display: none !important;
+}
+.dv-site-shell[data-route^="/users/"] [data-ui="user-profile-hero"] {
+  border-color: #e9ddec !important;
+  background: #fff !important;
+  border-radius: 22px !important;
+  box-shadow: none !important;
+}
+.dv-site-shell[data-route^="/users/"] [data-ui="user-profile-hero"] > div:first-child {
+  opacity: .3;
+}
+.dv-site-shell[data-route^="/users/"] [data-ui="user-profile-actions"] {
+  border-radius: 15px !important;
+  background: #faf7fd !important;
+  border-color: #e6d9ef !important;
+}
+.dv-site-shell[data-route^="/users/"] [data-ui="user-profile-stats"] {
+  gap: 12px;
+}
+.dv-site-shell[data-route^="/users/"] [data-ui="user-profile-hero"] .text-emerald-100 {
+  color: #13664b !important;
+}
+.dark .dv-site-shell[data-route^="/users/"] [data-ui="user-profile-hero"] {
+  background: #191425 !important;
+  border-color: #3c324d !important;
+}
+.dark .dv-site-shell[data-route^="/users/"] [data-ui="user-profile-actions"] {
+  background: #221b30 !important;
+  border-color: #413451 !important;
+}
+.dark .dv-site-shell[data-route^="/users/"] [data-ui="user-profile-hero"] .text-emerald-100 {
+  color: #a7f3d0 !important;
+}
+
+/* Small viewports: keep long usernames, biographies and actions inside frame. */
+@media (max-width: 767px) {
+  .dv-site-shell[data-route="/me"] .dv-me-page {
+    padding: 8px;
+  }
+  .dv-site-shell[data-route="/me"] .dv-me-hero {
+    padding: 18px !important;
+  }
+  .dv-site-shell[data-route="/me"] .dv-me-hero > div:last-child > div:first-child {
+    min-width: 0;
+  }
+  .dv-site-shell[data-route="/me"] .dv-me-hero a { width: 100%; }
+  .dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-card"] > div:nth-child(2) {
+    padding-inline: 17px !important;
+  }
+  .dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-stats"] {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    gap: 9px !important;
+  }
+  .dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-stats"] > div {
+    padding: 12px !important;
+    border: 1px solid var(--dv-studio-line) !important;
+  }
+  .dv-site-shell[data-route^="/profile/"] [data-ui="public-profile-tabs"] { overflow-x: auto; }
+  .dv-site-shell[data-route^="/users/"] [data-ui="user-profile-hero"] > div:nth-child(2) {
+    padding: 17px !important;
+  }
+}
