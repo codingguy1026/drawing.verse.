@@ -22,6 +22,7 @@ import {
     Users,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import FollowButton from "@/components/users/FollowButton";
 
 type Profile = {
     id: string;
@@ -346,24 +347,18 @@ export default function ProfilePage() {
 
                     {isMe ? (
                         <Link
-                            href="/profile/edit"
+                            href={`/users/${profile?.id}/edit`}
                             className="flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-black text-white shadow-xl shadow-slate-900/10 transition hover:bg-indigo-600 dark:bg-white dark:text-slate-950"
                         >
                             <Settings className="h-4 w-4" />
                             프로필 수정
                         </Link>
                     ) : (
-                        <button
-                            type="button"
-                            className="flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-black text-white shadow-xl shadow-slate-900/10 transition hover:bg-indigo-600 dark:bg-white dark:text-slate-950"
-                        >
-                            <Users className="h-4 w-4" />
-                            팔로우
-                        </button>
+                        <FollowButton profileId={profile!.id} className="!rounded-xl !px-5 !py-2.5 !text-xs" />
                     )}
                 </div>
 
-                <section className="overflow-hidden rounded-[44px] border border-slate-200/70 bg-white/70 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]">
+                <section data-ui="public-profile-card" className="overflow-hidden rounded-[32px] border border-slate-200/70 bg-white/70 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                     <div className="relative h-56 overflow-hidden bg-gradient-to-br from-violet-500 via-indigo-500 to-sky-400">
                         {profile?.banner_url ? (
                             <img
@@ -385,8 +380,8 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="px-6 pb-8 sm:px-8 lg:px-10">
-                        <div className="-mt-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                            <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
+                        <div className="relative z-10 -mt-14 flex min-w-0 flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                            <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-end">
                                 <div className="relative">
                                     <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-[40px] border-4 border-white bg-gradient-to-br from-violet-500 to-indigo-500 text-4xl font-black text-white shadow-2xl shadow-indigo-500/20 dark:border-[#0b0e14]">
                                         {profile?.avatar_url ? (
@@ -405,9 +400,9 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
 
-                                <div className="pb-1">
+                                <div className="min-w-0 flex-1 pb-1">
                                     <div className="flex flex-wrap items-center gap-3">
-                                        <h1 className="text-4xl font-black tracking-tight text-slate-950 dark:text-white">
+                                        <h1 className="break-words text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl">
                                             {displayName}
                                         </h1>
 
@@ -439,7 +434,7 @@ export default function ProfilePage() {
 
                             {isMe && (
                                 <Link
-                                    href="/profile/edit"
+                                    href={`/users/${profile?.id}/edit`}
                                     className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-black text-slate-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
                                 >
                                     <PenLine className="h-4 w-4" />
@@ -448,7 +443,7 @@ export default function ProfilePage() {
                             )}
                         </div>
 
-                        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div data-ui="public-profile-stats" className="mt-9 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                             {[
                                 {
                                     label: "게시글",
@@ -499,7 +494,7 @@ export default function ProfilePage() {
                 </section>
 
                 <section className="mt-8">
-                    <div className="mb-8 flex flex-wrap gap-2 rounded-[30px] border border-slate-200/70 bg-white/65 p-2 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]">
+                    <div data-ui="public-profile-tabs" className="mb-7 flex flex-wrap gap-2 rounded-xl border border-slate-200/70 bg-white/65 p-2 dark:border-white/10 dark:bg-white/[0.04]">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
 
@@ -545,7 +540,7 @@ export default function ProfilePage() {
                                     {posts.map((post) => (
                                         <Link
                                             key={post.id}
-                                            href={`/community/post/${post.id}`}
+                                            href={`/post/${post.id}`}
                                             className="group rounded-[32px] border border-slate-200 bg-white/75 p-6 shadow-sm backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-indigo-300 hover:shadow-xl dark:border-white/10 dark:bg-white/[0.04]"
                                         >
                                             <div className="mb-4 flex items-center justify-between gap-3">
