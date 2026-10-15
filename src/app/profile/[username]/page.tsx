@@ -27,6 +27,7 @@ type Profile = {
     id: string;
     username: string;
     display_name: string | null;
+    nickname?: string | null;
     bio: string | null;
     avatar_url: string | null;
     banner_url: string | null;
@@ -203,6 +204,7 @@ export default function ProfilePage() {
     const [profile, setProfile] = React.useState<Profile | null>(null);
     const [posts, setPosts] = React.useState<PostItem[]>([]);
     const [gallery, setGallery] = React.useState<GalleryItem[]>([]);
+    const [universes, setUniverses] = React.useState<UniverseItem[]>([]);
     const [activeTab, setActiveTab] = React.useState<TabKey>("posts");
     const [loading, setLoading] = React.useState(true);
     const [isMe, setIsMe] = React.useState(false);
@@ -235,6 +237,7 @@ export default function ProfilePage() {
                         setProfile(null);
                         setPosts([]);
                         setGallery([]);
+                        setUniverses([]);
                         setErrorMessage("이 프로필을 찾지 못했어요.");
                     }
 
@@ -243,16 +246,18 @@ export default function ProfilePage() {
 
                 const loadedProfile = profileData as Profile;
 
-                const [{ data: authData }, postItems, galleryItems] = await Promise.all([
+                const [{ data: authData }, postItems, galleryItems, universeItems] = await Promise.all([
                     supabase.auth.getUser(),
                     loadPosts(loadedProfile),
                     loadGallery(loadedProfile),
+                    loadUniverses(loadedProfile),
                 ]);
 
                 if (!ignore) {
                     setProfile(loadedProfile);
                     setPosts(postItems);
                     setGallery(galleryItems);
+                    setUniverses(universeItems);
                     setIsMe(authData.user?.id === loadedProfile.id);
                 }
             } catch (error) {
@@ -335,7 +340,7 @@ export default function ProfilePage() {
 
     return (
         <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-white">
-            <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div className="relative z-10 mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <div className="mb-6 flex items-center justify-between gap-3">
                     <Link
                         href="/"
@@ -359,7 +364,7 @@ export default function ProfilePage() {
                 </div>
 
                 <section data-ui="public-profile-card" className="overflow-hidden rounded-[32px] border border-slate-200/70 bg-white/70 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-                    <div className="relative h-56 overflow-hidden bg-gradient-to-br from-violet-500 via-indigo-500 to-sky-400">
+                    <div className="relative h-40 overflow-hidden sm:h-48 lg:h-56 bg-gradient-to-br from-violet-500 via-indigo-500 to-sky-400">
                         {profile?.banner_url ? (
                             <img
                                 src={profile.banner_url}
@@ -379,7 +384,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    <div className="px-6 pb-8 sm:px-8 lg:px-10">
+                    <div className="px-4 pb-6 sm:px-8 sm:pb-8">
                         <div className="relative z-10 -mt-14 flex min-w-0 flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                             <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-end">
                                 <div className="relative">
@@ -443,7 +448,7 @@ export default function ProfilePage() {
                             )}
                         </div>
 
-                        <div data-ui="public-profile-stats" className="mt-9 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <div data-ui="public-profile-stats" className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
                             {[
                                 {
                                     label: "게시글",
@@ -493,7 +498,7 @@ export default function ProfilePage() {
                     </div>
                 </section>
 
-                <section className="mt-8">
+                <section className="mt-8 min-w-0">
                     <div data-ui="public-profile-tabs" className="mb-7 flex flex-wrap gap-2 rounded-xl border border-slate-200/70 bg-white/65 p-2 dark:border-white/10 dark:bg-white/[0.04]">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
