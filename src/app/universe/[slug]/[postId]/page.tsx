@@ -336,18 +336,18 @@ export default function PostDetail({ params }: PostDetailProps) {
 
     return (
         <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 dark:bg-[#050711] dark:text-white sm:px-6">
-            <div className="mx-auto max-w-3xl">
+            <div className="mx-auto w-full max-w-4xl min-w-0">
                 <Link href={`/universe/${slug}`} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950 dark:text-slate-400 dark:hover:text-white">
                     <ArrowLeft className="h-4 w-4"/>Universe로 돌아가기
                 </Link>
 
-                <article className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
+                <article className="mt-6 min-w-0 rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
                     <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                         <span className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold dark:border-white/10">{post.category || "전체"}</span>
                         <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4"/>{formatDate(post.created_at)}</span>
                     </div>
 
-                    <h1 className="mt-5 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{post.title}</h1>
+                    <h1 className="mt-5 break-words text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl">{post.title}</h1>
 
                     <div className="mt-5 flex items-center gap-3 border-b border-slate-200 pb-6 dark:border-white/10">
                         {authorProfile?.avatar_url ? (
@@ -368,7 +368,7 @@ export default function PostDetail({ params }: PostDetailProps) {
                         </div>
                     </div>
 
-                    <div className="whitespace-pre-line break-words py-8 text-[16px] leading-8 text-slate-700 dark:text-slate-200">{post.content || "본문이 비어 있어요."}</div>
+                    <div className="min-h-40 whitespace-pre-wrap break-words py-8 text-base leading-8 text-slate-700 dark:text-slate-200">{post.content || "본문이 비어 있어요."}</div>
 
                     {post.image_url && <img src={post.image_url} alt="게시글 첨부 이미지" className="mb-8 max-h-[560px] w-full rounded-2xl object-cover"/>}
 
@@ -382,11 +382,11 @@ export default function PostDetail({ params }: PostDetailProps) {
 
                 <section id="comments" className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
                     <div className="flex items-center justify-between gap-4"><h2 className="text-xl font-bold">댓글</h2><span className="text-sm text-slate-400">{comments.length}개</span></div>
-                    <form onSubmit={submitComment} className="mt-5 grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)_80px]">
+                    <form onSubmit={submitComment} className="mt-5 grid min-w-0 gap-3 md:grid-cols-[150px_minmax(0,1fr)_80px]">
                         <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/80">
                             {commentAuthor || "로그인 필요"}
                         </div>
-                        <input value={commentContent} onChange={(e) => setCommentContent(e.target.value)} placeholder={commentAuthor ? "댓글을 입력해줘" : "로그인 후 댓글 작성 가능"} className="rounded-xl border border-slate-200 bg-transparent px-3 py-2.5 text-sm outline-none dark:border-white/10"/>
+                        <input value={commentContent} onChange={(e) => setCommentContent(e.target.value)} placeholder={commentAuthor ? "댓글을 입력해줘" : "로그인 후 댓글 작성 가능"} className="min-w-0 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2.5 text-sm outline-none dark:border-white/10"/>
                         <button type="submit" disabled={commentSaving || !commentContent.trim() || !commentAuthor} className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60 dark:bg-white dark:text-slate-950">{commentSaving ? "저장 중" : "등록"}</button>
                     </form>
 
