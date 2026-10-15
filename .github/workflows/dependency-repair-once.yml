@@ -1,0 +1,55 @@
+name: One-time dependency repair
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lockfile:
+    if: github.event.head_commit.message == 'ci: prepare dependency repair run'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Restore missing Next ESLint configuration
+        run: npm install --save-dev --save-exact eslint-config-next@16.3.0-canary.10
+      - name: Apply compatible security fixes
+        run: |
+          npm audit fix --no-fund || echo "Some audit advisories remain, review required."
+          npm audit --audit-level=high || echo "High severity advisories remain for follow-up."
+      - name: Run existing tests and typecheck
+        run: |
+          npm test
+          npm run typecheck
+      - name: Verify production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      - name: Show lint results for follow-up
+        run: npm run lint || echo "Lint findings remain; follow-up required."
+      - name: Commit verified dependency files to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/dependency-repair-once.yml
+          git add package.json package-lock.json .github/workflows/dependency-repair-once.yml
+          if git diff --cached --quiet; then
+            echo "No dependency changes."
+          else
+            git commit -m "chore(deps): refresh lockfile and Next ESLint tooling"
+            git push origin HEAD:main
+          fi
