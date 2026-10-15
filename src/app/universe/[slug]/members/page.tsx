@@ -58,7 +58,7 @@ export default function UniverseMembersPage() {
 
       setUniverse(universeData);
 
-      const jobs: Promise<unknown>[] = [];
+      const jobs: PromiseLike<unknown>[] = [];
 
       if (universeData.owner_id) {
         jobs.push(
