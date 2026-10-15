@@ -11,34 +11,59 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  tests-and-types:
+    name: Tests and TypeScript
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
 
-      - name: Install locked dependencies
-        run: npm ci
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
 
-      - name: Run existing automated tests
-        run: npm test
-
-      - name: Check TypeScript
-        run: npm run typecheck
-
-      - name: Check ESLint
-        run: npm run lint
-
-      - name: Check production build
-        run: npm run build
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
         env:
-          # Placeholder public values only. Never place private keys in CI YAML.
+          # CI-only placeholder public values. Never include private credentials.
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
