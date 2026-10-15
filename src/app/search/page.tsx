@@ -32,8 +32,8 @@ export default async function SearchPage({
     );
   }
 
-  let universes: any[] = [];
-  let posts: any[] = [];
+  let universes: Universe[] = [];
+  let posts: Post[] = [];
 
   if (supabase) {
     const result = await Promise.all([
@@ -56,7 +56,7 @@ export default async function SearchPage({
   return (
     <div className="mx-auto max-w-4xl p-8 space-y-8">
       <h1 className="text-xl font-bold">
-        검색 결과: <span className="text-violet-600">"{query}"</span>
+        검색 결과: <span className="text-violet-600">&quot;{query}&quot;</span>
       </h1>
 
       {(!universes || universes.length === 0) &&
@@ -94,7 +94,7 @@ export default async function SearchPage({
             {posts.map((p) => (
               <li key={p.id}>
                 <Link
-                  href={`/post/${p.id}`}
+                  href={`/universe/${encodeURIComponent(p.universe_slug)}/${p.id}`}
                   className="text-violet-600 hover:underline"
                 >
                   {p.title}
