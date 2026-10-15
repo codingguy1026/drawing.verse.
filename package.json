@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
-    "start": "next start"
+    "start": "next start",
+    "test": "node tests/universe-creation.test.cjs && node scripts/test-sports.cjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@devup-ui/react": "^1.0.34",
