@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Bell, BellOff, BookOpen, Compass, Flame, Image as ImageIcon, Info, MessageCircle, Orbit, PenLine, Plus, ShieldCheck, Sparkles, Star, Sun, Users } from "lucide-react";
+import { ArrowLeft, Bell, BellOff, BookOpen, Compass, Eye, Flame, Image as ImageIcon, Info, MessageCircle, Orbit, PenLine, Plus, ShieldCheck, Sparkles, Star, Sun, Users } from "lucide-react";
 import SportsPanel, { TeamLogo } from "@/components/Sports/SportsPanel";
 import { resolveSportsConfig, safeAsset } from "@/lib/sports/config";
 import type { SportsConfig } from "@/lib/sports/types";
 import { supabase } from "@/lib/supabase/client";
 
 type UniverseRow = { icon?: string; visibility?: string; sections?: string[]; rules?: string; id: number | string; slug: string; name: string; description: string | null; category: string | null; subscriber_count: number | null; post_count: number | null };
-type PostRow = { id: number | string; public_id?: string | null; title: string; author?: string | null; user_id?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; universe_slug?: string | null };
+type PostRow = { id: number | string; public_id?: string | null; title: string; author?: string | null; user_id?: string | null; created_at?: string | null; category?: string | null; like_count?: number | null; comment_count?: number | null; view_count?: number | null; universe_slug?: string | null };
 type ProfileRow = { id: string; display_name: string | null; nickname: string | null; avatar_url: string | null };
 type StellarSystemRow = { id: number | string; universe_slug: string; slug: string; name: string; description: string; icon: string; accent: string; owner_id: string; created_at: string };
 type FeedMode = "latest" | "popular";
@@ -157,32 +157,38 @@ function PostRowItem({ post, profile, last }: { post: PostRow; profile?: Profile
   return (
     <Link
       href={href}
-      className={cn("group block py-5", !last && "border-b border-slate-200 dark:border-white/10")}
+      className={cn(
+        "group block min-w-0 py-5 focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500",
+        !last && "border-b border-slate-200 dark:border-white/10"
+      )}
     >
-      <div className="flex items-start justify-between gap-5">
-        <div className="min-w-0">
-          <div className="flex gap-2 text-xs font-bold text-violet-500">
-            <span>{post.category ?? "이야기"}</span>
-            <span>·</span>
-            <span className="text-slate-400">{relativeDate(post.created_at)}</span>
-          </div>
-          <h3 className="mt-2 truncate text-lg font-black group-hover:text-violet-600">{post.title}</h3>
-          <div className="mt-3 flex items-center gap-2">
+      <article className="min-w-0">
+        <p className="text-xs font-bold text-violet-500">{post.category ?? "이야기"}</p>
+        <h3 className="mt-2 line-clamp-2 break-words text-lg font-black leading-snug group-hover:text-violet-600">
+          {post.title}
+        </h3>
+        <div className="mt-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-2">
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="size-7 rounded-full object-cover" />
+              <img src={profile.avatar_url} alt="" className="size-7 shrink-0 rounded-full object-cover" />
             ) : (
-              <div className="grid size-7 place-items-center rounded-full bg-slate-100 text-[11px] font-black text-slate-500 dark:bg-white/10 dark:text-white/70">
+              <div className="grid size-7 shrink-0 place-items-center rounded-full bg-slate-100 text-[11px] font-black text-slate-500 dark:bg-white/10 dark:text-white/70">
                 {authorName.slice(0, 1).toUpperCase()}
               </div>
             )}
-            <p className="truncate text-xs font-bold text-slate-600 dark:text-white/70">{authorName}</p>
+            <span className="truncate text-xs font-bold text-slate-600 dark:text-white/70">{authorName}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-slate-400 sm:justify-end">
+            <time>{relativeDate(post.created_at)}</time>
+            <span className="inline-flex items-center gap-1" aria-label={`조회 ${post.view_count ?? 0}`}>
+              <Eye className="size-3.5" aria-hidden="true"/>{post.view_count ?? 0}
+            </span>
+            <span className="inline-flex items-center gap-1" aria-label={`댓글 ${post.comment_count ?? 0}`}>
+              <MessageCircle className="size-3.5" aria-hidden="true"/>{post.comment_count ?? 0}
+            </span>
           </div>
         </div>
-        <div className="flex gap-3 text-xs font-bold text-slate-400">
-          <span className="inline-flex items-center gap-1"><Flame className="size-3.5"/>{post.like_count ?? 0}</span>
-          <span className="inline-flex items-center gap-1"><MessageCircle className="size-3.5"/>{post.comment_count ?? 0}</span>
-        </div>
-      </div>
+      </article>
     </Link>
   );
 }
