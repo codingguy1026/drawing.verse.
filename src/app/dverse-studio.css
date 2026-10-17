@@ -681,3 +681,42 @@
     padding: 17px !important;
   }
 }
+
+
+/* Liquid Glass v1: scoped to Drawing Verse surfaces, never the cosmic artwork. */
+.dv-site-shell {
+  --liquid-edge: rgba(202, 183, 248, .56);
+  --liquid-gleam: rgba(255, 255, 255, .78);
+  --liquid-depth: rgba(87, 59, 128, .13);
+}
+.dark .dv-site-shell {
+  --liquid-edge: rgba(218, 195, 255, .22);
+  --liquid-gleam: rgba(255, 255, 255, .12);
+  --liquid-depth: rgba(3, 2, 13, .34);
+}
+.dv-site-shell :is(.dv-nav-shell, .dv-subpage-contextbar, .dvux-card, .dvux-stat, .dv-me-stat, .dv-glass, .dv-glass-premium) {
+  border-color: var(--liquid-edge);
+  box-shadow: inset 0 1px 0 var(--liquid-gleam), 0 15px 38px var(--liquid-depth);
+  -webkit-backdrop-filter: saturate(155%) blur(18px);
+  backdrop-filter: saturate(155%) blur(18px);
+}
+.dv-site-shell :is(.dvux-card, .dvux-stat, .dv-me-stat) {
+  background-color: rgba(255, 255, 255, .65);
+}
+.dark .dv-site-shell :is(.dvux-card, .dvux-stat, .dv-me-stat) {
+  background-color: rgba(27, 23, 44, .74);
+}
+@media (max-width: 640px) {
+  .dv-site-shell :is(.dv-nav-shell, .dv-subpage-contextbar, .dvux-card, .dvux-stat, .dv-me-stat, .dv-glass, .dv-glass-premium) {
+    -webkit-backdrop-filter: saturate(130%) blur(10px);
+    backdrop-filter: saturate(130%) blur(10px);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .dv-site-shell :is(.dv-nav-shell, .dv-subpage-contextbar, .dvux-card, .dvux-stat, .dv-me-stat, .dv-glass, .dv-glass-premium) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .dv-site-shell :is(.dvux-card, .dvux-stat, .dv-me-stat) { background-color: #faf7ff; }
+  .dark .dv-site-shell :is(.dvux-card, .dvux-stat, .dv-me-stat) { background-color: #211b35; }
+}
