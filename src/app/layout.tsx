@@ -1,3 +1,4 @@
+import Script from "next/script";
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_KR } from "next/font/google";
@@ -6,6 +7,7 @@ import "./globals.css";
 import "./dverse-brand.css";
 import "./dverse-pages.css";
 import "./dverse-studio.css";
+import "./liquid-refraction.css";
 
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
@@ -73,6 +75,7 @@ export default function RootLayout({
             <ProfileAchievementsMount />
           </ThemeProvider>
         </FramerMotionProvider>
+        <Script src="/liquid-refraction.js" strategy="afterInteractive" />
       </body>
     </html>
   );

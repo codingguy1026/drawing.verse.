@@ -1,0 +1,18 @@
+/* Liquid Glass v2: edge optics for Drawing Verse. */
+.dv-site-shell .dg-liquid-optical {
+  -webkit-backdrop-filter: var(--dg-liquid-filter) !important;
+  backdrop-filter: var(--dg-liquid-filter) !important;
+}
+.dv-site-shell .dg-liquid-shine {
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2;
+  background: radial-gradient(360px circle at var(--dg-light-x, 32%) var(--dg-light-y, 0%), rgba(233, 205, 255, .22), transparent 76%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .43), inset 0 -1px 0 rgba(128, 99, 187, .12);
+}
+.dark .dv-site-shell .dg-liquid-shine {
+  background: radial-gradient(360px circle at var(--dg-light-x, 32%) var(--dg-light-y, 0%), rgba(213, 180, 255, .17), transparent 76%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), inset 0 -1px 0 rgba(145, 121, 205, .16);
+}
+@media (pointer: coarse) { .dv-site-shell .dg-liquid-shine { opacity: .6; } }
+@media (prefers-reduced-motion: reduce), (prefers-reduced-transparency: reduce) {
+  .dv-site-shell .dg-liquid-shine { display: none; }
+}
