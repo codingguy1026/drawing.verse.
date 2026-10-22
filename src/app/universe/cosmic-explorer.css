@@ -179,3 +179,95 @@
 @media (prefers-reduced-motion: reduce) {
   .dv-universe-redesign *, .dv-universe-redesign *::before, .dv-universe-redesign *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
 }
+
+
+/* Drawing Verse shared visual language: light-first surfaces, lavender/coral accents.
+   Keep the existing explorer structure, filters and galaxy view intact. */
+.dv-universe-redesign {
+  --dvux-bg: #f8f9fc;
+  --dvux-panel: #ffffff;
+  --dvux-panel-hi: #f5f3ff;
+  --dvux-border: #e2e8f0;
+  --dvux-text: #0f172a;
+  --dvux-muted: #64748b;
+  --dvux-coral: #ff6b72;
+  --dvux-lavender: #8a61dd;
+  color-scheme: light;
+  background: radial-gradient(ellipse at 85% 0%, #ede8ff 0%, transparent 34%), var(--dvux-bg);
+}
+.dvux-content { max-width: 1280px; padding-top: 28px; }
+.dvux-topbar-heading span, .dvux-eyebrow { color: #8a61dd; }
+.dvux-topbar-heading strong, .dvux-section-head h2, .dvux-card-title-line h3, .dvux-aside-card h3, .dvux-empty h3 { color: #0f172a; }
+.dvux-search, .dvux-view-switch, .dvux-sort { background: #fff; border-color: #e2e8f0; color: #64748b; }
+.dvux-search input, .dvux-sort select { color: #0f172a; }
+.dvux-search input::placeholder { color: #94a3b8; }
+.dvux-search button { color: #64748b; }
+.dvux-sort option { background: #fff; color: #0f172a; }
+.dvux-button-primary { background: #0f172a; border-color: #0f172a; color: #fff !important; box-shadow: none; }
+.dvux-button-primary:hover { background: #33245c; color: #fff !important; }
+.dvux-button-secondary { background: #fff; border-color: #e2e8f0; color: #334155 !important; }
+.dvux-button-secondary:hover { background: #f5f3ff; }
+.dvux-hero { border-color: #ddd6fe; border-radius: 32px; background: radial-gradient(ellipse at 80% 40%, #e8dfff, #f8f7ff 62%, #fff1f2); box-shadow: 0 20px 55px #64748b14; }
+.dvux-hero::after { background: linear-gradient(0deg, #ffffff66, transparent); }
+.dvux-hero h1 { color: #0f172a; }
+.dvux-hero h1 em { background-image: linear-gradient(90deg, #ef5d68, #8a61dd); }
+.dvux-hero-copy p { color: #64748b; }
+.dvux-celestial { opacity: .8; }
+.dvux-stat, .dvux-card, .dvux-aside-card, .dvux-empty { background: #fff; border-color: #e2e8f0; }
+.dvux-stat strong { color: #0f172a; }
+.dvux-stat span, .dvux-card-desc, .dvux-aside-card-accent p, .dvux-empty p { color: #64748b; }
+.dvux-stat svg, .dvux-text-link, .dvux-aside-card-accent > svg { color: #8a61dd !important; }
+.dvux-text-link:hover { color: #6d42bd !important; }
+.dvux-filter { background: #fff; border-color: #e2e8f0; color: #475569; }
+.dvux-filter:hover { border-color: #c4b5fd; color: #6d42bd; }
+.dvux-filter.is-active, .dvux-view-switch button.is-active { background: #0f172a; border-color: #0f172a; color: #fff; }
+.dvux-view-switch button { color: #64748b; }
+.dvux-toolbar-right, .dvux-card-meta, .dvux-popular-row { border-color: #e2e8f0; }
+.dvux-result-count { color: #64748b; }
+.dvux-card { border-radius: 24px; }
+.dvux-card:hover { border-color: #b89cff; box-shadow: 0 16px 45px #8a61dd1a; }
+.dvux-card-link { color: #0f172a !important; }
+.dvux-chip { background: #f5f3ff; color: #7c3aed; border-color: #ede9fe; }
+.dvux-card-title-line svg, .dvux-popular-row svg { color: #8a61dd; }
+.dvux-card-meta { color: #64748b; }
+.dvux-aside-card { border-radius: 24px; }
+.dvux-popular-row { color: #334155 !important; }
+.dvux-popular-row:hover strong { color: #7c3aed; }
+.dvux-popular-index { background: #f5f3ff; border-color: #ede9fe; color: #7c3aed; }
+.dvux-popular-info small { color: #94a3b8; }
+.dvux-aside-card-accent { background: linear-gradient(130deg, #fff1f2, #f5f3ff); }
+.dvux-empty { border-style: dashed; }
+.dvux-skeleton { background: linear-gradient(110deg, #e2e8f0 12%, #f8fafc 33%, #e2e8f0 55%); background-size: 200% 100%; }
+.dv-universe-redesign :is(a,button,input,select):focus-visible { outline-color: #8a61dd; }
+@media (max-width: 620px) {
+  .dvux-content { padding-inline: 16px; }
+  .dvux-grid, .dvux-skeleton-grid { grid-template-columns: 1fr; }
+  .dvux-world-art { height: 145px; }
+  .dvux-card-content { padding: 17px; }
+  .dvux-card-title-line h3 { font-size: 17px; }
+  .dvux-hero { border-radius: 24px; }
+}
+@media (prefers-color-scheme: dark) {
+  .dark .dv-universe-redesign {
+    --dvux-bg: #05060b; --dvux-panel: #10121c; --dvux-border: #ffffff1a;
+    --dvux-text: #f8fafc; --dvux-muted: #94a3b8;
+    color-scheme: dark;
+    background: radial-gradient(ellipse at 85% 0%, #251b42 0%, transparent 34%), var(--dvux-bg);
+  }
+  .dark .dvux-topbar-heading strong, .dark .dvux-section-head h2, .dark .dvux-card-title-line h3, .dark .dvux-aside-card h3, .dark .dvux-empty h3 { color: #fff; }
+  .dark .dvux-search, .dark .dvux-view-switch, .dark .dvux-sort, .dark .dvux-stat, .dark .dvux-card, .dark .dvux-aside-card, .dark .dvux-empty { background: #10121c; border-color: #ffffff1a; }
+  .dark .dvux-search input, .dark .dvux-sort select { color: #fff; }
+  .dark .dvux-sort option { background: #10121c; color: #fff; }
+  .dark .dvux-button-secondary { background: #ffffff0a; border-color: #ffffff26; color: #fff !important; }
+  .dark .dvux-button-primary, .dark .dvux-filter.is-active, .dark .dvux-view-switch button.is-active { background: #fff; border-color: #fff; color: #0f172a !important; }
+  .dark .dvux-hero { background: radial-gradient(ellipse at 80% 40%, #292047, #111321 65%, #17111e); border-color: #ffffff1a; }
+  .dark .dvux-hero h1, .dark .dvux-stat strong { color: #fff; }
+  .dark .dvux-hero-copy p { color: #aab3c6; }
+  .dark .dvux-filter { background: #ffffff0a; border-color: #ffffff1a; color: #cbd5e1; }
+  .dark .dvux-card-link { color: #fff !important; }
+  .dark .dvux-card-meta, .dark .dvux-toolbar-right, .dark .dvux-popular-row { border-color: #ffffff1a; }
+  .dark .dvux-popular-row { color: #e2e8f0 !important; }
+  .dark .dvux-aside-card-accent { background: linear-gradient(130deg, #251b32, #171b2b); }
+  .dark .dvux-chip, .dark .dvux-popular-index { background: #8a61dd22; border-color: #8a61dd44; color: #d8b4fe; }
+  .dark .dvux-skeleton { background: linear-gradient(110deg, #171b29 12%, #222a3e 33%, #171b29 55%); background-size: 200% 100%; }
+}
