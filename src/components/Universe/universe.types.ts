@@ -17,6 +17,7 @@ export interface UniverseItem {
   subscribers: number;
   posts: number;
   updatedAt: string;
+  parentSlug?: string | null;
   isTrending?: boolean;
   isNew?: boolean;
   tags?: string[];
