@@ -469,6 +469,21 @@ export default function UniverseWritePage() {
               )}
 
               <section className="overflow-hidden rounded-[2.25rem] border border-slate-200/80 bg-white/85 shadow-[0_30px_90px_rgba(15,23,42,.08)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035] dark:shadow-[0_30px_90px_rgba(0,0,0,.25)]">
+                <div className="px-5 pb-4 pt-7 sm:px-8 sm:pt-9">
+                  <label htmlFor="post-title" className="sr-only">
+                    게시글 제목
+                  </label>
+                  <textarea
+                    id="post-title"
+                    autoFocus
+                    rows={2}
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    placeholder="어떤 이야기를 남길까요?"
+                    className="w-full resize-none bg-transparent text-[1.8rem] font-black leading-[1.08] tracking-[-0.045em] text-slate-950 outline-none placeholder:text-slate-300 dark:text-white dark:placeholder:text-white/15 sm:text-[3.15rem]"
+                  />
+                </div>
+
                 <div className="border-b border-slate-200/70 px-5 py-4 dark:border-white/10 sm:px-8">
                   <p className="mb-3 text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
                     Category
@@ -493,21 +508,6 @@ export default function UniverseWritePage() {
                       );
                     })}
                   </div>
-                </div>
-
-                <div className="px-5 pb-4 pt-7 sm:px-8 sm:pt-9">
-                  <label htmlFor="post-title" className="sr-only">
-                    게시글 제목
-                  </label>
-                  <textarea
-                    id="post-title"
-                    autoFocus
-                    rows={2}
-                    value={title}
-                    onChange={(event) => setTitle(event.target.value)}
-                    placeholder="어떤 이야기를 남길까요?"
-                    className="w-full resize-none bg-transparent text-[2.15rem] font-black leading-[1.08] tracking-[-0.045em] text-slate-950 outline-none placeholder:text-slate-300 dark:text-white dark:placeholder:text-white/15 sm:text-[3.15rem]"
-                  />
                 </div>
 
                 <div className="px-5 pb-6 sm:px-8">
