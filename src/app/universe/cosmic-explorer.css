@@ -271,3 +271,23 @@
   .dark .dvux-chip, .dark .dvux-popular-index { background: #8a61dd22; border-color: #8a61dd44; color: #d8b4fe; }
   .dark .dvux-skeleton { background: linear-gradient(110deg, #171b29 12%, #222a3e 33%, #171b29 55%); background-size: 200% 100%; }
 }
+
+
+/* Scoped layout guard: the Universe page has its own CSS and must not
+   override the explorer's two-column stage/detail arrangement. */
+.dv-galaxy-layout { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; width: 100%; }
+.dv-galaxy-stage { grid-column: 1; width: 100%; min-width: 0; }
+.dv-galaxy-aside { grid-column: 1; width: 100%; min-width: 0; }
+.dv-galaxy-planet-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; width: 100%; }
+.dv-galaxy-system-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+@media (min-width: 640px) {
+  .dv-galaxy-planet-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .dv-galaxy-system-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 1024px) {
+  .dv-galaxy-layout { grid-template-columns: minmax(0, 1fr) 300px !important; }
+  .dv-galaxy-aside { grid-column: 2; }
+}
+@media (min-width: 1280px) {
+  .dv-galaxy-planet-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
