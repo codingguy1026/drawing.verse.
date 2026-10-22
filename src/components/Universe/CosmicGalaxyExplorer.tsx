@@ -79,7 +79,7 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
     : { level: "galaxy" });
 
   return (
-    <section aria-label="Cosmic Galaxy Explorer" className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,.07)] dark:border-white/10 dark:bg-[#0d101b] dark:text-white">
+    <section aria-label="Cosmic Galaxy Explorer" className="dv-galaxy-root relative overflow-hidden rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,.07)] dark:border-white/10 dark:bg-[#0d101b] dark:text-white">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-5 py-5 dark:border-white/10 sm:px-7">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-[#8a61dd]"><Sparkles className="size-4"/> Drawing Verse / Cosmic Explorer</p>
