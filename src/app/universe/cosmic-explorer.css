@@ -291,3 +291,18 @@
 @media (min-width: 1280px) {
   .dv-galaxy-planet-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 }
+
+
+/* Root cause: the explorer section can inherit a multi-column grid layout.
+   Its header, map and footer must stack vertically before the inner grid splits. */
+.dv-universe-redesign .dv-galaxy-root {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0;
+}
+.dv-universe-redesign .dv-galaxy-root > header,
+.dv-universe-redesign .dv-galaxy-root > footer,
+.dv-universe-redesign .dv-galaxy-root > .dv-galaxy-layout {
+  width: 100% !important;
+  min-width: 0;
+}
