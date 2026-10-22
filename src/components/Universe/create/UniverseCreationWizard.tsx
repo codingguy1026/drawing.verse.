@@ -7,9 +7,9 @@ import { initialUniverse, slugFromName, validateUniverse, type UniverseDraft } f
 import { BasicInfoStep, CommunitySetupStep, SectionsStep, UniversePreviewStep, buttonClass } from './steps';
 
 const labels = ['기본 정보', '커뮤니티 설정', '시작 섹션', '미리보기'];
-export default function UniverseCreationWizard({ demo = false }: { demo?: boolean }) {
+export default function UniverseCreationWizard({ demo = false, parentSlug }: { demo?: boolean; parentSlug?: string }) {
   const router = useRouter();
-  const [draft, setDraft] = useState<UniverseDraft>(() => ({ ...initialUniverse, sections: [...initialUniverse.sections] }));
+  const [draft, setDraft] = useState<UniverseDraft>(() => ({ ...initialUniverse, sections: [...initialUniverse.sections], parent_slug: parentSlug || null }));
   const [step, setStep] = useState(0);
   const [slugEdited, setSlugEdited] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -41,7 +41,7 @@ export default function UniverseCreationWizard({ demo = false }: { demo?: boolea
     } catch (e) { setError(e instanceof Error && e.message !== 'Failed to fetch' ? e.message : '연결이 끊겼어요. 입력 내용은 유지돼요. 잠시 후 다시 시도해주세요.'); }
     finally { lock.current = false; setBusy(false); }
   }
-  return <main className="min-h-screen bg-slate-50 px-4 py-10 text-slate-950 dark:bg-[#03050a] dark:text-white"><div className="mx-auto max-w-2xl"><Link href="/universe" className="text-sm font-bold text-slate-500">← 유니버스로 돌아가기</Link><h1 className="mt-6 text-3xl font-black">우리만의 유니버스 만들기</h1><p className="mt-3 text-slate-500">함께할 주제 하나면 충분해요. 나머지는 차근차근 정해봐요.</p>{demo && <p role="status" className="mt-4 rounded-xl bg-amber-100 p-3 text-sm text-amber-950">개발 미리보기예요. 실제 계정이나 데이터에 저장되지 않아요.</p>}
+  return <main className="min-h-screen bg-slate-50 px-4 py-10 text-slate-950 dark:bg-[#03050a] dark:text-white"><div className="mx-auto max-w-2xl"><Link href="/universe" className="text-sm font-bold text-slate-500">← 유니버스로 돌아가기</Link><h1 className="mt-6 text-3xl font-black">{parentSlug ? '새 행성 유니버스 만들기' : '우리만의 유니버스 만들기'}</h1><p className="mt-3 text-slate-500">{parentSlug ? '상위 유니버스에 소속되는 새로운 행성을 만들어요.' : '함께할 주제 하나면 충분해요.'} 나머지는 차근차근 정해봐요.</p>{demo && <p role="status" className="mt-4 rounded-xl bg-amber-100 p-3 text-sm text-amber-950">개발 미리보기예요. 실제 계정이나 데이터에 저장되지 않아요.</p>}
     <ol aria-label="생성 진행 단계" className="my-8 grid grid-cols-4 gap-2">{labels.map((label, i) => <li key={label} aria-current={i === step ? 'step' : undefined} className={`border-t-4 pt-3 text-xs sm:text-sm ${i <= step ? 'border-violet-500 font-bold' : 'border-slate-200 text-slate-500'}`}><span className="block">{i + 1}</span>{label}</li>)}</ol>
     <form onSubmit={e => { e.preventDefault(); void advance(); }} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04] sm:p-8" noValidate>
       <h2 ref={heading} tabIndex={-1} className="mb-6 text-xl font-bold outline-none">{labels[step]}</h2>
