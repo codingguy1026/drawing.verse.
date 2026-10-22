@@ -96,8 +96,8 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
         </div>
       </header>
 
-      <div className="grid min-h-[480px] lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="relative min-w-0 overflow-hidden bg-[radial-gradient(ellipse_at_50%_40%,#eee8ff_0%,#f8f7ff_48%,#fff_100%)] p-5 dark:bg-[radial-gradient(ellipse_at_50%_40%,#30234c_0%,#131426_50%,#0b0d16_100%)] sm:p-8">
+      <div className="dv-galaxy-layout min-h-[480px]">
+        <div className="dv-galaxy-stage relative min-w-0 overflow-hidden bg-[radial-gradient(ellipse_at_50%_40%,#eee8ff_0%,#f8f7ff_48%,#fff_100%)] p-5 dark:bg-[radial-gradient(ellipse_at_50%_40%,#30234c_0%,#131426_50%,#0b0d16_100%)] sm:p-8">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-50" style={{ backgroundImage: "radial-gradient(#b8a7fa 1px, transparent 1px)", backgroundSize: "30px 30px" }}/>
           <div className="relative">
             <div className="mb-6 flex items-center justify-between gap-3">
@@ -116,7 +116,7 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
                   <input className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400" placeholder="지도에서 우주 찾기" value={query} onChange={event => setQuery(event.target.value)}/>
                   {query && <button type="button" onClick={() => setQuery("")} aria-label="검색 초기화"><X className="size-4"/></button>}
                 </label>
-                {filtered.length ? <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+                {filtered.length ? <div className="dv-galaxy-planet-grid grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
                   {filtered.map(item => <button key={item.id} type="button" onClick={() => setFocus({ level: "universe", universe: item })} className="group flex min-w-0 flex-col items-center gap-3 rounded-2xl border border-violet-100/80 bg-white/70 px-3 py-6 text-center transition hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-violet-500 dark:border-white/10 dark:bg-white/[.06]">
                     <span className="grid size-16 place-items-center rounded-full border-2 border-white/70 text-2xl shadow-[inset_-12px_-10px_20px_#0002,0_10px_24px_#0002] transition group-hover:scale-105 sm:size-20" style={{background:`radial-gradient(circle at 30% 25%, #fff, ${accent(item.slug)} 52%, #22213b)`}} aria-hidden="true">{(item as UniverseItem & {icon?: string}).icon || "✦"}</span>
                     <span className="w-full truncate text-sm font-black">{item.name}</span>
@@ -129,7 +129,7 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
                 <div className="mb-6 grid size-24 place-items-center rounded-full border-4 border-white/80 text-3xl shadow-xl" style={{background:`radial-gradient(circle at 30% 25%, #fff, ${accent(focus.universe.slug)} 52%, #22213b)`}}><Orbit className="size-10 text-white"/></div>
                 <h3 className="mb-5 text-center text-xl font-black">{focus.universe.name}</h3>
                 {loading ? <p className="py-10 text-sm text-slate-500" role="status">항성계를 불러오는 중...</p> : error ? <p className="py-10 text-sm text-rose-600" role="alert">항성계 정보를 불러오지 못했어요.</p> : systems.length ? (
-                  <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="dv-galaxy-system-grid grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
                     {systems.map(s => <button key={s.id} type="button" onClick={() => setFocus({ level: "system", universe: focus.universe, system: s })} className="flex min-w-0 flex-col items-center gap-3 rounded-2xl border border-violet-100 bg-white/80 p-5 text-center transition hover:border-violet-300 hover:shadow-md dark:border-white/10 dark:bg-white/5">
                       <span className="grid size-14 place-items-center rounded-full text-2xl shadow-md" style={{background:`radial-gradient(circle at 30% 25%, #fff, ${s.accent || "#b89cff"} 65%, #29213a)`}}>{s.icon || "✦"}</span>
                       <span className="w-full truncate text-xs font-black">{s.name}</span>
@@ -147,7 +147,7 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
           </div>
         </div>
 
-        <aside className="flex min-w-0 flex-col gap-5 border-t border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#10121c] lg:border-l lg:border-t-0 sm:p-7">
+        <aside className="dv-galaxy-aside flex min-w-0 flex-col gap-5 border-t border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#10121c] lg:border-l lg:border-t-0 sm:p-7">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[.2em] text-[#8a61dd]">Explorer details</p>
             <h3 className="mt-2 text-xl font-black">{system ? system.name : universe ? universe.name : "탐험 안내"}</h3>
