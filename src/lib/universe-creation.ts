@@ -2,7 +2,7 @@ export const universeCategories = { general: '일반', art: '미술', fantasy: '
 export type UniverseDraft = {
   name: string; slug: string; description: string; category: string; icon: string;
   visibility: 'public' | 'private'; allow_member_posts: boolean; allow_comments: boolean;
-  rules: string; sections: string[];
+  rules: string; sections: string[]; parent_slug?: string | null;
 };
 export const initialUniverse: UniverseDraft = {
   name: '', slug: '', description: '', category: 'general', icon: '🌌',
