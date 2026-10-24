@@ -16,7 +16,10 @@ type UniverseSettings = {
   rules: string;
   sections: string[];
   owner_id: string | null;
+  parent_slug: string | null;
 };
+
+type ParentOption = { slug: string; name: string };
 
 export default function UniverseSettingsClient({ slug }: { slug: string }) {
   const universeHref = `/universe/${encodeURIComponent(slug)}`;
@@ -34,6 +37,9 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
   const [allowComments, setAllowComments] = React.useState(true);
   const [rules, setRules] = React.useState("");
   const [sections, setSections] = React.useState<string[]>([]);
+  const [parentSlug, setParentSlug] = React.useState("");
+  const [parentOptions, setParentOptions] = React.useState<ParentOption[]>([]);
+  const [hasChildren, setHasChildren] = React.useState(false);
 
   React.useEffect(() => {
     let ignore = false;
@@ -46,7 +52,7 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
         supabase.auth.getUser(),
         supabase
           .from("universes")
-          .select("slug,name,description,icon,visibility,allow_member_posts,allow_comments,rules,sections,owner_id")
+          .select("slug,name,description,icon,visibility,allow_member_posts,allow_comments,rules,sections,owner_id,parent_slug")
           .eq("slug", slug)
           .maybeSingle<UniverseSettings>(),
       ]);
@@ -73,6 +79,20 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
         return;
       }
 
+      // Build the selector from the owner’s root universes only.
+      const [rootsResult, childrenResult] = await Promise.all([
+        supabase.from("universes").select("slug,name").eq("owner_id", authData.user.id).is("parent_slug", null).neq("slug", slug).order("name"),
+        supabase.from("universes").select("slug").eq("parent_slug", slug).limit(1),
+      ]);
+      if (ignore) return;
+      if (rootsResult.error || childrenResult.error) {
+        setErrorMessage("소속 유니버스 정보를 불러오지 못했어요.");
+        setLoading(false);
+        return;
+      }
+      setParentOptions((rootsResult.data as ParentOption[] | null) ?? []);
+      setHasChildren(Boolean(childrenResult.data?.length));
+      setParentSlug(universe.parent_slug ?? "");
       setName(universe.name || "");
       setDescription(universe.description || "");
       setIcon(universe.icon || "");
@@ -108,6 +128,9 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
     const trimmedName = name.trim();
     const normalizedSections = sections.map((section) => section.trim()).filter(Boolean);
 
+    if (parentSlug === slug) return "자기 자신을 상위 유니버스로 선택할 수 없어요.";
+    if (parentSlug && hasChildren) return "소속 행성이 있는 유니버스는 다른 유니버스에 편입할 수 없어요.";
+    if (parentSlug && !parentOptions.some((option) => option.slug === parentSlug)) return "선택한 상위 유니버스를 확인해 주세요.";
     if (!trimmedName) return "Universe 이름을 입력해 주세요.";
     if (trimmedName.length > 60) return "Universe 이름은 60자 이내여야 해요.";
     if (description.length > 280) return "설명은 280자 이내여야 해요.";
@@ -143,6 +166,7 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
       .from("universes")
       .update({
         name: name.trim(),
+        parent_slug: parentSlug || null,
         description: description.trim(),
         icon: icon.trim(),
         visibility,
@@ -156,7 +180,9 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
 
     if (error) {
       console.error("Universe settings update failed:", error);
-      setErrorMessage(error.message || "설정을 저장하지 못했어요.");
+      setErrorMessage(["P0001", "23503", "23514"].includes(error.code || "")
+        ? "소속을 변경할 수 없어요. 같은 소유자의 최상위 유니버스만 선택할 수 있어요."
+        : (error.message || "설정을 저장하지 못했어요."));
     } else {
       setSections(normalizedSections);
       setMessage("Universe 설정을 저장했어요.");
@@ -222,6 +248,21 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
                   <input value={icon} onChange={(event) => setIcon(event.target.value)} maxLength={16} placeholder="예: 🌌" className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none dark:border-white/10 dark:bg-white/[0.03] sm:max-w-40" />
                 </label>
               </div>
+            </section>
+
+            <section className="py-8">
+              <h2 className="text-lg font-black">소속 유니버스</h2>
+              <p className="mt-1 text-sm text-slate-500">기존 유니버스를 다른 유니버스의 행성으로 옮기거나 독립시킬 수 있어요. 게시글과 주소는 유지됩니다.</p>
+              <label className="mt-5 block">
+                <span className="text-sm font-bold">상위 유니버스</span>
+                <select value={parentSlug} onChange={(event) => setParentSlug(event.target.value)} disabled={hasChildren} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm disabled:opacity-60 dark:border-white/10 dark:bg-[#080a10]">
+                  <option value="">없음 · 독립 유니버스</option>
+                  {parentOptions.map((option) => <option key={option.slug} value={option.slug}>{option.name}</option>)}
+                </select>
+              </label>
+              {hasChildren
+                ? <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">이 유니버스에는 소속 행성이 있어요. 행성을 먼저 이동하거나 독립시켜야 합니다.</p>
+                : <p className="mt-2 text-xs text-slate-500">본인이 소유한 최상위 유니버스만 선택할 수 있어요. 소속은 한 단계까지만 지원합니다.</p>}
             </section>
 
             <section className="py-8">
