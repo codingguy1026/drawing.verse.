@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Trophy, X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
@@ -34,7 +35,10 @@ async function fetchAchievement(code: string): Promise<Achievement | null> {
 }
 
 export default function AchievementToast() {
+  const [mounted, setMounted] = useState(false);
   const [queue, setQueue] = useState<ToastItem[]>([]);
+
+  useEffect(() => setMounted(true), []);
   const [current, setCurrent] = useState<ToastItem | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setupRunRef = useRef(0);
@@ -144,7 +148,9 @@ export default function AchievementToast() {
     };
   }, []);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="pointer-events-none fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-3 z-[9999] w-[calc(100%-1.5rem)] max-w-sm sm:bottom-5 sm:right-5 sm:w-full">
       <AnimatePresence mode="wait">
         {current ? (
@@ -183,6 +189,7 @@ export default function AchievementToast() {
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </div>
+    </div>,
+    document.body
   );
 }
