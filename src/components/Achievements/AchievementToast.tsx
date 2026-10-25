@@ -151,6 +151,20 @@ export default function AchievementToast() {
   if (!mounted) return null;
 
   return createPortal(
+    <>
+    {process.env.NODE_ENV === "development" && (
+      <button
+        type="button"
+        onClick={() => setQueue((prev) => [...prev, {
+          code: "dev-test", name: "테스트 도전과제",
+          description: "오른쪽 아래 알림 위치를 확인하세요.",
+          icon: "🏆", rarity: "rare", earnedAt: new Date().toISOString(),
+        }])}
+        className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 z-[9999] rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-bold text-white shadow-lg sm:bottom-5 sm:left-5"
+      >
+        🏆 도전과제 알림 테스트
+      </button>
+    )}
     <div className="pointer-events-none fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-3 z-[9999] w-[calc(100%-1.5rem)] max-w-sm sm:bottom-5 sm:right-5 sm:w-full">
       <AnimatePresence mode="wait">
         {current ? (
@@ -189,7 +203,8 @@ export default function AchievementToast() {
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </div>,
+    </div>
+    </>,
     document.body
   );
 }
