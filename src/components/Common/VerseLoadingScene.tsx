@@ -78,7 +78,25 @@ export default function VerseLoadingScene({
 
       <section className="relative z-10 flex w-full max-w-md flex-col items-center px-5 text-center">
         <div className="relative mb-6 flex h-60 w-60 items-center justify-center sm:h-64 sm:w-64" aria-hidden="true">
-          <div className="absolute inset-[15%] rounded-full bg-violet-500/20 blur-[44px]" />
+          <motion.div
+            className="absolute inset-[15%] rounded-full bg-violet-500/20 blur-[44px]"
+            initial={reduceMotion ? false : { opacity: 0.1, scale: 0.2 }}
+            animate={reduceMotion ? undefined : { opacity: [0.1, 0.75, 0.35], scale: [0.2, 1.45, 1] }}
+            transition={{ duration: 1.6, ease: "easeOut" }}
+          />
+          {/* A new little universe expands from its first spark. */}
+          <motion.div
+            className="absolute inset-[38%] rounded-full border border-violet-300/70 shadow-[0_0_25px_rgba(167,139,250,0.55)]"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.1 }}
+            animate={reduceMotion ? undefined : { opacity: [0, 0.95, 0], scale: [0.1, 3.7, 4.3] }}
+            transition={{ duration: 2.1, ease: "easeOut", repeat: Infinity, repeatDelay: 1.3 }}
+          />
+          <motion.div
+            className="absolute inset-[42%] rounded-full bg-violet-200/65 blur-md"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.3 }}
+            animate={reduceMotion ? undefined : { opacity: [0, 0.95, 0.15], scale: [0.3, 2.4, 1.5] }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+          />
           <motion.div
             className={`absolute inset-2 rounded-full border border-dashed ${orbitBorder}`}
             animate={reduceMotion ? undefined : { rotate: 360 }}
@@ -93,6 +111,25 @@ export default function VerseLoadingScene({
           >
             <span className="absolute -right-[5px] top-1/2 h-[10px] w-[10px] -translate-y-1/2 rounded-full bg-fuchsia-400 shadow-[0_0_18px_rgba(232,121,249,0.8)]" />
           </motion.div>
+          {/* Newly formed planets emerge from the core and join the orbit. */}
+          <motion.span
+            className="absolute left-1/2 top-1/2 h-4 w-4 rounded-full border border-white/40 bg-[radial-gradient(circle_at_30%_25%,#effcff,#73d9f4_45%,#4672d5)] shadow-[0_0_19px_rgba(125,211,252,0.55)]"
+            initial={reduceMotion ? false : { x: -8, y: -8, scale: 0, opacity: 0 }}
+            animate={reduceMotion ? undefined : { x: [-8, 60, 73], y: [-8, -42, -62], scale: [0, 1.15, 1], opacity: [0, 1, 1] }}
+            transition={{ duration: 1.7, delay: 0.15, ease: "easeOut" }}
+          />
+          <motion.span
+            className="absolute left-1/2 top-1/2 h-3 w-3 rounded-full border border-white/40 bg-[radial-gradient(circle_at_30%_25%,#fff8ee,#f4a4d7_50%,#a55de9)] shadow-[0_0_18px_rgba(244,114,182,0.55)]"
+            initial={reduceMotion ? false : { x: -6, y: -6, scale: 0, opacity: 0 }}
+            animate={reduceMotion ? undefined : { x: [-6, -50, -81], y: [-6, 23, 47], scale: [0, 1.15, 1], opacity: [0, 1, 1] }}
+            transition={{ duration: 1.9, delay: 0.35, ease: "easeOut" }}
+          />
+          <motion.span
+            className="absolute left-1/2 top-1/2 h-2 w-2 rounded-full bg-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.75)]"
+            initial={reduceMotion ? false : { x: -4, y: -4, scale: 0, opacity: 0 }}
+            animate={reduceMotion ? undefined : { x: [-4, 28, 44], y: [-4, 57, 85], scale: [0, 1.3, 1], opacity: [0, 1, 0.9] }}
+            transition={{ duration: 1.85, delay: 0.55, ease: "easeOut" }}
+          />
           <motion.div
             className="absolute inset-[27%] rounded-full border border-violet-400/25"
             animate={reduceMotion ? undefined : { scale: [1, 1.07, 1], opacity: [0.5, 1, 0.5] }}
@@ -100,8 +137,9 @@ export default function VerseLoadingScene({
           />
           <motion.div
             className="relative flex h-[92px] w-[92px] items-center justify-center rounded-[30px] border border-white/30 bg-[linear-gradient(145deg,#a993ff_0%,#7257ed_47%,#4234bd_100%)] shadow-[0_20px_60px_rgba(106,77,229,0.35),inset_0_2px_1px_rgba(255,255,255,0.3)]"
-            animate={reduceMotion ? undefined : { y: [0, -5, 0] }}
-            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            initial={reduceMotion ? false : { scale: 0.25, opacity: 0, rotate: -18 }}
+            animate={reduceMotion ? undefined : { scale: [0.25, 1.08, 1], opacity: [0, 1, 1], rotate: [-18, 3, 0] }}
+            transition={{ duration: 1.35, ease: "easeOut" }}
           >
             <span className="text-[31px] font-black tracking-[-0.14em] text-white [text-shadow:0_2px_10px_rgba(32,16,90,0.3)]">
               D<span className="pr-1 text-[#9deeff]">V</span>
