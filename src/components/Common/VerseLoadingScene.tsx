@@ -19,6 +19,15 @@ const stars = [
   { left: "80%", top: "39%", delay: 0.7 },
 ];
 
+const newbornStars = [
+  { x: -100, y: -58, delay: 0.2, color: "bg-sky-400" },
+  { x: 96, y: -72, delay: 0.31, color: "bg-fuchsia-400" },
+  { x: -112, y: 46, delay: 0.42, color: "bg-violet-400" },
+  { x: 98, y: 75, delay: 0.53, color: "bg-sky-300" },
+  { x: 14, y: -115, delay: 0.27, color: "bg-white" },
+  { x: -21, y: 114, delay: 0.48, color: "bg-fuchsia-300" },
+];
+
 export default function VerseLoadingScene({
   eyebrow = "Connecting worlds",
   title = "새로운 우주를 여는 중",
@@ -61,7 +70,7 @@ export default function VerseLoadingScene({
       />
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(142,130,199,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(142,130,199,0.08)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_72%)]`}
+        className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(142,130,199,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(142,130,199,0.08)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_72%)]"
       />
 
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -79,72 +88,70 @@ export default function VerseLoadingScene({
       <section className="relative z-10 flex w-full max-w-md flex-col items-center px-5 text-center">
         <div className="relative mb-6 flex h-60 w-60 items-center justify-center sm:h-64 sm:w-64" aria-hidden="true">
           <motion.div
-            className="absolute inset-[15%] rounded-full bg-violet-500/20 blur-[44px]"
-            initial={reduceMotion ? false : { opacity: 0.1, scale: 0.2 }}
-            animate={reduceMotion ? undefined : { opacity: [0.1, 0.75, 0.35], scale: [0.2, 1.45, 1] }}
-            transition={{ duration: 1.6, ease: "easeOut" }}
+            className="absolute inset-[14%] rounded-full bg-violet-500/25 blur-[45px]"
+            animate={reduceMotion ? undefined : { scale: [0.55, 1.2, 1], opacity: [0.25, 0.9, 0.6] }}
+            transition={{ duration: 1.45, ease: "easeOut" }}
           />
-          {/* A new little universe expands from its first spark. */}
-          <motion.div
-            className="absolute inset-[38%] rounded-full border border-violet-300/70 shadow-[0_0_25px_rgba(167,139,250,0.55)]"
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.1 }}
-            animate={reduceMotion ? undefined : { opacity: [0, 0.95, 0], scale: [0.1, 3.7, 4.3] }}
-            transition={{ duration: 2.1, ease: "easeOut", repeat: Infinity, repeatDelay: 1.3 }}
-          />
-          <motion.div
-            className="absolute inset-[42%] rounded-full bg-violet-200/65 blur-md"
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.3 }}
-            animate={reduceMotion ? undefined : { opacity: [0, 0.95, 0.15], scale: [0.3, 2.4, 1.5] }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-          />
+
+          {/* A tiny point of light becomes an expanding new universe. */}
+          {[0, 1].map((wave) => (
+            <motion.div
+              key={wave}
+              className="absolute inset-[25%] rounded-full border border-violet-400/45 shadow-[0_0_28px_rgba(167,139,250,0.23)]"
+              initial={reduceMotion ? false : { scale: 0.24, opacity: 0 }}
+              animate={reduceMotion ? undefined : { scale: [0.24, 1.8, 2.35], opacity: [0, 0.55, 0] }}
+              transition={{ duration: 2.8, delay: 0.35 + wave * 1.4, ease: "easeOut", repeat: Infinity }}
+            />
+          ))}
+
           <motion.div
             className={`absolute inset-2 rounded-full border border-dashed ${orbitBorder}`}
-            animate={reduceMotion ? undefined : { rotate: 360 }}
-            transition={{ duration: 28, ease: "linear", repeat: Infinity }}
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.4 }}
+            animate={reduceMotion ? undefined : { opacity: 1, scale: 1, rotate: 360 }}
+            transition={reduceMotion ? undefined : { opacity: { duration: 0.75 }, scale: { duration: 1 }, rotate: { duration: 28, ease: "linear", repeat: Infinity } }}
           >
             <span className="absolute left-1/2 -top-[5px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-sky-400 shadow-[0_0_18px_rgba(56,189,248,0.9)]" />
           </motion.div>
+
           <motion.div
             className={`absolute inset-8 rounded-full border ${orbitBorder}`}
-            animate={reduceMotion ? undefined : { rotate: -360 }}
-            transition={{ duration: 19, ease: "linear", repeat: Infinity }}
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.5 }}
+            animate={reduceMotion ? undefined : { opacity: 1, scale: 1, rotate: -360 }}
+            transition={reduceMotion ? undefined : { opacity: { duration: 0.85 }, scale: { duration: 0.95 }, rotate: { duration: 19, ease: "linear", repeat: Infinity } }}
           >
             <span className="absolute -right-[5px] top-1/2 h-[10px] w-[10px] -translate-y-1/2 rounded-full bg-fuchsia-400 shadow-[0_0_18px_rgba(232,121,249,0.8)]" />
           </motion.div>
-          {/* Newly formed planets emerge from the core and join the orbit. */}
-          <motion.span
-            className="absolute left-1/2 top-1/2 h-4 w-4 rounded-full border border-white/40 bg-[radial-gradient(circle_at_30%_25%,#effcff,#73d9f4_45%,#4672d5)] shadow-[0_0_19px_rgba(125,211,252,0.55)]"
-            initial={reduceMotion ? false : { x: -8, y: -8, scale: 0, opacity: 0 }}
-            animate={reduceMotion ? undefined : { x: [-8, 60, 73], y: [-8, -42, -62], scale: [0, 1.15, 1], opacity: [0, 1, 1] }}
-            transition={{ duration: 1.7, delay: 0.15, ease: "easeOut" }}
-          />
-          <motion.span
-            className="absolute left-1/2 top-1/2 h-3 w-3 rounded-full border border-white/40 bg-[radial-gradient(circle_at_30%_25%,#fff8ee,#f4a4d7_50%,#a55de9)] shadow-[0_0_18px_rgba(244,114,182,0.55)]"
-            initial={reduceMotion ? false : { x: -6, y: -6, scale: 0, opacity: 0 }}
-            animate={reduceMotion ? undefined : { x: [-6, -50, -81], y: [-6, 23, 47], scale: [0, 1.15, 1], opacity: [0, 1, 1] }}
-            transition={{ duration: 1.9, delay: 0.35, ease: "easeOut" }}
-          />
-          <motion.span
-            className="absolute left-1/2 top-1/2 h-2 w-2 rounded-full bg-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.75)]"
-            initial={reduceMotion ? false : { x: -4, y: -4, scale: 0, opacity: 0 }}
-            animate={reduceMotion ? undefined : { x: [-4, 28, 44], y: [-4, 57, 85], scale: [0, 1.3, 1], opacity: [0, 1, 0.9] }}
-            transition={{ duration: 1.85, delay: 0.55, ease: "easeOut" }}
-          />
+
+          {newbornStars.map((star, index) => (
+            <motion.span
+              key={index}
+              className={`absolute left-1/2 top-1/2 z-10 h-[5px] w-[5px] rounded-full shadow-[0_0_12px_currentColor] ${star.color}`}
+              initial={reduceMotion ? { x: star.x, y: star.y, opacity: 0.75 } : { x: 0, y: 0, opacity: 0, scale: 0.1 }}
+              animate={reduceMotion ? undefined : {
+                x: [0, star.x * 1.12, star.x],
+                y: [0, star.y * 1.12, star.y],
+                scale: [0.1, 1.35, 0.9],
+                opacity: [0, 1, 0.65],
+              }}
+              transition={{ duration: 1.2, delay: star.delay, ease: "easeOut" }}
+            />
+          ))}
+
           <motion.div
-            className="absolute inset-[27%] rounded-full border border-violet-400/25"
-            animate={reduceMotion ? undefined : { scale: [1, 1.07, 1], opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="relative flex h-[92px] w-[92px] items-center justify-center rounded-[30px] border border-white/30 bg-[linear-gradient(145deg,#a993ff_0%,#7257ed_47%,#4234bd_100%)] shadow-[0_20px_60px_rgba(106,77,229,0.35),inset_0_2px_1px_rgba(255,255,255,0.3)]"
-            initial={reduceMotion ? false : { scale: 0.25, opacity: 0, rotate: -18 }}
-            animate={reduceMotion ? undefined : { scale: [0.25, 1.08, 1], opacity: [0, 1, 1], rotate: [-18, 3, 0] }}
-            transition={{ duration: 1.35, ease: "easeOut" }}
+            className="relative flex h-[94px] w-[94px] items-center justify-center rounded-full border border-white/30 bg-[radial-gradient(circle_at_29%_22%,#d3c1ff_0%,#a28afa_20%,#7257ed_55%,#3423a3_100%)] shadow-[0_20px_65px_rgba(106,77,229,0.48),inset_0_2px_3px_rgba(255,255,255,0.4)]"
+            initial={reduceMotion ? false : { scale: 0.06, opacity: 0, filter: "blur(9px)" }}
+            animate={reduceMotion ? undefined : { scale: [0.06, 1.2, 1], opacity: [0, 1, 1], filter: "blur(0px)" }}
+            transition={{ duration: 1, times: [0, 0.75, 1], ease: "easeOut" }}
           >
-            <span className="text-[31px] font-black tracking-[-0.14em] text-white [text-shadow:0_2px_10px_rgba(32,16,90,0.3)]">
+            <span className="text-[30px] font-black tracking-[-0.14em] text-white [text-shadow:0_2px_10px_rgba(32,16,90,0.35)]">
               D<span className="pr-1 text-[#9deeff]">V</span>
             </span>
-            <span className="absolute right-3 top-2 text-xs text-white/80">✦</span>
+            <span className="absolute right-2 top-3 text-xs text-white/85">✦</span>
+            <motion.span
+              className="pointer-events-none absolute inset-1 rounded-full border border-white/35"
+              animate={reduceMotion ? undefined : { opacity: [0.15, 0.55, 0.15] }}
+              transition={{ duration: 2.8, ease: "easeInOut", repeat: Infinity }}
+            />
           </motion.div>
         </div>
 
