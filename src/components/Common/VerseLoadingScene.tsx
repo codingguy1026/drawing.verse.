@@ -2,11 +2,41 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 
+export type VerseLoadingPhase = "connecting" | "rendering" | "ready" | "delayed";
+
 type VerseLoadingSceneProps = {
   eyebrow?: string;
   title?: string;
   subtitle?: string;
   mode?: "auto" | "light" | "dark";
+  phase?: VerseLoadingPhase;
+};
+
+const loadingStages: Record<VerseLoadingPhase, { label: string; detail: string; step: number; width: string }> = {
+  connecting: {
+    label: "목적지와 연결하는 중",
+    detail: "페이지 전환을 요청하고 있어요.",
+    step: 1,
+    width: "32%",
+  },
+  delayed: {
+    label: "서버 응답을 기다리는 중",
+    detail: "조금 오래 걸리고 있지만 연결을 시도하고 있어요.",
+    step: 1,
+    width: "32%",
+  },
+  rendering: {
+    label: "새로운 세계를 그리는 중",
+    detail: "목적지에 도착해 화면을 표시하고 있어요.",
+    step: 2,
+    width: "70%",
+  },
+  ready: {
+    label: "새로운 세계에 도착했어요!",
+    detail: "페이지 전환이 완료됐어요.",
+    step: 3,
+    width: "100%",
+  },
 };
 
 const stars = [
@@ -33,8 +63,11 @@ export default function VerseLoadingScene({
   title = "새로운 우주를 여는 중",
   subtitle = "당신의 다음 세계를 준비하고 있어요.",
   mode = "auto",
+  phase = "connecting",
 }: VerseLoadingSceneProps) {
   const reduceMotion = useReducedMotion();
+  const loadingStage = loadingStages[phase];
+  const finished = phase === "ready";
   const dark = mode === "dark";
   const light = mode === "light";
   const background = dark
@@ -163,18 +196,43 @@ export default function VerseLoadingScene({
         </h1>
         <p className={`mt-2 text-sm leading-6 ${subtleText}`}>{subtitle}</p>
 
-        <div className="mt-9 w-56" aria-hidden="true">
-          <div className={`h-[3px] overflow-hidden rounded-full ${dark ? "bg-white/10" : light ? "bg-violet-200/65" : "bg-violet-200/65 dark:bg-white/10"}`}>
+        <div className="mt-8 w-full max-w-[310px]">
+          <div className={`mb-3 flex items-center justify-between gap-3 text-[11px] font-semibold ${subtleText}`}>
+            <span aria-live="polite">{loadingStage.label}</span>
+            <span className="shrink-0 font-bold tabular-nums">
+              {finished ? "완료" : `${loadingStage.step} / 3단계`}
+            </span>
+          </div>
+
+          <div
+            className={`relative h-2 overflow-hidden rounded-full ${dark ? "bg-white/10" : light ? "bg-violet-200/65" : "bg-violet-200/65 dark:bg-white/10"}`}
+            role="progressbar"
+            aria-label={loadingStage.label}
+            aria-valuetext={finished ? "페이지 이동 완료" : `${loadingStage.step}단계: ${loadingStage.label}`}
+          >
             <motion.div
-              className="h-full w-[76px] rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-sky-400 shadow-[0_0_18px_rgba(139,92,246,0.65)]"
-              animate={reduceMotion ? undefined : { x: [-76, 224] }}
-              transition={{ duration: 1.75, ease: "easeInOut", repeat: Infinity }}
-            />
+              className="relative h-full overflow-hidden rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-sky-400 shadow-[0_0_18px_rgba(139,92,246,0.65)]"
+              initial={false}
+              animate={{ width: loadingStage.width }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.4, ease: "easeOut" }}
+            >
+              {!finished && !reduceMotion && (
+                <motion.span
+                  className="absolute inset-y-0 left-0 w-1/3 bg-white/50 blur-[3px]"
+                  animate={{ x: ["-100%", "350%"] }}
+                  transition={{ duration: 1.1, ease: "easeInOut", repeat: Infinity }}
+                />
+              )}
+            </motion.div>
+          </div>
+
+          <p className={`mt-3 min-h-[20px] text-xs leading-5 ${subtleText}`} aria-live="polite">
+            {loadingStage.detail}
+          </p>
+          <div className={`mt-2 text-[10px] font-semibold uppercase tracking-[0.2em] ${subtleText}`}>
+            {eyebrow}
           </div>
         </div>
-        <p className={`mt-4 text-[10px] font-semibold uppercase tracking-[0.26em] ${subtleText}`}>
-          {eyebrow}
-        </p>
         <p className={`mt-9 text-[10px] tracking-[0.22em] ${subtleText}`}>
           EVERY IDEA HAS A UNIVERSE
         </p>
