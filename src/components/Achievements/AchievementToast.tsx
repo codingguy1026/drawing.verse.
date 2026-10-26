@@ -160,12 +160,14 @@ export default function AchievementToast() {
           description: "오른쪽 아래 알림 위치를 확인하세요.",
           icon: "🏆", rarity: "rare", earnedAt: new Date().toISOString(),
         }])}
-        className="fixed bottom-4 right-4 z-[10001] rounded-full border border-violet-400 bg-violet-700 px-3 py-2 text-xs font-bold text-white shadow-lg hover:bg-violet-600"
+        style={{ position: "fixed", bottom: 16, right: 16, left: "auto", zIndex: 10001, backgroundColor: "#6d28d9", color: "#fff" }}
+        className="rounded-full border border-violet-400 bg-violet-700 px-3 py-2 text-xs font-bold text-white shadow-lg hover:bg-violet-600"
       >
         🏆 알림 테스트
       </button>
     )}
-    <div className="pointer-events-none fixed bottom-16 right-3 z-[10000] w-[min(22rem,calc(100vw-1.5rem))] sm:bottom-20 sm:right-5">
+    <div style={{ position: "fixed", bottom: 76, right: 16, left: "auto", width: "min(352px, calc(100vw - 32px))", maxWidth: "calc(100vw - 32px)", zIndex: 10000, pointerEvents: "none" }}
+      className="pointer-events-none">
       <AnimatePresence mode="wait">
         {current ? (
           <motion.div
@@ -174,6 +176,7 @@ export default function AchievementToast() {
             animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
             exit={{ opacity: 0, x: 18, y: 20, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 360, damping: 26 }}
+            style={{ width: "100%", boxSizing: "border-box", maxWidth: "100%" }}
             className="pointer-events-auto relative box-border w-full min-w-0 overflow-hidden rounded-2xl border border-violet-300/30 bg-slate-950/95 p-3 text-white shadow-[0_16px_48px_rgba(76,29,149,.35)] backdrop-blur-2xl sm:p-4"
           >
             <div className="pointer-events-none absolute -right-8 -top-10 size-32 rounded-full bg-violet-500/25 blur-3xl" />
