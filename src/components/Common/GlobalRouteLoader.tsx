@@ -1,94 +1,143 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { usePathname, useSearchParams } from "next/navigation";
 import VerseLoadingScene from "@/components/Common/VerseLoadingScene";
-import { normalizeProgress } from "./LoadingOverlay";
+
+// The animation is an activity indicator, not a simulated download percentage.
+const MIN_SCENE_MS = 850;
+const STALE_NAVIGATION_MS = 12000;
 
 export default function GlobalRouteLoader() {
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const routeKey = `${pathname ?? ""}?${searchParams?.toString() ?? ""}`;
+  const previousRoute = useRef<string | null>(null);
+  const startedAt = useRef(0);
+  const active = useRef(false);
+  const finishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const staleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  const clearTimers = useCallback(() => {
+    if (finishTimer.current) clearTimeout(finishTimer.current);
+    if (staleTimer.current) clearTimeout(staleTimer.current);
+    finishTimer.current = null;
+    staleTimer.current = null;
+  }, []);
+
+  const stop = useCallback(() => {
+    clearTimers();
+    active.current = false;
+    startedAt.current = 0;
+    setVisible(false);
+  }, [clearTimers]);
+
+  const finish = useCallback(() => {
+    if (!active.current) return;
+    if (finishTimer.current) clearTimeout(finishTimer.current);
+    if (staleTimer.current) clearTimeout(staleTimer.current);
+    staleTimer.current = null;
+
+    const elapsed = Date.now() - startedAt.current;
+    finishTimer.current = setTimeout(() => {
+      active.current = false;
+      startedAt.current = 0;
+      finishTimer.current = null;
+      setVisible(false);
+    }, Math.max(0, MIN_SCENE_MS - elapsed));
+  }, []);
+
+  const start = useCallback(() => {
+    clearTimers();
+    active.current = true;
+    startedAt.current = Date.now();
+    setVisible(true);
+
+    // If a navigation is cancelled or fails, never trap visitors behind the overlay.
+    staleTimer.current = setTimeout(() => {
+      active.current = false;
+      startedAt.current = 0;
+      finishTimer.current = null;
+      staleTimer.current = null;
+      setVisible(false);
+    }, STALE_NAVIGATION_MS);
+  }, [clearTimers]);
 
   useEffect(() => {
-    function shouldLoad(anchor: HTMLAnchorElement): boolean {
-      const href = anchor.getAttribute("href");
-      if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return false;
-      if (anchor.target === "_blank" || anchor.hasAttribute("download")) return false;
-      if (href.startsWith("http") && !href.startsWith(window.location.origin)) return false;
+    const handleClick = (event: MouseEvent) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (!(event.target instanceof Element)) return;
+      const anchor = event.target.closest("a[href]");
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+      if (anchor.hasAttribute("download") || (anchor.target && anchor.target !== "_self")) return;
+
+      const rawHref = anchor.getAttribute("href");
+      if (!rawHref || rawHref.startsWith("#") || rawHref.startsWith("mailto:") || rawHref.startsWith("tel:")) return;
 
       try {
-        const next = new URL(anchor.href, window.location.origin);
-        const curr = new URL(window.location.href);
-        if (next.pathname.startsWith("/loading")) return false;
-        if (next.pathname === curr.pathname && next.search === curr.search) return false;
+        const next = new URL(anchor.href, window.location.href);
+        const current = new URL(window.location.href);
+        if (!["http:", "https:"].includes(next.protocol) || next.origin !== current.origin) return;
+        // Pure hash jumps, disabled links, and clicking the current route do not load a new page.
+        if (next.pathname === current.pathname && next.search === current.search) return;
+        // The dedicated loading route already renders the shared scene itself.
+        if (next.pathname === "/loading") return;
+        start();
       } catch {
-        return false;
+        // Malformed or non-navigational links should behave normally.
       }
-
-      return true;
-    }
-
-    function handleClick(event: MouseEvent) {
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
-
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-
-      const anchor = target.closest("a") as HTMLAnchorElement | null;
-      if (!anchor || !shouldLoad(anchor)) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      if (pendingHref) return;
-
-      const url = new URL(anchor.href, window.location.origin);
-      setProgress(0);
-      setPendingHref(url.pathname + url.search + url.hash);
-    }
-
-    document.addEventListener("click", handleClick, true);
-    return () => document.removeEventListener("click", handleClick, true);
-  }, [pendingHref]);
-
-  useEffect(() => {
-    if (!pendingHref) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const interval = window.setInterval(() => {
-      setProgress((current) => {
-        if (current >= 100) return 100;
-        const nextStep = current < 60 ? 8 : current < 88 ? 4 : 2;
-        return normalizeProgress(current + nextStep);
-      });
-    }, 110);
-
-    return () => {
-      window.clearInterval(interval);
-      document.body.style.overflow = previousOverflow;
     };
-  }, [pendingHref]);
+
+    const handlePopState = () => {
+      if (window.location.pathname !== "/loading") start();
+    };
+
+    // Capture before Next Link handles navigation; don't prevent its SPA routing.
+    document.addEventListener("click", handleClick, true);
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      document.removeEventListener("click", handleClick, true);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [start]);
 
   useEffect(() => {
-    if (!pendingHref || progress < 100) return;
+    if (previousRoute.current === null) {
+      previousRoute.current = routeKey;
+      return;
+    }
+    if (previousRoute.current === routeKey) return;
+    previousRoute.current = routeKey;
 
-    const timeout = window.setTimeout(() => {
-      window.location.assign(pendingHref);
-    }, 260);
+    if (pathname === "/loading") {
+      stop();
+      return;
+    }
 
-    return () => window.clearTimeout(timeout);
-  }, [pendingHref, progress]);
+    // Covers router.push/replace, browser history, and other in-app route changes.
+    if (!active.current) start();
+    finish();
+  }, [routeKey, pathname, start, finish, stop]);
 
-  if (!pendingHref || typeof document === "undefined") return null;
+  useEffect(() => {
+    if (!visible) return;
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = oldOverflow; };
+  }, [visible]);
+
+  useEffect(() => () => clearTimers(), [clearTimers]);
+
+  if (!visible || typeof document === "undefined" || pathname === "/loading") return null;
 
   return createPortal(
     <VerseLoadingScene
       eyebrow="Connecting worlds"
       title="우주를 연결하는 중"
-      subtitle="당신이 찾는 세계로 이동하고 있어요."
+      subtitle="새로운 세계가 펼쳐지고 있어요."
     />,
     document.body
   );
 }
-
