@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 export type VerseLoadingPhase = "connecting" | "rendering" | "ready" | "delayed";
@@ -57,6 +58,22 @@ const newbornStars = [
   { x: 14, y: -115, delay: 0.27, color: "bg-white" },
   { x: -21, y: 114, delay: 0.48, color: "bg-fuchsia-300" },
 ];
+
+// Actual elapsed time since this loading scene was mounted. It is not a download estimate.
+function ElapsedLoadingTime({ finished }: { finished: boolean }) {
+  const [startedAt] = useState(() => Date.now());
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const update = () => setElapsed((Date.now() - startedAt) / 1000);
+    update();
+    if (finished) return;
+    const interval = window.setInterval(update, 200);
+    return () => window.clearInterval(interval);
+  }, [startedAt, finished]);
+
+  return <span className="tabular-nums">{elapsed.toFixed(1)}초 경과</span>;
+}
 
 export default function VerseLoadingScene({
   eyebrow = "Connecting worlds",
@@ -229,8 +246,9 @@ export default function VerseLoadingScene({
           <p className={`mt-3 min-h-[20px] text-xs leading-5 ${subtleText}`} aria-live="polite">
             {loadingStage.detail}
           </p>
-          <div className={`mt-2 text-[10px] font-semibold uppercase tracking-[0.2em] ${subtleText}`}>
-            {eyebrow}
+          <div className={`mt-2 flex items-center justify-between gap-3 text-[10px] font-semibold ${subtleText}`}>
+            <span className="uppercase tracking-[0.2em]">{eyebrow}</span>
+            <ElapsedLoadingTime finished={finished} />
           </div>
         </div>
         <p className={`mt-9 text-[10px] tracking-[0.22em] ${subtleText}`}>
