@@ -82,15 +82,13 @@ export default function GlobalRouteLoader() {
 
   if (!pendingHref || typeof document === "undefined") return null;
 
-  return createPortal(<DguyRouteLoading progress={progress} />, document.body);
-}
-
-function DguyRouteLoading({ progress: _progress }: { progress: number }) {
-  return (
+  return createPortal(
     <VerseLoadingScene
       eyebrow="Connecting worlds"
       title="우주를 연결하는 중"
       subtitle="당신이 찾는 세계로 이동하고 있어요."
-    />
+    />,
+    document.body
   );
 }
+
