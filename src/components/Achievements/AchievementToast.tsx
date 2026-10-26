@@ -160,12 +160,12 @@ export default function AchievementToast() {
           description: "오른쪽 아래 알림 위치를 확인하세요.",
           icon: "🏆", rarity: "rare", earnedAt: new Date().toISOString(),
         }])}
-        className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 z-[9999] rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-bold text-white shadow-lg sm:bottom-5 sm:left-5"
+        className="fixed bottom-4 right-4 z-[10001] rounded-full border border-violet-400 bg-violet-700 px-3 py-2 text-xs font-bold text-white shadow-lg hover:bg-violet-600"
       >
-        🏆 도전과제 알림 테스트
+        🏆 알림 테스트
       </button>
     )}
-    <div className="pointer-events-none fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-3 z-[9999] w-[calc(100%-1.5rem)] max-w-sm sm:bottom-5 sm:right-5 sm:w-full">
+    <div className="pointer-events-none fixed bottom-16 right-3 z-[10000] w-[min(22rem,calc(100vw-1.5rem))] sm:bottom-20 sm:right-5">
       <AnimatePresence mode="wait">
         {current ? (
           <motion.div
@@ -174,11 +174,11 @@ export default function AchievementToast() {
             animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
             exit={{ opacity: 0, x: 18, y: 20, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 360, damping: 26 }}
-            className="pointer-events-auto relative w-full overflow-hidden rounded-[1.6rem] border border-violet-300/30 bg-slate-950/95 p-4 text-white shadow-[0_24px_80px_rgba(76,29,149,.35)] backdrop-blur-2xl"
+            className="pointer-events-auto relative box-border w-full min-w-0 overflow-hidden rounded-2xl border border-violet-300/30 bg-slate-950/95 p-3 text-white shadow-[0_16px_48px_rgba(76,29,149,.35)] backdrop-blur-2xl sm:p-4"
           >
             <div className="pointer-events-none absolute -right-8 -top-10 size-32 rounded-full bg-violet-500/25 blur-3xl" />
-            <div className="relative flex items-start gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-2xl shadow-inner">
+            <div className="relative flex min-w-0 items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-2xl shadow-inner">
                 {current.icon}
               </div>
               <div className="min-w-0 flex-1">
@@ -194,7 +194,7 @@ export default function AchievementToast() {
               <button
                 type="button"
                 onClick={() => setCurrent(null)}
-                className="rounded-full p-1.5 text-white/40 transition hover:bg-white/10 hover:text-white"
+                className="shrink-0 rounded-full p-1.5 text-white/40 transition hover:bg-white/10 hover:text-white"
                 aria-label="도전과제 알림 닫기"
               >
                 <X className="size-4" />
