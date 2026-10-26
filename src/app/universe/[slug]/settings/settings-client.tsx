@@ -17,6 +17,7 @@ type UniverseSettings = {
   sections: string[];
   owner_id: string | null;
   parent_slug: string | null;
+  moderation_status: "active" | "hidden" | "removed";
 };
 
 type ParentOption = { slug: string; name: string };
@@ -26,6 +27,10 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [isOwner, setIsOwner] = React.useState(false);
+  const [isOperator, setIsOperator] = React.useState(false);
+  const [moderationStatus, setModerationStatus] = React.useState<"active" | "hidden" | "removed">("active");
+  const [moderationReason, setModerationReason] = React.useState("");
+  const [moderating, setModerating] = React.useState(false);
   const [message, setMessage] = React.useState("");
   const [errorMessage, setErrorMessage] = React.useState("");
 
@@ -48,13 +53,14 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
       setLoading(true);
       setErrorMessage("");
 
-      const [{ data: authData }, { data: universe, error }] = await Promise.all([
+      const [{ data: authData }, { data: universe, error }, { data: operatorValue }] = await Promise.all([
         supabase.auth.getUser(),
         supabase
           .from("universes")
-          .select("slug,name,description,icon,visibility,allow_member_posts,allow_comments,rules,sections,owner_id,parent_slug")
+          .select("slug,name,description,icon,visibility,allow_member_posts,allow_comments,rules,sections,owner_id,parent_slug,moderation_status")
           .eq("slug", slug)
           .maybeSingle<UniverseSettings>(),
+        supabase.rpc("is_dverse_operator"),
       ]);
 
       if (ignore) return;
@@ -70,18 +76,21 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
         return;
       }
 
+      const operator = operatorValue === true;
       const owner = universe.owner_id === authData.user.id;
-      setIsOwner(owner);
+      setIsOwner(owner || operator);
+      setIsOperator(operator);
+      setModerationStatus(universe.moderation_status || "active");
 
-      if (!owner) {
-        setErrorMessage("이 Universe의 소유자만 설정을 변경할 수 있어요.");
+      if (!owner && !operator) {
+        setErrorMessage("이 Universe의 제작자 또는 운영자만 설정을 변경할 수 있어요.");
         setLoading(false);
         return;
       }
 
-      // Build the selector from the owner’s root universes only.
+      // Preserve actual creator ownership when choosing an eligible parent.
       const [rootsResult, childrenResult] = await Promise.all([
-        supabase.from("universes").select("slug,name").eq("owner_id", authData.user.id).is("parent_slug", null).neq("slug", slug).order("name"),
+        supabase.from("universes").select("slug,name").eq("owner_id", universe.owner_id).eq("moderation_status", "active").is("parent_slug", null).neq("slug", slug).order("name"),
         supabase.from("universes").select("slug").eq("parent_slug", slug).limit(1),
       ]);
       if (ignore) return;
@@ -191,6 +200,30 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
     setSaving(false);
   }
 
+  async function moderateUniverse(action: "hide" | "remove" | "restore") {
+    if (!isOwner || moderating) return;
+    if (action === "hide" && !isOperator) return;
+    if (action === "restore" && !isOperator) return;
+    const label = action === "hide" ? "숨기기" : action === "remove" ? "삭제" : "복구";
+    if (!window.confirm(`이 Universe를 정말 ${label}할까요? ${action === "remove" ? "게시글은 보존되며 운영자가 복구할 수 있습니다." : "변경사항은 즉시 적용됩니다."}`)) return;
+    setModerating(true);
+    setErrorMessage("");
+    setMessage("");
+    const nextStatus = action === "hide" ? "hidden" : action === "remove" ? "removed" : "active";
+    const { data, error } = await supabase.from("universes")
+      .update({ moderation_status: nextStatus, moderation_reason: action === "restore" ? null : moderationReason.trim() || null })
+      .eq("slug", slug).select("moderation_status").maybeSingle();
+    if (error || !data) {
+      setErrorMessage(error?.message || "상태를 변경할 권한이 없거나 유니버스를 찾을 수 없어요.");
+    } else {
+      setModerationStatus(data.moderation_status as "active" | "hidden" | "removed");
+      setModerationReason("");
+      setMessage(`Universe를 ${label}했어요. 변경 내용은 기록됩니다.`);
+      if (action === "remove" && !isOperator) window.location.assign("/universe");
+    }
+    setModerating(false);
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-[#03050a] sm:px-6">
@@ -214,6 +247,8 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
         <header className="mt-8 border-b border-slate-200 pb-6 dark:border-white/10">
           <p className="text-sm font-semibold text-slate-500">{slug}</p>
           <h1 className="mt-1 text-3xl font-black tracking-tight">Universe 설정</h1>
+          {isOperator && <p className="mt-2 text-xs font-bold text-violet-600">운영자 공동 소유권 · 실제 제작자 기록은 유지됩니다.</p>}
+          {moderationStatus !== "active" && <p className="mt-2 text-sm font-bold text-rose-600">현재 상태: {moderationStatus === "hidden" ? "운영자 숨김" : "삭제됨 · 복구 가능"}</p>}
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-white/55">
             기본 정보, 게시 권한, 댓글, 섹션과 규칙을 한 곳에서 관리합니다.
           </p>
@@ -317,8 +352,19 @@ export default function UniverseSettingsClient({ slug }: { slug: string }) {
                 <div>
                   <h2 className="text-lg font-black">위험 영역</h2>
                   <p className="mt-1 text-sm leading-6 text-slate-500">
-                    Universe 삭제는 게시글과 연결 데이터 정리 규칙을 먼저 확정한 뒤 연결합니다.
+                    삭제는 복구 가능한 상태 변경으로 처리합니다. 게시글과 실제 제작자 기록은 보존되고, 활동은 노출되지 않습니다.
                   </p>
+                  <p className="mt-2 text-xs text-slate-500">소속 행성이 있다면 부모 유니버스의 제재 상태에 따라 함께 숨겨집니다.</p>
+                </div>
+              </div>
+              <div className="mt-5 space-y-3">
+                <label className="block text-sm font-semibold">관리 사유 (선택, 최대 500자)
+                  <textarea value={moderationReason} onChange={(event) => setModerationReason(event.target.value)} maxLength={500} rows={2} placeholder="규칙 위반, 제작자 요청 등" className="mt-2 w-full rounded-xl border border-slate-200 bg-white p-3 text-sm dark:border-white/10 dark:bg-white/[0.03]" />
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {isOperator && moderationStatus === "active" && <button type="button" disabled={moderating} onClick={() => moderateUniverse("hide")} className="rounded-xl border border-amber-300 px-4 py-2 text-sm font-bold text-amber-700 disabled:opacity-50">유니버스 숨기기</button>}
+                  {moderationStatus !== "removed" && <button type="button" disabled={moderating} onClick={() => moderateUniverse("remove")} className="rounded-xl border border-rose-300 px-4 py-2 text-sm font-bold text-rose-700 disabled:opacity-50">유니버스 삭제</button>}
+                  {isOperator && moderationStatus !== "active" && <button type="button" disabled={moderating} onClick={() => moderateUniverse("restore")} className="rounded-xl border border-emerald-300 px-4 py-2 text-sm font-bold text-emerald-700 disabled:opacity-50">유니버스 복구</button>}
                 </div>
               </div>
             </section>
