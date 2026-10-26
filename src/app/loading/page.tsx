@@ -6,12 +6,12 @@ import {
   getBrowserVisualMode,
   getLoadingRouteState,
   LOADING_PRESETS,
-  normalizeProgress,
   shouldAutoRedirect,
 } from "@/components/Common/LoadingOverlay";
 
+const STANDALONE_MIN_VISIBLE_MS = 2300;
+
 export default function Page() {
-  const [progress, setProgress] = useState(0);
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState<"light" | "dark">("light");
 
@@ -33,7 +33,6 @@ export default function Page() {
     const updateTheme = () => setMode(getBrowserVisualMode(nextRoute.themeOverride));
     const observer = new MutationObserver(updateTheme);
     const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
-
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -49,28 +48,15 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    setProgress(0);
-    const interval = window.setInterval(() => {
-      setProgress((current) => {
-        if (current >= 100) return 100;
-        const step = current < 58 ? 8 : current < 86 ? 5 : 2;
-        return normalizeProgress(current + step);
-      });
-    }, 115);
-
-    return () => window.clearInterval(interval);
-  }, [routeState.targetHref]);
-
-  useEffect(() => {
-    if (progress < 100) return;
     if (!shouldAutoRedirect(window.location.search, window.location.hostname)) return;
 
-    const timeout = window.setTimeout(() => {
+    // The dedicated /loading route cannot know the destination's network bytes.
+    // Keep its progress indeterminate until the destination navigation actually begins.
+    const timer = window.setTimeout(() => {
       window.location.replace(routeState.targetHref);
-    }, 360);
-
-    return () => window.clearTimeout(timeout);
-  }, [progress, routeState.targetHref]);
+    }, STANDALONE_MIN_VISIBLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [routeState.targetHref]);
 
   return (
     <VerseLoadingScene
