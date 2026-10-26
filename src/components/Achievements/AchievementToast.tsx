@@ -16,6 +16,13 @@ type Achievement = {
 
 type ToastItem = Achievement & { earnedAt: string };
 
+const rarityStyle: Record<string, { glow: string; border: string; icon: string; text: string; bar: string }> = {
+  common: { glow: "bg-slate-300/10", border: "border-slate-400/25", icon: "from-slate-400/25 to-slate-600/10", text: "text-slate-200", bar: "bg-slate-300" },
+  rare: { glow: "bg-violet-500/20", border: "border-violet-400/40", icon: "from-violet-400/35 to-indigo-500/10", text: "text-violet-200", bar: "bg-violet-400" },
+  epic: { glow: "bg-fuchsia-500/20", border: "border-fuchsia-400/40", icon: "from-fuchsia-400/35 to-purple-500/10", text: "text-fuchsia-200", bar: "bg-fuchsia-400" },
+  legendary: { glow: "bg-amber-400/20", border: "border-amber-300/50", icon: "from-amber-300/35 to-orange-500/10", text: "text-amber-200", bar: "bg-amber-300" },
+};
+
 const rarityLabel: Record<string, string> = {
   common: "COMMON",
   rare: "RARE",
@@ -150,6 +157,8 @@ export default function AchievementToast() {
 
   if (!mounted) return null;
 
+  const appearance = rarityStyle[current?.rarity ?? "common"] ?? rarityStyle.common;
+
   return createPortal(
     <>
     {process.env.NODE_ENV === "development" && (
@@ -172,26 +181,27 @@ export default function AchievementToast() {
         {current ? (
           <motion.div
             key={`${current.code}-${current.earnedAt}`}
-            initial={{ opacity: 0, x: 24, y: 28, scale: 0.96 }}
+            initial={{ opacity: 0, x: 32, y: 12, scale: 0.97 }}
             animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
             exit={{ opacity: 0, x: 18, y: 20, scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 360, damping: 26 }}
+            transition={{ type: "spring", stiffness: 280, damping: 28 }}
             style={{ width: "100%", boxSizing: "border-box", maxWidth: "100%" }}
-            className="pointer-events-auto relative box-border w-full min-w-0 overflow-hidden rounded-2xl border border-violet-300/30 bg-slate-950/95 p-3 text-white shadow-[0_16px_48px_rgba(76,29,149,.35)] backdrop-blur-2xl sm:p-4"
+            className={`pointer-events-auto relative box-border w-full min-w-0 overflow-hidden rounded-[22px] border bg-[#0b1022]/95 p-3.5 text-white shadow-[0_18px_55px_rgba(10,8,35,.45)] backdrop-blur-2xl sm:p-4 ${appearance.border}`}
           >
-            <div className="pointer-events-none absolute -right-8 -top-10 size-32 rounded-full bg-violet-500/25 blur-3xl" />
+            <div className={`pointer-events-none absolute -right-8 -top-10 size-36 rounded-full blur-3xl ${appearance.glow}`} />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.07] via-transparent to-transparent" />
             <div className="relative flex min-w-0 items-start gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-2xl shadow-inner">
+              <div className={`flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-gradient-to-br text-2xl shadow-[0_0_22px_rgba(139,92,246,.16)] ${appearance.icon}`}>
                 {current.icon}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <Trophy className="size-3.5 text-amber-300" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-200">
+                  <Trophy className={`size-3.5 ${appearance.text}`} />
+                  <p className={`text-[10px] font-black uppercase tracking-[0.18em] ${appearance.text}`}>
                     도전과제 달성 · {rarityLabel[current.rarity] ?? current.rarity.toUpperCase()}
                   </p>
                 </div>
-                <h3 className="mt-1 text-base font-black tracking-tight">{current.name}</h3>
+                <h3 className="mt-1 text-[17px] font-black tracking-tight">{current.name}</h3>
                 <p className="mt-1 text-xs leading-5 text-white/60">{current.description}</p>
               </div>
               <button
@@ -203,6 +213,14 @@ export default function AchievementToast() {
                 <X className="size-4" />
               </button>
             </div>
+            <motion.div
+              key={`progress-${current.code}-${current.earnedAt}`}
+              className={`absolute bottom-0 left-0 h-[3px] w-full origin-left ${appearance.bar}`}
+              initial={{ scaleX: 1 }}
+              animate={{ scaleX: 0 }}
+              transition={{ duration: 6.5, ease: "linear" }}
+              aria-hidden="true"
+            />
           </motion.div>
         ) : null}
       </AnimatePresence>
