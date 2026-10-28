@@ -249,7 +249,7 @@ export default function DVNav({
             </Link>
           </motion.div>
 
-          <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
+          <div className="hidden min-w-0 flex-1 items-center justify-center xl:flex">
             <div className="dv-orbit-nav relative flex h-[56px] items-center px-3">
               <div className="dv-orbit-track pointer-events-none absolute left-8 right-8 top-[21px] h-px" />
               <div className="dv-orbit-track-glow pointer-events-none absolute left-8 right-8 top-[21px] h-px" />
@@ -595,7 +595,7 @@ export default function DVNav({
               onClick={() => setMobileOpen((value) => !value)}
               aria-label="Navigation menu"
               aria-expanded={mobileOpen}
-              className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 lg:hidden dark:text-white/70 dark:hover:bg-white/[0.07]"
+              className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 xl:hidden dark:text-white/70 dark:hover:bg-white/[0.07]"
             >
               {mobileOpen ? <X size={19} /> : <Menu size={19} />}
             </button>
@@ -609,7 +609,7 @@ export default function DVNav({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="overflow-hidden border-t border-slate-200/70 lg:hidden dark:border-white/[0.08]"
+              className="overflow-hidden border-t border-slate-200/70 xl:hidden dark:border-white/[0.08]"
             >
               <div className="relative space-y-2 p-3">
                 <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/50 to-transparent" />
