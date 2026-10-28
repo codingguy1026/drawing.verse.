@@ -351,7 +351,7 @@ export default function UniverseWritePage() {
 
       <form ref={formRef} onSubmit={handleSubmit} className="relative z-10">
         <div className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-2xl dark:border-white/10 dark:bg-[#05060b]/80">
-          <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="mx-auto grid w-full max-w-6xl grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 px-4 py-3 sm:flex sm:gap-3 sm:px-6 lg:px-8">
             <button
               type="button"
               onClick={goBack}
@@ -390,7 +390,7 @@ export default function UniverseWritePage() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 dark:bg-white dark:text-slate-950 sm:px-5"
+              className="col-span-2 inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 dark:bg-white dark:text-slate-950 sm:w-auto sm:px-5"
             >
               {isSubmitting ? (
                 <>
