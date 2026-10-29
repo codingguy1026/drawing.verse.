@@ -212,7 +212,7 @@ export default function DVNav({
           <div className="absolute bottom-0 right-[9%] h-px w-[18%] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
         </div>
 
-        <div className="flex h-[74px] items-center gap-2 px-2.5 sm:gap-3 sm:px-4">
+        <div className="flex h-[64px] min-w-0 items-center gap-1 px-2 min-[380px]:gap-2 min-[380px]:px-2.5 sm:h-[74px] sm:gap-3 sm:px-4">
           <motion.div
             variants={squishyVariants}
             whileHover="hover"
@@ -222,9 +222,9 @@ export default function DVNav({
             <Link
               href="/"
               aria-label="Drawing Verse Home"
-              className="group flex items-center gap-3 rounded-2xl px-2 py-1.5 transition hover:bg-violet-500/[0.05] dark:hover:bg-white/[0.05]"
+              className="group flex min-w-0 items-center gap-1 rounded-2xl px-0.5 py-1.5 transition hover:bg-violet-500/[0.05] min-[380px]:px-1 sm:gap-3 sm:px-2 dark:hover:bg-white/[0.05]"
             >
-              <div className="relative h-[52px] w-[58px] shrink-0">
+              <div className="relative h-10 w-10 shrink-0 min-[380px]:h-11 min-[380px]:w-11 sm:h-[52px] sm:w-[58px]">
                 <div className="pointer-events-none absolute inset-1 rounded-full bg-[radial-gradient(circle,rgba(255,91,91,.18),rgba(184,156,255,.18)_48%,transparent_72%)] blur-md transition-opacity duration-300 group-hover:opacity-100" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -348,7 +348,7 @@ export default function DVNav({
             </div>
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
+          <div className="ml-auto flex min-w-0 shrink-0 items-center gap-0.5 min-[380px]:gap-1 sm:gap-1.5">
             <motion.div
               variants={squishyVariants}
               whileHover="hover"
@@ -358,7 +358,7 @@ export default function DVNav({
               <Link
                 href="/search"
                 aria-label="Search"
-                className="grid h-10 w-10 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-white/55 dark:hover:bg-white/[0.07] dark:hover:text-white"
+                className="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 min-[380px]:h-10 min-[380px]:w-10 dark:text-white/55 dark:hover:bg-white/[0.07] dark:hover:text-white"
               >
                 <Search size={17} />
               </Link>
@@ -574,7 +574,7 @@ export default function DVNav({
             <Link
               href={isLoggedIn ? profileHref : "/login"}
               aria-label={isLoggedIn ? "Profile" : "Login"}
-              className="grid h-10 w-10 place-items-center overflow-hidden rounded-xl border border-slate-200/70 bg-white/60 text-slate-600 transition hover:bg-white sm:hidden dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70"
+              className="grid h-9 w-9 place-items-center overflow-hidden rounded-xl border border-slate-200/70 bg-white/60 text-slate-600 transition hover:bg-white min-[380px]:h-10 min-[380px]:w-10 sm:hidden dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70"
             >
               {isLoggedIn && avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -595,7 +595,7 @@ export default function DVNav({
               onClick={() => setMobileOpen((value) => !value)}
               aria-label="Navigation menu"
               aria-expanded={mobileOpen}
-              className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 xl:hidden dark:text-white/70 dark:hover:bg-white/[0.07]"
+              className="grid h-9 w-9 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 min-[380px]:h-10 min-[380px]:w-10 xl:hidden dark:text-white/70 dark:hover:bg-white/[0.07]"
             >
               {mobileOpen ? <X size={19} /> : <Menu size={19} />}
             </button>
