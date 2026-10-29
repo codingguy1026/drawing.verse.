@@ -353,7 +353,7 @@ export default function DVNav({
               variants={squishyVariants}
               whileHover="hover"
               whileTap="tap"
-              className="2xl:hidden"
+              className="hidden sm:block 2xl:hidden"
             >
               <Link
                 href="/search"
@@ -574,7 +574,7 @@ export default function DVNav({
             <Link
               href={isLoggedIn ? profileHref : "/login"}
               aria-label={isLoggedIn ? "Profile" : "Login"}
-              className="grid h-9 w-9 place-items-center overflow-hidden rounded-xl border border-slate-200/70 bg-white/60 text-slate-600 transition hover:bg-white min-[380px]:h-10 min-[380px]:w-10 sm:hidden dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70"
+              className="hidden h-9 w-9 place-items-center overflow-hidden rounded-xl border border-slate-200/70 bg-white/60 text-slate-600 transition hover:bg-white min-[380px]:h-10 min-[380px]:w-10 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70"
             >
               {isLoggedIn && avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -595,7 +595,7 @@ export default function DVNav({
               onClick={() => setMobileOpen((value) => !value)}
               aria-label="Navigation menu"
               aria-expanded={mobileOpen}
-              className="grid h-9 w-9 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 min-[380px]:h-10 min-[380px]:w-10 xl:hidden dark:text-white/70 dark:hover:bg-white/[0.07]"
+              className="grid h-10 w-10 place-items-center rounded-xl border border-violet-200/60 bg-violet-50/70 text-violet-700 transition hover:bg-violet-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 xl:hidden dark:border-white/10 dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/[0.10]"
             >
               {mobileOpen ? <X size={19} /> : <Menu size={19} />}
             </button>
