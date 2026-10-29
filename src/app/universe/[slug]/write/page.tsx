@@ -535,42 +535,51 @@ export default function UniverseWritePage() {
 
               <section className="mt-5 rounded-[1.75rem] border border-slate-200/80 bg-white/70 p-4 backdrop-blur dark:border-white/10 dark:bg-white/[0.025] sm:p-5">
                 {imagePreview ? (
-                  <div className="relative overflow-hidden rounded-[1.35rem] border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-white/5">
+                  <div className="min-w-0 overflow-hidden rounded-[1.35rem] border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-white/5">
                     <img
                       src={imagePreview}
                       alt="첨부 이미지 미리보기"
                       className="max-h-[30rem] w-full object-contain"
                     />
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur transition hover:bg-black/85"
-                      aria-label="첨부 이미지 제거"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 bg-white/80 px-4 py-3 dark:border-white/10 dark:bg-[#0a0c13]/80">
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <ImageIcon className="h-4 w-4 shrink-0 text-violet-500" />
+                        <span className="truncate text-xs font-semibold text-slate-600 dark:text-slate-300" title={imageFile?.name}>
+                          {imageFile?.name || "첨부 이미지"}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 transition hover:border-rose-300 hover:text-rose-600 dark:border-white/15 dark:bg-white/10 dark:text-white/80"
+                        aria-label="첨부 이미지 제거"
+                      >
+                        <X className="h-4 w-4" />
+                        제거
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <label className="group flex cursor-pointer items-center justify-between gap-4 rounded-[1.35rem] border border-dashed border-slate-300 bg-slate-50/70 px-5 py-5 transition hover:border-violet-300 hover:bg-violet-50/50 dark:border-white/15 dark:bg-white/[0.025] dark:hover:border-violet-500/40 dark:hover:bg-violet-500/5">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-violet-500 shadow-sm dark:bg-white/10 dark:text-violet-300">
+                  <label className="group flex cursor-pointer flex-col items-stretch gap-4 rounded-[1.35rem] border border-dashed border-slate-300 bg-slate-50/70 px-4 py-5 transition hover:border-violet-300 hover:bg-violet-50/50 dark:border-white/15 dark:bg-white/[0.025] dark:hover:border-violet-500/40 dark:hover:bg-violet-500/5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-violet-500 shadow-sm dark:bg-white/10 dark:text-violet-300">
                         <ImageIcon className="h-5 w-5" />
                       </span>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm font-black">이미지 한 장 첨부</p>
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-1 text-xs leading-5 text-slate-400">
                           선택 사항 · 이미지는 초안 자동저장에 포함되지 않아요.
                         </p>
                       </div>
                     </div>
-                    <span className="hidden rounded-full bg-slate-950 px-4 py-2 text-xs font-black text-white dark:bg-white dark:text-slate-950 sm:inline">
+                    <span className="inline-flex w-full shrink-0 items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-xs font-black text-white dark:bg-white dark:text-slate-950 sm:w-auto">
                       선택
                     </span>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}
-                      className="hidden"
+                      className="sr-only"
                     />
                   </label>
                 )}
