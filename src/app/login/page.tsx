@@ -220,6 +220,12 @@ export default function LoginPage() {
             </header>
 
             <div className="grid gap-3">
+              {process.env.NEXT_PUBLIC_DRAWING_SSO_ENABLED === "true" && (
+                <a href="/api/drawing-id/start"
+                  className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-violet-400/60 bg-violet-600 font-black text-white shadow-md shadow-violet-500/20 transition hover:bg-violet-700">
+                  🔐 Drawing ID로 계속하기 <span aria-hidden="true">→</span>
+                </a>
+              )}
               <button
                 type="button"
                 onClick={handleGoogleLogin}
