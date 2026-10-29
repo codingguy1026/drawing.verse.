@@ -97,7 +97,7 @@ export default function RegisterPage() {
         {/* 상단 제목 */}
         <div className="mb-8 text-center">
           <p className="text-[10px] font-bold tracking-[0.3em] text-indigo-400 uppercase mb-3 flex justify-center items-center gap-2">
-            Drawing Verse <Sparkles size={12} />
+            Drawing ID · Drawing Verse <Sparkles size={12} />
           </p>
           <h1 className="text-3xl font-bold text-white tracking-tight">
             Create Account

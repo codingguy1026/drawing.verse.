@@ -61,7 +61,7 @@ export default function RegisterPage() {
       <DreamSection>
         <div className="flex flex-col gap-2">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
-            Drawing Verse
+            Drawing ID · Drawing Verse
           </p>
           <h1 className="text-2xl font-semibold text-slate-50">
             새 계정 만들기

@@ -210,7 +210,7 @@ export default function LoginPage() {
                 </p>
 
                 <h2 className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white">
-                  {isLogin ? "로그인" : "회원가입"}
+                  Drawing ID · {isLogin ? "로그인" : "회원가입"}
                 </h2>
 
                 <p className="text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-500">
