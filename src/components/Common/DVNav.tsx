@@ -235,7 +235,7 @@ export default function DVNav({
                 />
               </div>
 
-              <div className="hidden leading-tight sm:block">
+              <div className="hidden leading-tight min-[420px]:block">
                 <div className="flex items-center gap-1.5">
                   <p className="whitespace-nowrap bg-[linear-gradient(92deg,#ef4c5f_0%,#ff5b5b_34%,#a883ff_72%,#8060f1_100%)] bg-clip-text text-[15px] font-black tracking-[-0.025em] text-transparent dark:bg-[linear-gradient(92deg,#ff9292_0%,#ff6b72_34%,#d7c6ff_68%,#b89cff_100%)]">
                     Drawing Verse
@@ -249,7 +249,7 @@ export default function DVNav({
             </Link>
           </motion.div>
 
-          <div className="hidden min-w-0 flex-1 items-center justify-center xl:flex">
+          <div className="hidden min-w-0 flex-1 items-center justify-center 2xl:flex">
             <div className="dv-orbit-nav relative flex h-[56px] items-center px-3">
               <div className="dv-orbit-track pointer-events-none absolute left-8 right-8 top-[21px] h-px" />
               <div className="dv-orbit-track-glow pointer-events-none absolute left-8 right-8 top-[21px] h-px" />
@@ -353,7 +353,7 @@ export default function DVNav({
               variants={squishyVariants}
               whileHover="hover"
               whileTap="tap"
-              className="hidden sm:block 2xl:hidden"
+              className="hidden"
             >
               <Link
                 href="/search"
@@ -364,7 +364,7 @@ export default function DVNav({
               </Link>
             </motion.div>
 
-            <div className="hidden items-center gap-1 xl:flex">
+            <div className="hidden items-center gap-1 2xl:flex">
               <CosmicAudioStation />
               <ThemeToggle />
             </div>
@@ -373,7 +373,7 @@ export default function DVNav({
               variants={squishyVariants}
               whileHover="hover"
               whileTap="tap"
-              className="hidden sm:block"
+              className="hidden 2xl:block"
             >
               <Link
                 href="/universe/create"
@@ -387,7 +387,7 @@ export default function DVNav({
             </motion.div>
 
             {isLoggedIn ? (
-              <div className="relative hidden sm:block">
+              <div className="relative hidden 2xl:block">
                 <button
                   type="button"
                   aria-label="User menu"
@@ -564,7 +564,7 @@ export default function DVNav({
             ) : (
               <Link
                 href="/login"
-                className="hidden h-10 items-center gap-2 rounded-xl px-3 text-sm font-black text-slate-600 transition hover:bg-slate-100 sm:flex dark:text-white/70 dark:hover:bg-white/[0.07]"
+                className="hidden h-10 items-center gap-2 rounded-xl px-3 text-sm font-black text-slate-600 transition hover:bg-slate-100 2xl:flex dark:text-white/70 dark:hover:bg-white/[0.07]"
               >
                 <LogIn size={16} />
                 Login
@@ -595,7 +595,7 @@ export default function DVNav({
               onClick={() => setMobileOpen((value) => !value)}
               aria-label="Navigation menu"
               aria-expanded={mobileOpen}
-              className="grid h-10 w-10 place-items-center rounded-xl border border-violet-200/60 bg-violet-50/70 text-violet-700 transition hover:bg-violet-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 xl:hidden dark:border-white/10 dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/[0.10]"
+              className="grid h-10 w-10 place-items-center rounded-xl border border-violet-200/60 bg-violet-50/70 text-violet-700 transition hover:bg-violet-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 2xl:hidden dark:border-white/10 dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/[0.10]"
             >
               {mobileOpen ? <X size={19} /> : <Menu size={19} />}
             </button>
@@ -609,7 +609,7 @@ export default function DVNav({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="overflow-hidden border-t border-slate-200/70 xl:hidden dark:border-white/[0.08]"
+              className="overflow-hidden border-t border-slate-200/70 2xl:hidden dark:border-white/[0.08]"
             >
               <div className="relative space-y-2 p-3">
                 <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/50 to-transparent" />
