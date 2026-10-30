@@ -2938,3 +2938,47 @@
 .dv-subpage-theme :where(button, a)[class*="rounded-2xl"] {
   border-radius: 10px !important;
 }
+
+
+/* Project navigation: visible local-session sign-out */
+.dv-frame-auth-action {
+  display: flex;
+  width: 100%;
+  min-height: 43px;
+  align-items: center;
+  gap: .68rem;
+  margin: .65rem 0 .8rem;
+  padding: .65rem .9rem;
+  border: 1px solid rgba(226,88,113,.18);
+  border-radius: 13px;
+  background: rgba(255,91,112,.055);
+  color: #b44e65;
+  font-size: .8rem;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.dv-frame-auth-action:hover { border-color: rgba(226,88,113,.38); background: rgba(255,91,112,.11); }
+.dv-frame-auth-action:focus-visible { outline: 2px solid #8060f1; outline-offset: 3px; }
+.dv-frame-auth-action:disabled { cursor: wait; opacity: .65; }
+.dv-frame-auth-login { color: #6650bd; border-color: rgba(128,96,241,.16); background: rgba(128,96,241,.055); }
+.dv-frame-auth-login:hover { background: rgba(128,96,241,.10); border-color: rgba(128,96,241,.35); }
+.dark .dv-frame-auth-action { color: #ff9aaa; background: rgba(255,91,112,.075); }
+.dark .dv-frame-auth-login { color: #c3adff; background: rgba(128,96,241,.08); }
+.dv-frame-auth-error { font-size: .7rem !important; line-height: 1.5; color: #d73556 !important; letter-spacing: 0 !important; }
+.dv-frame-auth-mobile, .dv-frame-auth-mobile-error { display: none; }
+@media (max-width: 1100px) {
+  .dv-frame-auth-mobile {
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 38px;
+    margin: 0;
+    align-self: center;
+    padding: .4rem .8rem;
+    white-space: nowrap;
+    font-size: .75rem;
+  }
+  .dv-frame-auth-mobile-error { display: inline-flex; align-items: center; white-space: nowrap; }
+}

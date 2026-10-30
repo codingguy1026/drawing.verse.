@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   Home,
   Images,
   Link2,
+  LogOut,
   MessageCircle,
   Orbit,
   PenLine,
@@ -17,6 +19,8 @@ import {
   UserRound,
 } from "lucide-react";
 import ThemeToggle from "@/components/Common/ThemeToggle";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
+import { supabase } from "@/lib/supabase/client";
 import { squishyVariants } from "@/lib/animations";
 
 type FrameItem = {
@@ -134,6 +138,27 @@ function DockGroup({
 export default function DVSubpageFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const meta = routeMeta(pathname);
+  const { user, loading: authLoading } = useSupabaseUser();
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
+
+  const handleSignOut = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    setSignOutError(null);
+
+    try {
+      // Only end the current session, not sessions on other devices.
+      const { error } = await supabase.auth.signOut({ scope: "local" });
+      if (error) throw error;
+      window.location.replace("/login");
+    } catch (error) {
+      console.error("Sidebar logout failed:", error);
+      setSignOutError("로그아웃에 실패했어요. 다시 시도해 주세요.");
+      setSigningOut(false);
+    }
+  };
+
   const focusMode =
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
@@ -184,6 +209,18 @@ export default function DVSubpageFrame({ children }: { children: ReactNode }) {
         <div className="dv-frame-nav-scroll">
           <DockGroup label="VERSE MAP" items={verseItems} pathname={pathname} orbit />
           <DockGroup label="TOOLS" items={toolItems} pathname={pathname} />
+          {!authLoading && user ? (
+            <button
+              type="button"
+              className="dv-frame-auth-action dv-frame-auth-mobile"
+              onClick={handleSignOut}
+              disabled={signingOut}
+            >
+              <LogOut size={16} aria-hidden="true" />
+              <span>{signingOut ? "로그아웃 중..." : "로그아웃"}</span>
+            </button>
+          ) : null}
+          {signOutError && <span className="dv-frame-auth-error dv-frame-auth-mobile-error" role="alert">{signOutError}</span>}
         </div>
 
         <div className="dv-frame-rail-footer">
@@ -194,6 +231,25 @@ export default function DVSubpageFrame({ children }: { children: ReactNode }) {
               <small>Light / Dark</small>
             </div>
           </div>
+          {!authLoading && (
+            user ? (
+              <button
+                type="button"
+                className="dv-frame-auth-action"
+                onClick={handleSignOut}
+                disabled={signingOut}
+              >
+                <LogOut size={17} aria-hidden="true" />
+                <span>{signingOut ? "로그아웃 중..." : "로그아웃"}</span>
+              </button>
+            ) : (
+              <Link href="/login" className="dv-frame-auth-action dv-frame-auth-login">
+                <UserRound size={17} aria-hidden="true" />
+                <span>로그인</span>
+              </Link>
+            )
+          )}
+          {signOutError && <p role="alert" className="dv-frame-auth-error">{signOutError}</p>}
           <span className="dv-frame-orbit-mark" />
           <p>Drawing Verse · Navigator</p>
         </div>
