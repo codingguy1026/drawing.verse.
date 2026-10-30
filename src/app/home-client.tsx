@@ -367,7 +367,7 @@ export default function HomeClient() {
       </div>
 
       <main className="relative z-10 mx-auto w-full max-w-[1380px] px-4 pb-24 sm:px-6 lg:px-8">
-        <section className="dv-home-hero relative min-h-[660px] overflow-visible pb-14 pt-2 sm:pt-3 lg:grid lg:grid-cols-[minmax(0,1.14fr)_minmax(280px,.86fr)] lg:items-center lg:gap-5 lg:pb-16 lg:pt-3 xl:grid-cols-[1.02fr_.98fr] xl:gap-10 xl:pb-20">
+        <section className="dv-home-hero relative min-h-[660px] overflow-visible pb-14 pt-2 sm:pt-3 xl:grid xl:grid-cols-[minmax(0,1.02fr)_minmax(0,.98fr)] xl:items-center xl:gap-10 xl:pb-20 xl:pt-3">
           {!userLoading && user && (
             <div className="absolute right-0 top-0 z-20">
               {isEditing ? (
@@ -406,21 +406,21 @@ export default function HomeClient() {
             </div>
           )}
 
-          <div className="dv-home-copy relative z-10 max-w-[720px]">
+          <div className="dv-home-copy relative z-10 min-w-0 max-w-[720px] pt-12 sm:pt-10">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="mb-7 flex w-fit items-center gap-3"
+              className="mb-7 flex max-w-full items-center gap-2 sm:gap-3"
             >
               <span className="h-2 w-2 rounded-full bg-[#ff6b72] shadow-[0_0_12px_rgba(255,107,114,.85)]" />
-              <span className="text-[10px] font-black uppercase tracking-[.28em] text-slate-400 dark:text-white/35">
+              <span className="min-w-0 text-[9px] font-black uppercase tracking-[.12em] text-slate-400 sm:text-[10px] sm:tracking-[.28em] dark:text-white/35">
                 Drawing Verse · Interverse Gateway
               </span>
-              <span className="h-px w-10 bg-gradient-to-r from-[#ff6b72]/60 to-[#b89cff]/20" />
+              <span className="hidden h-px w-10 bg-gradient-to-r sm:block from-[#ff6b72]/60 to-[#b89cff]/20" />
             </motion.div>
 
-            <h1 className="dv-home-title max-w-[760px] text-[46px] font-black leading-[.92] tracking-[-.06em] text-slate-950 dark:text-white sm:text-[58px] md:text-[64px] lg:text-[62px] xl:text-[86px]">
+            <h1 className="dv-home-title max-w-[760px] text-[clamp(2rem,6vw,3.5rem)] font-black leading-[1.02] tracking-[-.06em] text-slate-950 dark:text-white sm:text-[clamp(2.5rem,5vw,4rem)] xl:text-[86px]">
               <EditableText
                 isEditing={isEditing}
                 value={heroTitle}
@@ -452,7 +452,7 @@ export default function HomeClient() {
               className="mt-8 max-w-[650px] text-[15px] font-medium leading-8 text-slate-500 dark:text-white/45 sm:text-base"
             />
 
-            <div className="dv-home-actions mt-8 flex flex-wrap items-center gap-3">
+            <div className="dv-home-actions mt-8 flex flex-wrap items-center gap-3 max-[420px]:[&>div]:w-full max-[420px]:[&>div>a]:w-full max-[420px]:[&>div>a]:justify-center">
               <motion.div variants={squishyVariants} whileHover="hover" whileTap="tap">
                 <Link
                   href="/universe"
