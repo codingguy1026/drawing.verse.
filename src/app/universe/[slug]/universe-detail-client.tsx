@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Bell, BellOff, BookOpen, Compass, Eye, Flame, Image as ImageIcon, Info, MessageCircle, Orbit, PenLine, Plus, ShieldCheck, Sparkles, Star, Sun, Users } from "lucide-react";
+import { ArrowLeft, Bell, BellOff, BookOpen, ChevronRight, Compass, Eye, Flame, Image as ImageIcon, Info, MessageCircle, Orbit, PenLine, Plus, ShieldCheck, Sparkles, Star, Sun, Users } from "lucide-react";
 import SportsPanel, { TeamLogo } from "@/components/Sports/SportsPanel";
 import { resolveSportsConfig, safeAsset } from "@/lib/sports/config";
 import type { SportsConfig } from "@/lib/sports/types";
@@ -123,6 +123,17 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
     <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] overflow-hidden"><div className="absolute left-[10%] top-10 size-[280px] rounded-full bg-violet-400/10 blur-[100px]"/><div className="absolute right-[8%] top-8 size-[340px] rounded-full bg-sky-300/10 blur-[110px]"/></div>
     <div className="relative mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6 sm:pt-10 lg:px-8 lg:pt-12">
       <nav aria-label="유니버스 상단 탐색" className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"><Link href="/universe" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-violet-600 dark:text-white/55"><ArrowLeft className="size-4"/> 모든 유니버스</Link><div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">{(canCreateSystem || isOperator) && <Link href={`/universe/${encodeURIComponent(slug)}/settings`} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-violet-300 dark:border-white/10 dark:bg-white/5 dark:text-white/70">설정</Link>}<button onClick={toggleSubscription} disabled={!subscriptionReady || subscriptionBusy} className={cn("inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition disabled:opacity-50", subscribed ? "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-400/20 dark:bg-violet-500/10 dark:text-violet-200" : "border-slate-200 bg-white/80 text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-white/70")}>{subscribed ? <BellOff className="size-4"/> : <Bell className="size-4"/>}{subscriptionBusy ? "처리 중..." : subscribed ? "구독 중" : "구독하기"}</button></div></nav>
+      <nav aria-label="현재 위치" className="mb-5 min-w-0">
+        <ol className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500 dark:text-white/60">
+          <li><Link href="/universe" className="font-semibold hover:text-violet-600 dark:hover:text-violet-300">유니버스 탐색</Link></li>
+          <li aria-hidden="true"><ChevronRight className="size-4" /></li>
+          {parentUniverse && <>
+            <li className="min-w-0 max-w-[45vw] sm:max-w-xs"><Link href={`/universe/${encodeURIComponent(parentUniverse.slug)}`} className="block truncate font-semibold hover:text-violet-600 dark:hover:text-violet-300" title={parentUniverse.name}>{parentUniverse.name}</Link></li>
+            <li aria-hidden="true"><ChevronRight className="size-4" /></li>
+          </>}
+          <li aria-current="page" className="min-w-0 max-w-[65vw] truncate font-bold text-slate-900 dark:text-white" title={universe.name}>{universe.name}</li>
+        </ol>
+      </nav>
       <div id="universe-overview" className="scroll-mt-24"><Hero universe={universe} sports={sportsConfig} parent={parentUniverse}/></div>
       <nav aria-label="유니버스 콘텐츠 바로가기" className="mt-5 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white/80 p-2 dark:border-white/10 dark:bg-white/5">
         <a href="#universe-overview" className="rounded-xl px-4 py-2 text-sm font-bold hover:bg-violet-50 dark:hover:bg-white/10">개요</a>
