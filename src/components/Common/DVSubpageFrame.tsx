@@ -182,7 +182,7 @@ export default function DVSubpageFrame({ children }: { children: ReactNode }) {
             <ThemeToggle />
           </div>
         </div>
-        <div id="dv-main-content" tabIndex={-1} className="dv-route-content dv-subpage-slot">{children}</div>
+        <div id="dv-main-content" tabIndex={-1} className="relative isolate dv-route-content dv-subpage-slot">{children}</div>
       </div>
     );
   }
@@ -270,7 +270,7 @@ export default function DVSubpageFrame({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <div id="dv-main-content" tabIndex={-1} className="dv-route-content dv-subpage-slot">{children}</div>
+        <div id="dv-main-content" tabIndex={-1} className="relative isolate dv-route-content dv-subpage-slot">{children}</div>
       </section>
     </div>
   );
