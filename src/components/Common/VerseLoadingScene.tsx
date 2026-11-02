@@ -63,14 +63,16 @@ export default function VerseLoadingScene({
   const innerClass =
     variant === "overlay"
       ? "sticky top-0 flex min-h-[min(680px,calc(100dvh-7rem))] w-full items-center justify-center px-5 py-12"
-      : "flex min-h-full w-full items-center justify-center px-5 py-12";
+      : variant === "inline"
+        ? "flex min-h-[calc(100dvh-9rem)] w-full items-center justify-center px-5 py-12"
+        : "flex min-h-full w-full items-center justify-center px-5 py-12";
 
   return (
     <div
       role="status"
       aria-live="polite"
       aria-label="Drawing Verse 페이지 로딩 중"
-      className={`${layoutClass} ${themeClasses} isolate overflow-hidden`}
+      className={`${layoutClass} ${themeClasses} isolate ${variant === "fullscreen" ? "overflow-hidden" : "overflow-clip"}`}
     >
       <div
         aria-hidden="true"
