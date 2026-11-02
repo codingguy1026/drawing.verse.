@@ -29,6 +29,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
   const [universe, setUniverse] = useState<UniverseRow | null>(null);
   const [planets, setPlanets] = useState<UniverseRow[]>([]);
   const [parentUniverse, setParentUniverse] = useState<ParentUniverse | null>(null);
+  const [siblingPlanets, setSiblingPlanets] = useState<UniverseRow[]>([]);
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [profiles, setProfiles] = useState<Record<string, ProfileRow>>({});
   const [systems, setSystems] = useState<StellarSystemRow[]>([]);
@@ -57,13 +58,19 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
       if (u.error || !u.data) { setNotFound(true); setLoading(false); return; }
 
       const parentSlug = (u.data as UniverseRow).parent_slug;
-      const parentResult = parentSlug
-        ? await supabase.from("universes").select("slug,name").eq("slug", parentSlug).maybeSingle()
-        : null;
+      const [parentResult, siblingsResult] = await Promise.all([
+        parentSlug
+          ? supabase.from("universes").select("slug,name").eq("slug", parentSlug).maybeSingle()
+          : Promise.resolve(null),
+        parentSlug
+          ? supabase.from("universes").select("id,slug,name,description,icon").eq("parent_slug", parentSlug).neq("slug", slug).order("name")
+          : Promise.resolve(null),
+      ]);
       if (ignore) return;
       setParentUniverse(parentSlug
         ? (parentResult?.data as ParentUniverse | null) ?? { slug: parentSlug, name: parentSlug }
         : null);
+      setSiblingPlanets((siblingsResult?.data as UniverseRow[] | null) ?? []);
 
       const nextPosts = (p.data as PostRow[] | null) ?? [];
       const authorIds = [...new Set(nextPosts.map((post) => post.user_id).filter((id): id is string => Boolean(id)))];
@@ -142,8 +149,25 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
         <a href="#universe-info" className="rounded-xl px-4 py-2 text-sm font-bold hover:bg-violet-50 dark:hover:bg-white/10">정보</a>
       </nav>
       {!universe.parent_slug && <section id="universe-planets" aria-label="소속 행성" className="mt-7 scroll-mt-24 rounded-3xl border border-violet-200 bg-white/80 p-6 dark:border-violet-400/20 dark:bg-white/5"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-widest text-violet-500">Planetary Universes</p><h2 className="mt-1 text-2xl font-black">소속 행성</h2></div>{canCreateSystem && !universe.parent_slug && <Link href={`/universe/create?parent=${encodeURIComponent(slug)}`} className="rounded-full bg-violet-600 px-5 py-2.5 text-sm font-black text-white"><Plus className="mr-1 inline size-4"/> 행성 만들기</Link>}</div>{planets.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{planets.map(planet => <Link key={planet.id} href={`/universe/${encodeURIComponent(planet.slug)}`} className="rounded-2xl border border-violet-100 bg-violet-50/70 p-5 transition hover:border-violet-400 dark:border-white/10 dark:bg-white/5"><span className="text-3xl">{planet.icon || '🪐'}</span><h3 className="mt-2 font-black">{planet.name}</h3><p className="mt-1 line-clamp-2 text-sm text-slate-500">{planet.description}</p></Link>)}</div> : <p className="mt-4 text-sm text-slate-500">아직 소속 행성이 없어요.</p>}</section>}
-      {universe.parent_slug && <section aria-label="행성 소속 정보" className="mt-7 rounded-3xl border border-violet-200 bg-white/80 p-5 dark:border-violet-400/20 dark:bg-white/5 sm:p-6"><p className="text-xs font-black uppercase tracking-widest text-violet-500">Planet Overview</p><h2 className="mt-1 text-xl font-black">이 행성의 소속</h2><p className="mt-2 text-sm text-slate-500 dark:text-white/60">이 행성은 상위 유니버스에 속해 있어요. 다른 행성을 둘러보려면 상위 유니버스로 이동하세요.</p><Link href={`/universe/${encodeURIComponent(universe.parent_slug)}`} className="mt-4 inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-bold text-violet-700 hover:bg-violet-100 dark:border-violet-400/20 dark:bg-violet-500/10 dark:text-violet-200"><ArrowLeft className="size-4" /> {parentUniverse?.name ?? "상위 유니버스"}로 돌아가기</Link></section>}
-      {sportsConfig && <SportsPanel key={slug} config={sportsConfig}/>}
+      {universe.parent_slug && <section aria-label="행성 소속 정보" className="mt-7 rounded-3xl border border-violet-200 bg-white/80 p-5 dark:border-violet-400/20 dark:bg-white/5 sm:p-6"><p className="text-xs font-black uppercase tracking-widest text-violet-500">Planet Overview</p><h2 className="mt-1 text-xl font-black">이 행성의 소속</h2><p className="mt-2 text-sm text-slate-500 dark:text-white/60">이 행성은 상위 유니버스에 속해 있어요. 다른 행성을 둘러보려면 상위 유니버스로 이동하세요.</p><Link href={`/universe/${encodeURIComponent(universe.parent_slug)}`} className="mt-4 inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-bold text-violet-700 hover:bg-violet-100 dark:border-violet-400/20 dark:bg-violet-500/10 dark:text-violet-200"><ArrowLeft className="size-4" /> {parentUniverse?.name ?? "상위 유니버스"}로 돌아가기</Link>
+        <div className="mt-6 border-t border-slate-200 pt-5 dark:border-white/10">
+          <h3 className="text-base font-black">같은 항성의 다른 행성</h3>
+          {siblingPlanets.length ? (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {siblingPlanets.map(planet => (
+                <Link key={planet.id} href={`/universe/${encodeURIComponent(planet.slug)}`} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-violet-400 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-violet-500/10">
+                  <span className="text-xl" aria-hidden="true">{planet.icon || "🪐"}</span>
+                  <p className="mt-2 truncate text-sm font-black" title={planet.name}>{planet.name}</p>
+                  {planet.description && <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-white/60">{planet.description}</p>}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-slate-500 dark:text-white/60">둘러볼 다른 행성이 아직 없어요.</p>
+          )}
+        </div>
+      </section>}
+      {sportsConfig && <SportsPanel key={slug} config={sportsConfig}/>} 
       <StellarSystemsSection universeSlug={universe.slug} systems={systems} canCreate={canCreateSystem}/>
       {!!universe.sections?.length && <nav aria-label="게시글 섹션" className="my-6 flex flex-wrap gap-2">{[null, ...universe.sections].map(s => <button key={s ?? '__all'} aria-pressed={section === s} onClick={() => setSection(s)} className={cn("rounded-xl border px-4 py-2 text-sm", section === s && "bg-violet-600 text-white")}>{s ?? '전체'}</button>)}</nav>}
       <div className="relative z-10 -mt-5 px-3 sm:px-7"><div className="inline-flex max-w-full items-center gap-1 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-[0_12px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/95"><button onClick={() => setFeedMode("popular")} className={cn("inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold", feedMode === "popular" ? "bg-violet-50 text-violet-700 dark:bg-violet-500/15 dark:text-violet-200" : "text-slate-600 dark:text-white/75")}><Star className="size-4"/> 인기</button><Link href="/gallery" className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-white/75"><ImageIcon className="size-4"/> 갤러리</Link><a href="#universe-info" className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-white/75"><Info className="size-4"/> 정보</a></div></div>
