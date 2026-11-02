@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 export type VerseLoadingPhase = "connecting" | "rendering" | "ready" | "delayed";
+type LoadingVariant = "fullscreen" | "inline" | "overlay";
 
 type VerseLoadingSceneProps = {
   eyebrow?: string;
@@ -11,250 +11,137 @@ type VerseLoadingSceneProps = {
   subtitle?: string;
   mode?: "auto" | "light" | "dark";
   phase?: VerseLoadingPhase;
+  variant?: LoadingVariant;
 };
 
-const loadingStages: Record<VerseLoadingPhase, { label: string; detail: string; step: number; width: string }> = {
-  connecting: {
-    label: "목적지와 연결하는 중",
-    detail: "페이지 전환을 요청하고 있어요.",
-    step: 1,
-    width: "32%",
-  },
-  delayed: {
-    label: "서버 응답을 기다리는 중",
-    detail: "조금 오래 걸리고 있지만 연결을 시도하고 있어요.",
-    step: 1,
-    width: "32%",
-  },
-  rendering: {
-    label: "새로운 세계를 그리는 중",
-    detail: "목적지에 도착해 화면을 표시하고 있어요.",
-    step: 2,
-    width: "70%",
-  },
-  ready: {
-    label: "새로운 세계에 도착했어요!",
-    detail: "페이지 전환이 완료됐어요.",
-    step: 3,
-    width: "100%",
-  },
+const stageCopy: Record<VerseLoadingPhase, string> = {
+  connecting: "다음 페이지에 연결하는 중",
+  delayed: "응답을 기다리고 있어요",
+  rendering: "페이지를 화면에 표시하는 중",
+  ready: "준비 완료",
 };
 
 const stars = [
-  { left: "12%", top: "21%", delay: 0.1 },
-  { left: "27%", top: "72%", delay: 0.9 },
-  { left: "72%", top: "16%", delay: 1.5 },
-  { left: "86%", top: "64%", delay: 0.4 },
-  { left: "59%", top: "85%", delay: 1.1 },
-  { left: "18%", top: "48%", delay: 1.8 },
-  { left: "80%", top: "39%", delay: 0.7 },
+  { top: "16%", left: "18%", delay: 0 },
+  { top: "28%", left: "82%", delay: 0.6 },
+  { top: "72%", left: "11%", delay: 1.2 },
+  { top: "81%", left: "75%", delay: 0.3 },
+  { top: "49%", left: "91%", delay: 1.7 },
 ];
-
-const newbornStars = [
-  { x: -100, y: -58, delay: 0.2, color: "bg-sky-400" },
-  { x: 96, y: -72, delay: 0.31, color: "bg-fuchsia-400" },
-  { x: -112, y: 46, delay: 0.42, color: "bg-violet-400" },
-  { x: 98, y: 75, delay: 0.53, color: "bg-sky-300" },
-  { x: 14, y: -115, delay: 0.27, color: "bg-white" },
-  { x: -21, y: 114, delay: 0.48, color: "bg-fuchsia-300" },
-];
-
-// Actual elapsed time since this loading scene was mounted. It is not a download estimate.
-function ElapsedLoadingTime({ finished }: { finished: boolean }) {
-  const [startedAt] = useState(() => Date.now());
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    const update = () => setElapsed((Date.now() - startedAt) / 1000);
-    update();
-    if (finished) return;
-    const interval = window.setInterval(update, 200);
-    return () => window.clearInterval(interval);
-  }, [startedAt, finished]);
-
-  return <span className="tabular-nums">{elapsed.toFixed(1)}초 경과</span>;
-}
 
 export default function VerseLoadingScene({
-  eyebrow = "Connecting worlds",
-  title = "새로운 우주를 여는 중",
-  subtitle = "당신의 다음 세계를 준비하고 있어요.",
+  eyebrow = "VERSE NAVIGATOR",
+  title = "새로운 페이지를 여는 중",
+  subtitle = "잠시만요, 다음 세계를 준비하고 있어요.",
   mode = "auto",
   phase = "connecting",
+  variant = "fullscreen",
 }: VerseLoadingSceneProps) {
   const reduceMotion = useReducedMotion();
-  const loadingStage = loadingStages[phase];
-  const finished = phase === "ready";
-  const dark = mode === "dark";
-  const light = mode === "light";
-  const background = dark
-    ? "bg-[#050714] text-white"
-    : light
-      ? "bg-[#fafbff] text-[#18213b]"
-      : "bg-[#fafbff] text-[#18213b] dark:bg-[#050714] dark:text-white";
-  const subtleText = dark
-    ? "text-white/50"
-    : light
-      ? "text-slate-500"
-      : "text-slate-500 dark:text-white/50";
-  const orbitBorder = dark
-    ? "border-white/15"
-    : light
-      ? "border-violet-300/45"
-      : "border-violet-300/45 dark:border-white/15";
+  const isDone = phase === "ready";
+  const themeClasses = mode === "dark"
+    ? "bg-[#0b0a1c] text-[#f5f1ff]"
+    : mode === "light"
+      ? "bg-[#fbf9ff] text-[#302440]"
+      : "bg-[#fbf9ff] text-[#302440] dark:bg-[#0b0a1c] dark:text-[#f5f1ff]";
+  const subtleClasses = mode === "dark"
+    ? "text-[#bbb0da]"
+    : mode === "light"
+      ? "text-[#776d8b]"
+      : "text-[#776d8b] dark:text-[#bbb0da]";
+  const surfaceClasses = mode === "dark"
+    ? "border-white/10 bg-white/[0.04]"
+    : mode === "light"
+      ? "border-violet-200/70 bg-white/75"
+      : "border-violet-200/70 bg-white/75 dark:border-white/10 dark:bg-white/[0.04]";
+  const layoutClass =
+    variant === "fullscreen"
+      ? "fixed inset-0 z-[2147483647] h-[100dvh] w-screen"
+      : variant === "overlay"
+        ? "absolute inset-0 z-[70] min-h-full"
+        : "relative w-full min-h-[calc(100dvh-9rem)]";
+  const innerClass =
+    variant === "overlay"
+      ? "sticky top-0 flex min-h-[min(680px,calc(100dvh-7rem))] w-full items-center justify-center px-5 py-12"
+      : "flex min-h-full w-full items-center justify-center px-5 py-12";
 
   return (
-    <main
-      className={`fixed inset-0 z-[2147483647] flex h-[100dvh] w-screen items-center justify-center overflow-hidden ${background}`}
+    <div
       role="status"
       aria-live="polite"
-      aria-label="Drawing Verse 페이지를 불러오는 중"
+      aria-label="Drawing Verse 페이지 로딩 중"
+      className={`${layoutClass} ${themeClasses} isolate overflow-hidden`}
     >
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_38%,rgba(149,115,255,0.18),transparent_48%),radial-gradient(ellipse_at_12%_80%,rgba(66,196,236,0.11),transparent_38%),linear-gradient(180deg,#ffffff,#f4f5ff)] ${dark ? "hidden" : light ? "" : "dark:hidden"}`}
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_32%,rgba(167,139,250,0.17),transparent_50%),radial-gradient(circle_at_88%_87%,rgba(249,112,148,0.08),transparent_38%)]"
       />
-      <div
-        aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgba(115,67,249,0.28),transparent_45%),radial-gradient(ellipse_at_78%_70%,rgba(36,147,203,0.13),transparent_40%),linear-gradient(180deg,#080a1c,#03040c)] ${light ? "hidden" : dark ? "" : "hidden dark:block"}`}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(142,130,199,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(142,130,199,0.08)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_72%)]"
-      />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        {stars.map((star, index) => (
-          <motion.span
-            key={index}
-            className={`absolute block h-1 w-1 rounded-full bg-violet-400 shadow-[0_0_12px_rgba(167,139,250,0.85)] ${dark ? "bg-white/75" : light ? "" : "dark:bg-white/75"}`}
-            style={{ left: star.left, top: star.top }}
-            animate={reduceMotion ? undefined : { opacity: [0.25, 0.9, 0.25], scale: [0.8, 1.35, 0.8] }}
-            transition={{ duration: 2.9, delay: star.delay, repeat: Infinity, ease: "easeInOut" }}
-          />
-        ))}
-      </div>
-
-      <section className="relative z-10 flex w-full max-w-md flex-col items-center px-5 text-center">
-        <div className="relative mb-6 flex h-60 w-60 items-center justify-center sm:h-64 sm:w-64" aria-hidden="true">
-          <motion.div
-            className="absolute inset-[14%] rounded-full bg-violet-500/25 blur-[45px]"
-            animate={reduceMotion ? undefined : { scale: [0.55, 1.2, 1], opacity: [0.25, 0.9, 0.6] }}
-            transition={{ duration: 1.45, ease: "easeOut" }}
-          />
-
-          {/* A tiny point of light becomes an expanding new universe. */}
-          {[0, 1].map((wave) => (
-            <motion.div
-              key={wave}
-              className="absolute inset-[25%] rounded-full border border-violet-400/45 shadow-[0_0_28px_rgba(167,139,250,0.23)]"
-              initial={reduceMotion ? false : { scale: 0.24, opacity: 0 }}
-              animate={reduceMotion ? undefined : { scale: [0.24, 1.8, 2.35], opacity: [0, 0.55, 0] }}
-              transition={{ duration: 2.8, delay: 0.35 + wave * 1.4, ease: "easeOut", repeat: Infinity }}
-            />
-          ))}
-
-          <motion.div
-            className={`absolute inset-2 rounded-full border border-dashed ${orbitBorder}`}
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.4 }}
-            animate={reduceMotion ? undefined : { opacity: 1, scale: 1, rotate: 360 }}
-            transition={reduceMotion ? undefined : { opacity: { duration: 0.75 }, scale: { duration: 1 }, rotate: { duration: 28, ease: "linear", repeat: Infinity } }}
-          >
-            <span className="absolute left-1/2 -top-[5px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-sky-400 shadow-[0_0_18px_rgba(56,189,248,0.9)]" />
-          </motion.div>
-
-          <motion.div
-            className={`absolute inset-8 rounded-full border ${orbitBorder}`}
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.5 }}
-            animate={reduceMotion ? undefined : { opacity: 1, scale: 1, rotate: -360 }}
-            transition={reduceMotion ? undefined : { opacity: { duration: 0.85 }, scale: { duration: 0.95 }, rotate: { duration: 19, ease: "linear", repeat: Infinity } }}
-          >
-            <span className="absolute -right-[5px] top-1/2 h-[10px] w-[10px] -translate-y-1/2 rounded-full bg-fuchsia-400 shadow-[0_0_18px_rgba(232,121,249,0.8)]" />
-          </motion.div>
-
-          {newbornStars.map((star, index) => (
+      <div className={innerClass}>
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          {stars.map((star, index) => (
             <motion.span
               key={index}
-              className={`absolute left-1/2 top-1/2 z-10 h-[5px] w-[5px] rounded-full shadow-[0_0_12px_currentColor] ${star.color}`}
-              initial={reduceMotion ? { x: star.x, y: star.y, opacity: 0.75 } : { x: 0, y: 0, opacity: 0, scale: 0.1 }}
-              animate={reduceMotion ? undefined : {
-                x: [0, star.x * 1.12, star.x],
-                y: [0, star.y * 1.12, star.y],
-                scale: [0.1, 1.35, 0.9],
-                opacity: [0, 1, 0.65],
-              }}
-              transition={{ duration: 1.2, delay: star.delay, ease: "easeOut" }}
+              className="absolute h-1 w-1 rounded-full bg-violet-400/75 shadow-[0_0_12px_rgba(139,92,246,0.5)]"
+              style={{ top: star.top, left: star.left }}
+              animate={reduceMotion ? undefined : { opacity: [0.3, 0.95, 0.3], scale: [1, 1.4, 1] }}
+              transition={{ duration: 2.8, delay: star.delay, ease: "easeInOut", repeat: Infinity }}
             />
           ))}
-
-          <motion.div
-            className="relative flex h-[94px] w-[94px] items-center justify-center rounded-full border border-white/30 bg-[radial-gradient(circle_at_29%_22%,#d3c1ff_0%,#a28afa_20%,#7257ed_55%,#3423a3_100%)] shadow-[0_20px_65px_rgba(106,77,229,0.48),inset_0_2px_3px_rgba(255,255,255,0.4)]"
-            initial={reduceMotion ? false : { scale: 0.06, opacity: 0, filter: "blur(9px)" }}
-            animate={reduceMotion ? undefined : { scale: [0.06, 1.2, 1], opacity: [0, 1, 1], filter: "blur(0px)" }}
-            transition={{ duration: 1, times: [0, 0.75, 1], ease: "easeOut" }}
-          >
-            <span className="text-[30px] font-black tracking-[-0.14em] text-white [text-shadow:0_2px_10px_rgba(32,16,90,0.35)]">
-              D<span className="pr-1 text-[#9deeff]">V</span>
-            </span>
-            <span className="absolute right-2 top-3 text-xs text-white/85">✦</span>
-            <motion.span
-              className="pointer-events-none absolute inset-1 rounded-full border border-white/35"
-              animate={reduceMotion ? undefined : { opacity: [0.15, 0.55, 0.15] }}
-              transition={{ duration: 2.8, ease: "easeInOut", repeat: Infinity }}
-            />
-          </motion.div>
         </div>
 
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.36em] text-violet-500 dark:text-violet-300">
-          Drawing Verse
-        </p>
-        <h1 className="mt-3 text-[25px] font-black tracking-[-0.05em] sm:text-[29px]">
-          {title}
-        </h1>
-        <p className={`mt-2 text-sm leading-6 ${subtleText}`}>{subtitle}</p>
-
-        <div className="mt-8 w-full max-w-[310px]">
-          <div className={`mb-3 flex items-center justify-between gap-3 text-[11px] font-semibold ${subtleText}`}>
-            <span aria-live="polite">{loadingStage.label}</span>
-            <span className="shrink-0 font-bold tabular-nums">
-              {finished ? "완료" : `${loadingStage.step} / 3단계`}
-            </span>
-          </div>
-
-          <div
-            className={`relative h-2 overflow-hidden rounded-full ${dark ? "bg-white/10" : light ? "bg-violet-200/65" : "bg-violet-200/65 dark:bg-white/10"}`}
-            role="progressbar"
-            aria-label={loadingStage.label}
-            aria-valuetext={finished ? "페이지 이동 완료" : `${loadingStage.step}단계: ${loadingStage.label}`}
-          >
+        <section className={`relative z-10 flex w-full max-w-[360px] flex-col items-center rounded-[30px] border px-6 py-9 text-center shadow-[0_22px_72px_rgba(96,65,154,0.09)] backdrop-blur-xl sm:px-9 ${surfaceClasses}`}>
+          <div className="relative mb-7 flex h-36 w-36 items-center justify-center" aria-hidden="true">
+            <div className="absolute inset-5 rounded-full bg-violet-400/20 blur-2xl" />
             <motion.div
-              className="relative h-full overflow-hidden rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-sky-400 shadow-[0_0_18px_rgba(139,92,246,0.65)]"
-              initial={false}
-              animate={{ width: loadingStage.width }}
-              transition={reduceMotion ? { duration: 0 } : { duration: 0.4, ease: "easeOut" }}
+              className="absolute inset-1 rounded-full border border-dashed border-violet-400/50"
+              animate={reduceMotion ? undefined : { rotate: 360 }}
+              transition={{ duration: 15, ease: "linear", repeat: Infinity }}
             >
-              {!finished && !reduceMotion && (
-                <motion.span
-                  className="absolute inset-y-0 left-0 w-1/3 bg-white/50 blur-[3px]"
-                  animate={{ x: ["-100%", "350%"] }}
-                  transition={{ duration: 1.1, ease: "easeInOut", repeat: Infinity }}
-                />
-              )}
+              <span className="absolute -top-1 left-1/2 h-2 w-2 rounded-full bg-[#fb728e] shadow-[0_0_14px_rgba(251,114,142,0.65)]" />
+            </motion.div>
+            <motion.div
+              className="absolute inset-5 rounded-full border border-violet-300/45"
+              animate={reduceMotion ? undefined : { rotate: -360 }}
+              transition={{ duration: 10, ease: "linear", repeat: Infinity }}
+            >
+              <span className="absolute bottom-1 left-0 h-2 w-2 rounded-full bg-[#8e74f8] shadow-[0_0_14px_rgba(142,116,248,0.75)]" />
+            </motion.div>
+            <motion.div
+              className="relative flex h-[76px] w-[76px] items-center justify-center rounded-[23px] border border-white/60 bg-gradient-to-br from-[#ff758d] via-[#ad8cff] to-[#7658ea] text-2xl font-black tracking-[-0.14em] text-white shadow-[0_14px_34px_rgba(120,83,220,0.25)]"
+              animate={reduceMotion ? undefined : { y: [0, -4, 0] }}
+              transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
+            >
+              DV<span className="absolute -right-1 -top-2 text-sm tracking-normal">✦</span>
             </motion.div>
           </div>
 
-          <p className={`mt-3 min-h-[20px] text-xs leading-5 ${subtleText}`} aria-live="polite">
-            {loadingStage.detail}
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.27em] text-[#8560e8] dark:text-[#c4a8ff]">
+            DRAWING VERSE
           </p>
-          <div className={`mt-2 flex items-center justify-between gap-3 text-[10px] font-semibold ${subtleText}`}>
-            <span className="uppercase tracking-[0.2em]">{eyebrow}</span>
-            <ElapsedLoadingTime finished={finished} />
+          <h2 className="mt-3 text-[21px] font-extrabold tracking-[-0.05em] sm:text-[23px]">{title}</h2>
+          <p className={`mt-2 text-[13px] leading-6 ${subtleClasses}`}>{subtitle}</p>
+
+          <div className="mt-7 w-full" role="progressbar" aria-label={stageCopy[phase]} aria-valuetext={stageCopy[phase]}>
+            <div className="relative h-[3px] overflow-hidden rounded-full bg-violet-200/70 dark:bg-white/15">
+              {isDone ? (
+                <div className="h-full w-full rounded-full bg-gradient-to-r from-[#fb728e] to-[#8767ef]" />
+              ) : (
+                <motion.div
+                  className="absolute inset-y-0 w-[38%] rounded-full bg-gradient-to-r from-[#ff7995] via-[#a68aff] to-[#8062ec]"
+                  initial={{ x: "-110%" }}
+                  animate={reduceMotion ? undefined : { x: ["-110%", "290%"] }}
+                  transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                />
+              )}
+            </div>
+            <div className={`mt-3 flex items-center justify-between gap-3 text-[11px] font-semibold ${subtleClasses}`}>
+              <span aria-live="polite">{stageCopy[phase]}</span>
+              <span className="shrink-0 text-[#9a75ed]">{isDone ? "✓" : "✦ ✦ ✦"}</span>
+            </div>
           </div>
-        </div>
-        <p className={`mt-9 text-[10px] tracking-[0.22em] ${subtleText}`}>
-          EVERY IDEA HAS A UNIVERSE
-        </p>
-      </section>
-    </main>
+          <p className={`mt-7 text-[10px] font-bold uppercase tracking-[0.19em] ${subtleClasses}`}>{eyebrow}</p>
+        </section>
+      </div>
+    </div>
   );
 }
