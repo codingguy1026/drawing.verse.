@@ -68,15 +68,31 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
     }
   }, [items, focus]);
 
-  const filtered = items.filter(item =>
+  // Root universes appear first. Their planets stay nested under them.
+  // A planet remains discoverable if its parent was removed by external filters.
+  const availableSlugs = new Set(items.map(item => item.slug));
+  const roots = items.filter(item => !item.parentSlug || !availableSlugs.has(item.parentSlug));
+  const matchesQuery = (item: UniverseItem) =>
     [item.name, item.description, item.category, item.slug]
-      .join(" ").toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
+      .join(" ").toLocaleLowerCase().includes(query.trim().toLocaleLowerCase());
+  const filtered = roots.filter(item =>
+    matchesQuery(item) || items.some(child => child.parentSlug === item.slug && matchesQuery(child))
   );
   const universe = focus.level === "galaxy" ? null : focus.universe;
   const system = focus.level === "system" ? focus.system : null;
-  const back = () => setFocus(focus.level === "system" && universe
-    ? { level: "universe", universe }
-    : { level: "galaxy" });
+  const parentUniverse = universe?.parentSlug
+    ? items.find(item => item.slug === universe.parentSlug)
+    : null;
+  const planets = universe ? items.filter(item => item.parentSlug === universe.slug) : [];
+  const back = () => {
+    if (focus.level === "system" && universe) {
+      setFocus({ level: "universe", universe });
+    } else if (parentUniverse) {
+      setFocus({ level: "universe", universe: parentUniverse });
+    } else {
+      setFocus({ level: "galaxy" });
+    }
+  };
 
   return (
     <section aria-label="Cosmic Galaxy Explorer" className="dv-galaxy-root relative overflow-hidden rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,.07)] dark:border-white/10 dark:bg-[#0d101b] dark:text-white">
@@ -87,7 +103,7 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
             {system ? system.name : universe ? universe.name : "우주 탐험 지도"}
           </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {system ? "항성계 상세 정보" : universe ? "이 우주에 속한 항성계를 탐험해 보세요." : `${items.length}개의 유니버스를 탐험할 수 있어요.`}
+            {system ? "항성계 상세 정보" : universe ? "이 유니버스에 속한 행성과 항성계를 탐험해 보세요." : `${items.length}개의 유니버스를 탐험할 수 있어요.`}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -105,7 +121,7 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
                 {focus.level === "galaxy" ? "Universe constellation" : focus.level === "universe" ? "Stellar systems" : "System overview"}
               </span>
               <span className="rounded-full border border-violet-200 bg-white/80 px-3 py-1 text-xs font-bold text-violet-700 dark:border-violet-400/20 dark:bg-white/10 dark:text-violet-200">
-                {focus.level === "galaxy" ? filtered.length : focus.level === "universe" ? systems.length : 1} objects
+                {focus.level === "galaxy" ? filtered.length : focus.level === "universe" ? planets.length + systems.length : 1} objects
               </span>
             </div>
             {focus.level === "galaxy" ? (
@@ -120,7 +136,7 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
                   {filtered.map(item => <button key={item.id} type="button" onClick={() => setFocus({ level: "universe", universe: item })} className="group flex min-w-0 flex-col items-center gap-3 rounded-2xl border border-violet-100/80 bg-white/70 px-3 py-6 text-center transition hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-violet-500 dark:border-white/10 dark:bg-white/[.06]">
                     <span className="grid size-16 place-items-center rounded-full border-2 border-white/70 text-2xl shadow-[inset_-12px_-10px_20px_#0002,0_10px_24px_#0002] transition group-hover:scale-105 sm:size-20" style={{background:`radial-gradient(circle at 30% 25%, #fff, ${accent(item.slug)} 52%, #22213b)`}} aria-hidden="true">{(item as UniverseItem & {icon?: string}).icon || "✦"}</span>
                     <span className="w-full truncate text-sm font-black">{item.name}</span>
-                    <span className="max-w-full truncate text-[11px] text-slate-500 dark:text-slate-400">{item.category || "Universe"}</span>
+                    <span className="max-w-full truncate text-[11px] text-slate-500 dark:text-slate-400">{items.some(child => child.parentSlug === item.slug) ? `상위 유니버스 · 행성 ${items.filter(child => child.parentSlug === item.slug).length}개` : item.parentSlug ? "행성" : item.category || "Universe"}</span>
                   </button>)}
                 </div> : <div className="rounded-2xl border border-dashed border-violet-200 bg-white/60 p-10 text-center text-sm text-slate-500 dark:border-white/15 dark:bg-white/5">일치하는 유니버스가 없어요.</div>}
               </>
@@ -128,6 +144,21 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
               <div className="flex flex-col items-center">
                 <div className="mb-6 grid size-24 place-items-center rounded-full border-4 border-white/80 text-3xl shadow-xl" style={{background:`radial-gradient(circle at 30% 25%, #fff, ${accent(focus.universe.slug)} 52%, #22213b)`}}><Orbit className="size-10 text-white"/></div>
                 <h3 className="mb-5 text-center text-xl font-black">{focus.universe.name}</h3>
+                {parentUniverse && <p className="mb-5 text-xs font-bold text-violet-600 dark:text-violet-300">{parentUniverse.name}에 속한 행성</p>}
+                {planets.length > 0 && (
+                  <section aria-label="소속 행성" className="mb-8 w-full">
+                    <h4 className="mb-3 text-sm font-black text-slate-700 dark:text-slate-200">🪐 소속 행성 · {planets.length}개</h4>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {planets.map(planet => (
+                        <button key={planet.id} type="button" onClick={() => setFocus({ level: "universe", universe: planet })} className="flex min-w-0 flex-col items-center gap-3 rounded-2xl border border-violet-100 bg-white/80 p-5 text-center transition hover:border-violet-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-violet-500 dark:border-white/10 dark:bg-white/5">
+                          <span className="grid size-14 place-items-center rounded-full text-2xl shadow-md" style={{background:`radial-gradient(circle at 30% 25%, #fff, ${accent(planet.slug)} 60%, #29213a)`}} aria-hidden="true">{(planet as UniverseItem & {icon?: string}).icon || "✦"}</span>
+                          <span className="w-full truncate text-xs font-black">{planet.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                <h4 className="mb-3 self-start text-sm font-black text-slate-700 dark:text-slate-200">항성계</h4>
                 {loading ? <p className="py-10 text-sm text-slate-500" role="status">항성계를 불러오는 중...</p> : error ? <p className="py-10 text-sm text-rose-600" role="alert">항성계 정보를 불러오지 못했어요.</p> : systems.length ? (
                   <div className="dv-galaxy-system-grid grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
                     {systems.map(s => <button key={s.id} type="button" onClick={() => setFocus({ level: "system", universe: focus.universe, system: s })} className="flex min-w-0 flex-col items-center gap-3 rounded-2xl border border-violet-100 bg-white/80 p-5 text-center transition hover:border-violet-300 hover:shadow-md dark:border-white/10 dark:bg-white/5">
@@ -152,7 +183,7 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
             <p className="text-[10px] font-black uppercase tracking-[.2em] text-[#8a61dd]">Explorer details</p>
             <h3 className="mt-2 text-xl font-black">{system ? system.name : universe ? universe.name : "탐험 안내"}</h3>
             <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600 dark:text-slate-300">
-              {system ? system.description || "이 항성계의 이야기를 만나보세요." : universe ? universe.description || "아직 소개글이 없어요." : "행성을 선택하면 유니버스의 정보와 항성계를 탐색할 수 있어요. 원하는 세계를 선택해 보세요."}
+              {system ? system.description || "이 항성계의 이야기를 만나보세요." : universe ? universe.description || "아직 소개글이 없어요." : "상위 유니버스를 선택하면 그곳에 속한 행성과 항성계를 탐색할 수 있어요. 원하는 세계를 선택해 보세요."}
             </p>
           </div>
           {universe && <div className="flex items-center gap-4 border-y border-slate-100 py-4 text-xs font-bold text-slate-500 dark:border-white/10">
@@ -168,7 +199,7 @@ export default function CosmicGalaxyExplorer({ items = [] }: { items?: UniverseI
         </aside>
       </div>
       <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-5 py-3 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:text-slate-400 sm:px-7">
-        <span>GALAXY → UNIVERSE → STELLAR SYSTEM</span>
+        <span>GALAXY → UNIVERSE → PLANET / STELLAR SYSTEM</span>
         <span>Drawing Verse · Explore your worlds</span>
       </footer>
     </section>
