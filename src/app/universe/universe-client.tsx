@@ -27,6 +27,7 @@ type UniverseRow = {
   created_at: string | null;
   tags?: string[] | null;
   icon?: string | null;
+  parent_slug?: string | null;
 };
 
 type SortMode = "popular" | "newest" | "active";
@@ -160,6 +161,7 @@ export default function UniversePage() {
             updatedAt: row.created_at ?? "",
             tags: Array.isArray(row.tags) ? row.tags : [],
             icon: row.icon ?? "",
+            parentSlug: row.parent_slug ?? null,
           })));
         }
         const { data: auth, error: authError } = await supabase.auth.getUser();
