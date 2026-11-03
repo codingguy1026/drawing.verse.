@@ -30,6 +30,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
   const [planets, setPlanets] = useState<UniverseRow[]>([]);
   const [parentUniverse, setParentUniverse] = useState<ParentUniverse | null>(null);
   const [siblingPlanets, setSiblingPlanets] = useState<UniverseRow[]>([]);
+  const [siblingPlanetsError, setSiblingPlanetsError] = useState(false);
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [profiles, setProfiles] = useState<Record<string, ProfileRow>>({});
   const [systems, setSystems] = useState<StellarSystemRow[]>([]);
@@ -70,6 +71,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
       setParentUniverse(parentSlug
         ? (parentResult?.data as ParentUniverse | null) ?? { slug: parentSlug, name: parentSlug }
         : null);
+      setSiblingPlanetsError(Boolean(siblingsResult?.error));
       setSiblingPlanets((siblingsResult?.data as UniverseRow[] | null) ?? []);
 
       const nextPosts = (p.data as PostRow[] | null) ?? [];
@@ -152,7 +154,9 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
       {universe.parent_slug && <section aria-label="행성 소속 정보" className="mt-7 rounded-3xl border border-violet-200 bg-white/80 p-5 dark:border-violet-400/20 dark:bg-white/5 sm:p-6"><p className="text-xs font-black uppercase tracking-widest text-violet-500">Planet Overview</p><h2 className="mt-1 text-xl font-black">이 행성의 소속</h2><p className="mt-2 text-sm text-slate-500 dark:text-white/60">이 행성은 상위 유니버스에 속해 있어요. 다른 행성을 둘러보려면 상위 유니버스로 이동하세요.</p><Link href={`/universe/${encodeURIComponent(universe.parent_slug)}`} className="mt-4 inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-bold text-violet-700 hover:bg-violet-100 dark:border-violet-400/20 dark:bg-violet-500/10 dark:text-violet-200"><ArrowLeft className="size-4" /> {parentUniverse?.name ?? "상위 유니버스"}로 돌아가기</Link>
         <div className="mt-6 border-t border-slate-200 pt-5 dark:border-white/10">
           <h3 className="text-base font-black">같은 항성의 다른 행성</h3>
-          {siblingPlanets.length ? (
+          {siblingPlanetsError ? (
+            <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">다른 행성 목록을 불러오지 못했어요. 잠시 후 페이지를 새로고침해 주세요.</p>
+          ) : siblingPlanets.length ? (
             <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {siblingPlanets.map(planet => (
                 <Link key={planet.id} href={`/universe/${encodeURIComponent(planet.slug)}`} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-violet-400 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-violet-500/10">
