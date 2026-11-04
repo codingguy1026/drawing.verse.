@@ -31,6 +31,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
   const [parentUniverse, setParentUniverse] = useState<ParentUniverse | null>(null);
   const [siblingPlanets, setSiblingPlanets] = useState<UniverseRow[]>([]);
   const [siblingPlanetsError, setSiblingPlanetsError] = useState(false);
+  const [retryingSiblingPlanets, setRetryingSiblingPlanets] = useState(false);
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [profiles, setProfiles] = useState<Record<string, ProfileRow>>({});
   const [systems, setSystems] = useState<StellarSystemRow[]>([]);
@@ -108,6 +109,29 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
   const filteredPosts = useMemo(() => section ? posts.filter(p => p.category === section) : posts, [posts, section]);
   const sortedPosts = useMemo(() => feedMode === "latest" ? filteredPosts : [...filteredPosts].sort((a,b) => ((b.like_count ?? 0)*2 + (b.comment_count ?? 0)) - ((a.like_count ?? 0)*2 + (a.comment_count ?? 0))), [feedMode, filteredPosts]);
 
+  async function retrySiblingPlanets() {
+    const parentSlug = universe?.parent_slug;
+    if (!parentSlug || retryingSiblingPlanets) return;
+    setRetryingSiblingPlanets(true);
+    try {
+      const { data, error } = await supabase.from("universes")
+        .select("id,slug,name,description,icon")
+        .eq("parent_slug", parentSlug)
+        .neq("slug", slug)
+        .order("name");
+      if (error) {
+        setSiblingPlanetsError(true);
+      } else {
+        setSiblingPlanets((data as UniverseRow[] | null) ?? []);
+        setSiblingPlanetsError(false);
+      }
+    } catch {
+      setSiblingPlanetsError(true);
+    } finally {
+      setRetryingSiblingPlanets(false);
+    }
+  }
+
   async function toggleSubscription() {
     if (!universe || subscriptionBusy || !subscriptionReady) return;
     const user = (await supabase.auth.getUser()).data.user;
@@ -155,7 +179,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
         <div className="mt-6 border-t border-slate-200 pt-5 dark:border-white/10">
           <h3 className="text-base font-black">같은 항성의 다른 행성</h3>
           {siblingPlanetsError ? (
-            <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">다른 행성 목록을 불러오지 못했어요. 잠시 후 페이지를 새로고침해 주세요.</p>
+            <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">다른 행성 목록을 불러오지 못했어요. <button type="button" onClick={retrySiblingPlanets} disabled={retryingSiblingPlanets} className="ml-1 rounded-lg border border-amber-400/50 px-3 py-1.5 font-bold hover:bg-amber-100 disabled:cursor-wait disabled:opacity-60 dark:hover:bg-amber-400/10">{retryingSiblingPlanets ? "다시 불러오는 중..." : "다시 불러오기"}</button></p>
           ) : siblingPlanets.length ? (
             <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {siblingPlanets.map(planet => (
