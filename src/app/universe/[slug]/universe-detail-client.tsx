@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Bell, BellOff, BookOpen, ChevronRight, Compass, Eye, Flame, Image as ImageIcon, Info, MessageCircle, Orbit, PenLine, Plus, ShieldCheck, Sparkles, Star, Sun, Users } from "lucide-react";
 import SportsPanel, { TeamLogo } from "@/components/Sports/SportsPanel";
 import { resolveSportsConfig, safeAsset } from "@/lib/sports/config";
@@ -32,6 +32,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
   const [siblingPlanets, setSiblingPlanets] = useState<UniverseRow[]>([]);
   const [siblingPlanetsError, setSiblingPlanetsError] = useState(false);
   const [retryingSiblingPlanets, setRetryingSiblingPlanets] = useState(false);
+  const siblingRequestId = useRef(0);
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [profiles, setProfiles] = useState<Record<string, ProfileRow>>({});
   const [systems, setSystems] = useState<StellarSystemRow[]>([]);
@@ -47,6 +48,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
 
   useEffect(() => {
     let ignore = false;
+    const requestId = ++siblingRequestId.current;
     async function load() {
       const [u, p, systemsResult, a, childrenResult, operatorResult] = await Promise.all([
         supabase.from("universes").select("*").eq("slug", slug).maybeSingle(),
@@ -72,8 +74,11 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
       setParentUniverse(parentSlug
         ? (parentResult?.data as ParentUniverse | null) ?? { slug: parentSlug, name: parentSlug }
         : null);
-      setSiblingPlanetsError(Boolean(siblingsResult?.error));
-      setSiblingPlanets((siblingsResult?.data as UniverseRow[] | null) ?? []);
+      // An explicit retry may have finished while the initial page load was pending.
+      if (requestId === siblingRequestId.current) {
+        setSiblingPlanetsError(Boolean(siblingsResult?.error));
+        setSiblingPlanets((siblingsResult?.data as UniverseRow[] | null) ?? []);
+      }
 
       const nextPosts = (p.data as PostRow[] | null) ?? [];
       const authorIds = [...new Set(nextPosts.map((post) => post.user_id).filter((id): id is string => Boolean(id)))];
@@ -103,7 +108,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "posts", filter: `universe_slug=eq.${slug}` }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "universes", filter: `slug=eq.${slug}` }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "stellar_systems", filter: `universe_slug=eq.${slug}` }, load).subscribe();
-    return () => { ignore = true; supabase.removeChannel(channel); };
+    return () => { ignore = true; ++siblingRequestId.current; supabase.removeChannel(channel); };
   }, [slug]);
 
   const filteredPosts = useMemo(() => section ? posts.filter(p => p.category === section) : posts, [posts, section]);
@@ -112,6 +117,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
   async function retrySiblingPlanets() {
     const parentSlug = universe?.parent_slug;
     if (!parentSlug || retryingSiblingPlanets) return;
+    const requestId = ++siblingRequestId.current;
     setRetryingSiblingPlanets(true);
     try {
       const { data, error } = await supabase.from("universes")
@@ -119,6 +125,7 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
         .eq("parent_slug", parentSlug)
         .neq("slug", slug)
         .order("name");
+      if (requestId !== siblingRequestId.current) return;
       if (error) {
         setSiblingPlanetsError(true);
       } else {
@@ -126,9 +133,9 @@ export default function UniverseDetailClient({ slug }: { slug: string }) {
         setSiblingPlanetsError(false);
       }
     } catch {
-      setSiblingPlanetsError(true);
+      if (requestId === siblingRequestId.current) setSiblingPlanetsError(true);
     } finally {
-      setRetryingSiblingPlanets(false);
+      if (requestId === siblingRequestId.current) setRetryingSiblingPlanets(false);
     }
   }
 
