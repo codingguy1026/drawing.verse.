@@ -38,6 +38,9 @@ function convert(event: RawEvent, sport: Sport, leagueId: string, league: string
   if (!id || !home || !away || !startsAt) return null;
   const homeScore = score(event.intHomeScore), awayScore = score(event.intAwayScore);
   const currentStatus = status(event);
+  // The existing Match validator requires play-by-play state for live/break games.
+  // The free fixture endpoint does not supply that state, so do not fake it.
+  if (currentStatus === "live" || currentStatus === "break") return null;
   // A missing score is not evidence of a 0:0 result; scheduled games use a placeholder only.
   if (currentStatus === "final" && (homeScore === null || awayScore === null)) return null;
   return {
