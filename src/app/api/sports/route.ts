@@ -1,10 +1,15 @@
 import { parseMatches } from "@/lib/sports/validate";
 import { demoMatches } from "@/lib/sports/demo";
+import { fetchTheSportsDbMatches } from "@/lib/sports/thesportsdb";
 
 export const dynamic = "force-dynamic";
 const reply = (data: unknown, status = 200) => Response.json(data, { status, headers: { "Cache-Control": "no-store" } });
 export async function GET(request: Request) {
   if (new URL(request.url).searchParams.get("demo") === "1") return reply({ mode: "demo", matches: demoMatches() });
+  if (process.env.SPORTS_PROVIDER === "thesportsdb") {
+    try { return reply({ mode: "live", matches: await fetchTheSportsDbMatches() }); }
+    catch { return reply({ error: "스포츠 데이터를 가져오지 못했어요. 잠시 후 다시 시도해 주세요." }, 503); }
+  }
   const endpoint = process.env.SPORTS_FEED_URL;
   if (!endpoint) return reply({ mode: "unconfigured", matches: [] });
   try {
