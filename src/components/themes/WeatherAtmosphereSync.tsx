@@ -21,10 +21,18 @@ const REFRESH_MS = 10 * 60 * 1000;
 
 export default function WeatherAtmosphereSync() {
   const mode = useWeatherStore((state) => state.mode);
+  const weather = useWeatherStore((state) => state.weather);
   const setStatus = useWeatherStore((state) => state.setStatus);
   const setAutomaticWeather = useWeatherStore((state) => state.setAutomaticWeather);
   const timerRef = useRef<number | null>(null);
   const runningRef = useRef(false);
+
+  // Apply the shared atmosphere at the document root so route changes retain it.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.dvWeather = weather;
+    return () => { delete root.dataset.dvWeather; };
+  }, [weather]);
 
   const syncWeather = useCallback(() => {
     if (mode !== "auto" || typeof window === "undefined" || runningRef.current) return;
