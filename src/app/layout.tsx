@@ -6,6 +6,7 @@ import "./tailwind.css";
 import "./globals.css";
 import "./dverse-brand.css";
 import "./dverse-pages.css";
+import "./dverse-weather.css";
 import "./dverse-studio.css";
 import "./liquid-refraction.css";
 
