@@ -207,6 +207,16 @@ export async function GET(request: Request) {
     });
 
     if (!response.ok) {
+      // Do not log the full URL: it contains the private API key.
+      const responseBody = (await response.text()).slice(0, 500);
+      const sanitizedBody = responseBody
+        .replaceAll(rawKey, "[REDACTED]")
+        .replace(/(authKey|serviceKey)=([^&\\s<]+)/gi, "$1=[REDACTED]");
+      console.error("[Verse Atmosphere] KMA upstream rejected request", {
+        provider: hubKey ? "KMA API Hub" : "data.go.kr",
+        status: response.status,
+        response: sanitizedBody,
+      });
       throw new Error(`KMA request failed with ${response.status}`);
     }
 
