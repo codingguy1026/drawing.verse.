@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
-const KMA_ENDPOINT =
+const KMA_HUB_ENDPOINT =
+  "https://apihub.kma.go.kr/api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst";
+const DATA_GO_ENDPOINT =
   "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst";
 
 const KST_OFFSET = 9 * 60 * 60 * 1000;
@@ -169,13 +171,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "location is outside the supported KMA grid" }, { status: 400 });
   }
 
-  const rawKey = process.env.KMA_SERVICE_KEY || process.env.DATA_GO_KR_SERVICE_KEY;
+  const hubKey = process.env.KMA_API_KEY;
+  const rawKey = hubKey || process.env.KMA_SERVICE_KEY || process.env.DATA_GO_KR_SERVICE_KEY;
 
   if (!rawKey) {
     return NextResponse.json(
       {
         configured: false,
-        error: "KMA_SERVICE_KEY is not configured",
+        error: "KMA_API_KEY or a legacy KMA service key is not configured",
       },
       { status: 503 }
     );
@@ -184,7 +187,7 @@ export async function GET(request: Request) {
   const { nx, ny } = toKmaGrid(lat, lon);
   const { baseDate, baseTime } = getLatestUltraShortBase();
   const params = new URLSearchParams({
-    serviceKey: normalizeServiceKey(rawKey),
+    [hubKey ? "authKey" : "serviceKey"]: normalizeServiceKey(rawKey),
     pageNo: "1",
     numOfRows: "1000",
     dataType: "JSON",
@@ -195,7 +198,8 @@ export async function GET(request: Request) {
   });
 
   try {
-    const response = await fetch(`${KMA_ENDPOINT}?${params.toString()}`, {
+    const endpoint = hubKey ? KMA_HUB_ENDPOINT : DATA_GO_ENDPOINT;
+    const response = await fetch(`${endpoint}?${params.toString()}`, {
       cache: "no-store",
       headers: {
         Accept: "application/json",
