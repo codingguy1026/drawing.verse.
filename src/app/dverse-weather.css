@@ -1,0 +1,31 @@
+/* Drawing Verse weather-specific global theme rules. */
+/* Global weather atmosphere: subtle page tint, never replaces light/dark readability. */
+html {
+  --dv-weather-tint: transparent;
+  --dv-weather-accent: #8060f1;
+}
+html[data-dv-weather="sunny"] { --dv-weather-tint: rgba(250, 191, 72, .09); --dv-weather-accent: #cf8b2d; }
+html[data-dv-weather="cloudy"] { --dv-weather-tint: rgba(124, 141, 170, .11); --dv-weather-accent: #7d8ca8; }
+html[data-dv-weather="rainy"] { --dv-weather-tint: rgba(65, 139, 201, .12); --dv-weather-accent: #478ac2; }
+html[data-dv-weather="snowy"] { --dv-weather-tint: rgba(115, 190, 215, .10); --dv-weather-accent: #65a9c6; }
+html[data-dv-weather="night"] { --dv-weather-tint: rgba(102, 82, 181, .12); --dv-weather-accent: #8872d4; }
+html[data-dv-weather="deep_space"] { --dv-weather-tint: transparent; }
+
+html[data-dv-weather] body,
+html[data-dv-weather] .dv-subpage-theme {
+  background-image: linear-gradient(var(--dv-weather-tint), var(--dv-weather-tint)) !important;
+  transition: background-color .3s ease, background-image .3s ease;
+}
+html[data-dv-weather] .dv-subpage-theme {
+  background-color: #fbfafc;
+}
+html.dark[data-dv-weather] .dv-subpage-theme {
+  background-color: #0b0910;
+}
+html[data-dv-weather] :where(.dv-nav-shell, .dv-verse-dock) {
+  border-color: color-mix(in srgb, var(--dv-weather-accent) 26%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-dv-weather] body,
+  html[data-dv-weather] .dv-subpage-theme { transition: none; }
+}
