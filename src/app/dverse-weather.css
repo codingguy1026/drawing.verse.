@@ -1,31 +1,172 @@
-/* Drawing Verse weather-specific global theme rules. */
-/* Global weather atmosphere: subtle page tint, never replaces light/dark readability. */
+/* Drawing Verse immersive weather atmosphere.
+   Global, non-interactive layers keep the existing pages and controls intact. */
 html {
   --dv-weather-tint: transparent;
   --dv-weather-accent: #8060f1;
+  --dv-sky-top: transparent;
+  --dv-sky-bottom: transparent;
+  --dv-sky-glow: transparent;
+  --dv-weather-scene-opacity: 0;
 }
-html[data-dv-weather="sunny"] { --dv-weather-tint: rgba(250, 191, 72, .09); --dv-weather-accent: #cf8b2d; }
-html[data-dv-weather="cloudy"] { --dv-weather-tint: rgba(124, 141, 170, .11); --dv-weather-accent: #7d8ca8; }
-html[data-dv-weather="rainy"] { --dv-weather-tint: rgba(65, 139, 201, .12); --dv-weather-accent: #478ac2; }
-html[data-dv-weather="snowy"] { --dv-weather-tint: rgba(115, 190, 215, .10); --dv-weather-accent: #65a9c6; }
-html[data-dv-weather="night"] { --dv-weather-tint: rgba(102, 82, 181, .12); --dv-weather-accent: #8872d4; }
-html[data-dv-weather="deep_space"] { --dv-weather-tint: transparent; }
+html[data-dv-weather="sunny"] {
+  --dv-weather-tint: rgba(250, 191, 72, .08);
+  --dv-weather-accent: #cf8b2d;
+  --dv-sky-top: rgba(255, 197, 96, .25);
+  --dv-sky-bottom: rgba(255, 239, 197, .08);
+  --dv-sky-glow: rgba(255, 207, 83, .50);
+  --dv-weather-scene-opacity: 1;
+}
+html[data-dv-weather="cloudy"] {
+  --dv-weather-tint: rgba(124, 141, 170, .10);
+  --dv-weather-accent: #7d8ca8;
+  --dv-sky-top: rgba(130, 150, 180, .28);
+  --dv-sky-bottom: rgba(190, 201, 215, .09);
+  --dv-sky-glow: rgba(195, 205, 222, .28);
+  --dv-weather-scene-opacity: 1;
+}
+html[data-dv-weather="rainy"] {
+  --dv-weather-tint: rgba(65, 139, 201, .10);
+  --dv-weather-accent: #478ac2;
+  --dv-sky-top: rgba(52, 94, 145, .35);
+  --dv-sky-bottom: rgba(108, 153, 186, .10);
+  --dv-sky-glow: rgba(92, 150, 208, .22);
+  --dv-weather-scene-opacity: 1;
+}
+html[data-dv-weather="snowy"] {
+  --dv-weather-tint: rgba(115, 190, 215, .10);
+  --dv-weather-accent: #65a9c6;
+  --dv-sky-top: rgba(150, 202, 239, .28);
+  --dv-sky-bottom: rgba(227, 243, 255, .11);
+  --dv-sky-glow: rgba(220, 244, 255, .45);
+  --dv-weather-scene-opacity: 1;
+}
+html[data-dv-weather="night"] {
+  --dv-weather-tint: rgba(102, 82, 181, .10);
+  --dv-weather-accent: #8872d4;
+  --dv-sky-top: rgba(34, 38, 96, .33);
+  --dv-sky-bottom: rgba(69, 49, 118, .09);
+  --dv-sky-glow: rgba(156, 161, 255, .25);
+  --dv-weather-scene-opacity: 1;
+}
+html[data-dv-weather="deep_space"] {
+  --dv-weather-tint: transparent;
+  --dv-weather-scene-opacity: 0;
+}
 
+/* The tint is shared by all routes, even those with opaque page backgrounds. */
 html[data-dv-weather] body,
 html[data-dv-weather] .dv-subpage-theme {
   background-image: linear-gradient(var(--dv-weather-tint), var(--dv-weather-tint)) !important;
-  transition: background-color .3s ease, background-image .3s ease;
+  transition: background-color .6s ease, background-image .6s ease;
 }
-html[data-dv-weather] .dv-subpage-theme {
-  background-color: #fbfafc;
-}
-html.dark[data-dv-weather] .dv-subpage-theme {
-  background-color: #0b0910;
-}
+html[data-dv-weather] .dv-subpage-theme { background-color: #fbfafc; }
+html.dark[data-dv-weather] .dv-subpage-theme { background-color: #0b0910; }
 html[data-dv-weather] :where(.dv-nav-shell, .dv-verse-dock) {
-  border-color: color-mix(in srgb, var(--dv-weather-accent) 26%, transparent);
+  border-color: color-mix(in srgb, var(--dv-weather-accent) 28%, transparent);
+}
+
+/* Viewport-level sky and drifting cloud layers. No DOM listeners or GPU canvas. */
+html[data-dv-weather] body::before,
+html[data-dv-weather] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  z-index: 30;
+  opacity: var(--dv-weather-scene-opacity);
+  transition: opacity 1.2s ease;
+}
+html[data-dv-weather] body::before {
+  background:
+    radial-gradient(ellipse 52vw 45vh at 88% 2%, var(--dv-sky-glow), transparent 75%),
+    linear-gradient(180deg, var(--dv-sky-top) 0%, var(--dv-sky-bottom) 56%, transparent 90%);
+  animation: dv-sky-breathe 16s ease-in-out infinite alternate;
+}
+html[data-dv-weather] body::after {
+  inset: -20vh -35vw;
+  z-index: 31;
+  opacity: 0;
+  background-repeat: repeat;
+}
+
+/* Warm sunbeams and drifting high-altitude haze. */
+html[data-dv-weather="sunny"] body::after {
+  opacity: .62;
+  background-image:
+    radial-gradient(ellipse 18vw 7vh at 16% 20%, rgba(255,255,255,.65), transparent 90%),
+    radial-gradient(ellipse 25vw 9vh at 64% 38%, rgba(255,246,221,.65), transparent 90%),
+    radial-gradient(ellipse 20vw 8vh at 92% 14%, rgba(255,255,255,.55), transparent 90%);
+  background-size: 110vw 75vh;
+  animation: dv-cloud-drift 46s linear infinite;
+}
+html[data-dv-weather="cloudy"] body::after,
+html[data-dv-weather="rainy"] body::after {
+  opacity: .72;
+  background-image:
+    radial-gradient(ellipse 30vw 11vh at 16% 25%, rgba(225,232,242,.48), transparent 95%),
+    radial-gradient(ellipse 36vw 13vh at 65% 45%, rgba(180,196,217,.42), transparent 95%),
+    radial-gradient(ellipse 27vw 10vh at 94% 10%, rgba(221,229,240,.40), transparent 95%);
+  background-size: 115vw 70vh;
+  animation: dv-cloud-drift 32s linear infinite;
+}
+/* Rain streaks layered over moving clouds, visible but never blocking content. */
+html[data-dv-weather="rainy"] body::after {
+  opacity: .62;
+  background-image:
+    repeating-linear-gradient(105deg, transparent 0 24px, rgba(164,211,247,.25) 25px, transparent 27px, transparent 57px),
+    radial-gradient(ellipse 36vw 13vh at 65% 30%, rgba(180,196,217,.32), transparent 95%);
+  background-size: 180px 260px, 115vw 70vh;
+  animation: dv-rain-fall .9s linear infinite;
+}
+html[data-dv-weather="snowy"] body::after {
+  opacity: .82;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(210,235,255,.85) 0 3px, transparent 4px),
+    radial-gradient(circle, rgba(255,255,255,.85) 0 1.5px, transparent 2.5px);
+  background-size: 103px 127px, 173px 191px, 67px 89px;
+  background-position: 0 0, 44px 35px, 19px 58px;
+  animation: dv-snow-fall 11s linear infinite;
+}
+html[data-dv-weather="night"] body::after {
+  opacity: .68;
+  background-image:
+    radial-gradient(circle, rgba(236,237,255,.85) 0 1px, transparent 2px),
+    radial-gradient(circle, rgba(209,216,255,.70) 0 1px, transparent 2px);
+  background-size: 91px 103px, 157px 131px;
+  background-position: 8px 19px, 57px 44px;
+  animation: dv-stars-twinkle 5s ease-in-out infinite alternate;
+}
+html.dark[data-dv-weather] body::before { opacity: calc(var(--dv-weather-scene-opacity) * .72); }
+html.dark[data-dv-weather="rainy"] body::after { opacity: .42; }
+
+@keyframes dv-sky-breathe {
+  from { filter: brightness(.96); }
+  to { filter: brightness(1.10); }
+}
+@keyframes dv-cloud-drift {
+  from { transform: translateX(-5vw); }
+  to { transform: translateX(16vw); }
+}
+@keyframes dv-rain-fall {
+  from { background-position: 0 -260px, 0 0; }
+  to { background-position: -70px 0, 0 0; }
+}
+@keyframes dv-snow-fall {
+  from { background-position: 0 -127px, 44px -191px, 19px -89px; }
+  to { background-position: 42px 127px, -40px 191px, 55px 89px; }
+}
+@keyframes dv-stars-twinkle {
+  from { opacity: .35; }
+  to { opacity: .8; }
 }
 @media (prefers-reduced-motion: reduce) {
   html[data-dv-weather] body,
-  html[data-dv-weather] .dv-subpage-theme { transition: none; }
+  html[data-dv-weather] .dv-subpage-theme,
+  html[data-dv-weather] body::before,
+  html[data-dv-weather] body::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
