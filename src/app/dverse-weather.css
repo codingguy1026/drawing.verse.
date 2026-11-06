@@ -9,15 +9,15 @@ html {
   --dv-weather-scene-opacity: 0;
 }
 html[data-dv-weather="sunny"] {
-  --dv-weather-tint: rgba(250, 191, 72, .08);
+  --dv-weather-tint: transparent;
   --dv-weather-accent: #cf8b2d;
-  --dv-sky-top: rgba(255, 197, 96, .25);
-  --dv-sky-bottom: rgba(255, 239, 197, .08);
-  --dv-sky-glow: rgba(255, 207, 83, .50);
+  --dv-sky-top: rgba(151, 203, 252, .18);
+  --dv-sky-bottom: rgba(221, 239, 255, .025);
+  --dv-sky-glow: rgba(255, 223, 153, .22);
   --dv-weather-scene-opacity: 1;
 }
 html[data-dv-weather="cloudy"] {
-  --dv-weather-tint: rgba(124, 141, 170, .10);
+  --dv-weather-tint: transparent;
   --dv-weather-accent: #7d8ca8;
   --dv-sky-top: rgba(130, 150, 180, .28);
   --dv-sky-bottom: rgba(190, 201, 215, .09);
@@ -25,7 +25,7 @@ html[data-dv-weather="cloudy"] {
   --dv-weather-scene-opacity: 1;
 }
 html[data-dv-weather="rainy"] {
-  --dv-weather-tint: rgba(65, 139, 201, .10);
+  --dv-weather-tint: transparent;
   --dv-weather-accent: #478ac2;
   --dv-sky-top: rgba(52, 94, 145, .35);
   --dv-sky-bottom: rgba(108, 153, 186, .10);
@@ -33,7 +33,7 @@ html[data-dv-weather="rainy"] {
   --dv-weather-scene-opacity: 1;
 }
 html[data-dv-weather="snowy"] {
-  --dv-weather-tint: rgba(115, 190, 215, .10);
+  --dv-weather-tint: transparent;
   --dv-weather-accent: #65a9c6;
   --dv-sky-top: rgba(150, 202, 239, .28);
   --dv-sky-bottom: rgba(227, 243, 255, .11);
@@ -41,7 +41,7 @@ html[data-dv-weather="snowy"] {
   --dv-weather-scene-opacity: 1;
 }
 html[data-dv-weather="night"] {
-  --dv-weather-tint: rgba(102, 82, 181, .10);
+  --dv-weather-tint: transparent;
   --dv-weather-accent: #8872d4;
   --dv-sky-top: rgba(34, 38, 96, .33);
   --dv-sky-bottom: rgba(69, 49, 118, .09);
@@ -54,13 +54,10 @@ html[data-dv-weather="deep_space"] {
 }
 
 /* The tint is shared by all routes, even those with opaque page backgrounds. */
-html[data-dv-weather] body,
-html[data-dv-weather] .dv-subpage-theme {
-  background-image: linear-gradient(var(--dv-weather-tint), var(--dv-weather-tint)) !important;
-  transition: background-color .6s ease, background-image .6s ease;
+/* Preserve the page's original background and dark-mode palette. */
+html[data-dv-weather] :where(.dv-subpage-theme) {
+  transition: background-color .6s ease;
 }
-html[data-dv-weather] .dv-subpage-theme { background-color: #fbfafc; }
-html.dark[data-dv-weather] .dv-subpage-theme { background-color: #0b0910; }
 html[data-dv-weather] :where(.dv-nav-shell, .dv-verse-dock) {
   border-color: color-mix(in srgb, var(--dv-weather-accent) 28%, transparent);
 }
@@ -79,8 +76,8 @@ html[data-dv-weather] body::after {
 }
 html[data-dv-weather] body::before {
   background:
-    radial-gradient(ellipse 52vw 45vh at 88% 2%, var(--dv-sky-glow), transparent 75%),
-    linear-gradient(180deg, var(--dv-sky-top) 0%, var(--dv-sky-bottom) 56%, transparent 90%);
+    radial-gradient(ellipse 38vw 25vh at 88% 0%, var(--dv-sky-glow), transparent 78%),
+    linear-gradient(180deg, var(--dv-sky-top) 0%, var(--dv-sky-bottom) 22%, transparent 48%);
   animation: dv-sky-breathe 16s ease-in-out infinite alternate;
 }
 html[data-dv-weather] body::after {
@@ -92,7 +89,7 @@ html[data-dv-weather] body::after {
 
 /* Warm sunbeams and drifting high-altitude haze. */
 html[data-dv-weather="sunny"] body::after {
-  opacity: .62;
+  opacity: .32;
   background-image:
     radial-gradient(ellipse 18vw 7vh at 16% 20%, rgba(255,255,255,.65), transparent 90%),
     radial-gradient(ellipse 25vw 9vh at 64% 38%, rgba(255,246,221,.65), transparent 90%),
