@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SportsMatchList from "./SportsMatchList";
 
 const sports = [
   { name: "야구", emoji: "⚾", detail: "이닝 · 점수 · 주자 상황" },
@@ -29,6 +30,8 @@ export default function SportsAnalyticsPage() {
           ))}
         </div>
       </section>
+
+      <SportsMatchList />
 
       <section aria-labelledby="prediction-heading" className="space-y-4">
         <h2 id="prediction-heading" className="text-xl font-semibold">승리 확률</h2>
