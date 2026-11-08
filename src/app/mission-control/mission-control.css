@@ -7,7 +7,7 @@
   --mc-surface-raised: #152235;
   --mc-text: #e8edf5;
   --mc-muted: #9baabe;
-  --mc-border: #24364c;
+  --mc-border: var(--mc-line-accent, #24364c);
   --mc-accent: #4c8dff;
   --mc-radius: 16px;
   min-height: 100vh;
