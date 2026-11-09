@@ -737,7 +737,7 @@ export default function CommunityPage() {
                     value={messageInput}
                     onChange={(event) => setMessageInput(event.target.value)}
                     onKeyDown={(event) => {
-                      if (event.key === "Enter" && !event.shiftKey) {
+                      if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
                         event.preventDefault();
                         sendMessage();
                       }
