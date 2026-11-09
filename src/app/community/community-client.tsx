@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { squishyVariants } from "@/lib/animations";
 import type { User } from "@supabase/supabase-js";
 import {
@@ -495,7 +496,9 @@ export default function CommunityPage() {
   if (!mounted) return null;
 
   return (
-    <main className="min-h-screen overflow-hidden bg-slate-50 px-4 pt-24 text-slate-900 transition-colors dark:bg-[#03050a] dark:text-white">
+    <main className="vt2-root min-h-screen overflow-hidden bg-slate-50 px-4 pt-24 text-slate-900 transition-colors dark:bg-[#03050a] dark:text-white">
+      <div className="vt2-atmosphere" aria-hidden="true" />
+      <div className="vt2-system-strip"><span><i /> DRAWING VERSE / COMMUNICATION NETWORK</span><span>VERSE TALK · 2.0</span></div>
       {isAuthLoading && (
         <div className="flex min-h-[60vh] items-center justify-center">
           <div className="flex flex-col items-center gap-4">
@@ -506,7 +509,7 @@ export default function CommunityPage() {
       )}
 
       {!isAuthLoading && !user && (
-        <section className="mx-auto max-w-xl rounded-3xl border border-slate-200/60 bg-white/70 p-8 text-center shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-2xl">
+        <section className="vt2-gate mx-auto max-w-xl rounded-3xl border border-slate-200/60 bg-white/70 p-8 text-center shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-2xl">
           <MessageCircle className="mx-auto mb-4 h-11 w-11 text-fuchsia-400 dark:text-fuchsia-300" />
 
           <h1 className="text-3xl font-black">Verse Talk</h1>
@@ -514,15 +517,16 @@ export default function CommunityPage() {
           <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
             랜덤 대화를 시작하려면 먼저 로그인해야 해.
           </p>
+          <Link href="/login" className="vt2-login-link">Drawing ID로 로그인 <span aria-hidden="true">↗</span></Link>
         </section>
       )}
 
       {!isAuthLoading && user && (
-        <section className="mx-auto max-w-3xl pb-12">
+        <section className="vt2-stage mx-auto max-w-3xl pb-12">
           {talkState === "intro" && (
-          <div className="space-y-7">
-            <div className="text-center">
-              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-fuchsia-500/20">
+          <div className="vt2-lobby space-y-7">
+            <div className="vt2-lobby-heading text-center">
+              <div className="vt2-lobby-emblem mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-fuchsia-500/20">
                 <MessageCircle className="h-8 w-8" />
               </div>
 
@@ -531,7 +535,7 @@ export default function CommunityPage() {
                 Drawing Verse Community
               </p>
 
-              <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
+              <h1 className="vt2-lobby-title text-4xl font-black tracking-tight sm:text-5xl">
                 Verse Talk
               </h1>
 
@@ -545,9 +549,9 @@ export default function CommunityPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="rounded-[2rem] border border-slate-200/60 bg-white/70 p-5 shadow-xl backdrop-blur-xl sm:p-8 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-2xl"
+              className="vt2-lobby-panel rounded-[2rem] border border-slate-200/60 bg-white/70 p-5 shadow-xl backdrop-blur-xl sm:p-8 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-2xl"
             >
-              <div className="mb-6 grid gap-3 sm:grid-cols-3">
+              <div className="vt2-benefit-grid mb-6 grid gap-3 sm:grid-cols-3">
                 {[
                   { icon: WandSparkles, color: "text-fuchsia-400 dark:text-fuchsia-300", title: "랜덤 연결", desc: "대기 중인 유저와 자동으로 매칭돼." },
                   { icon: Sparkles, color: "text-violet-400 dark:text-violet-300", title: "창작 대화", desc: "그림, 세계관, 아이디어 이야기하기 좋아." },
@@ -558,7 +562,7 @@ export default function CommunityPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * idx }}
-                    className="rounded-3xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-white/10 dark:bg-white/[0.06]"
+                    className="vt2-benefit-card rounded-3xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-white/10 dark:bg-white/[0.06]"
                   >
                     <item.icon className={`mb-3 h-5 w-5 ${item.color}`} />
                     <p className="text-sm font-bold">{item.title}</p>
@@ -579,7 +583,7 @@ export default function CommunityPage() {
                 onChange={(event) => setNickname(event.target.value)}
                 maxLength={30}
                 placeholder="예: 우주먼지작가"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-400/10 dark:border-white/10 dark:bg-white/10 dark:text-white dark:focus:border-fuchsia-300/60 dark:focus:ring-fuchsia-400/10"
+                className="vt2-nickname-input w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-400/10 dark:border-white/10 dark:bg-white/10 dark:text-white dark:focus:border-fuchsia-300/60 dark:focus:ring-fuchsia-400/10"
               />
 
               {errorText && (
@@ -598,7 +602,7 @@ export default function CommunityPage() {
                 whileTap="tap"
                 onClick={startMatching}
                 disabled={isBusy || !nickname.trim()}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-5 py-3 font-black text-white shadow-lg shadow-fuchsia-500/20 transition hover:shadow-fuchsia-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                className="vt2-start-button mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-5 py-3 font-black text-white shadow-lg shadow-fuchsia-500/20 transition hover:shadow-fuchsia-500/30 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isBusy ? (
                   <>
@@ -621,19 +625,29 @@ export default function CommunityPage() {
         )}
 
         {talkState === "matching" && (
-          <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6">
-            <div className="relative flex h-20 w-20 items-center justify-center">
-              <div className="absolute h-20 w-20 animate-ping rounded-full border-2 border-fuchsia-400/30" />
-              <div className="h-14 w-14 animate-spin rounded-full border-2 border-fuchsia-400 border-t-transparent" />
+          <div className="vt2-matching flex min-h-[60vh] flex-col items-center justify-center gap-6">
+            <div className="vt2-radar" aria-hidden="true">
+              <div className="vt2-radar-grid" />
+              <div className="vt2-radar-sweep" />
+              <div className="vt2-radar-ring vt2-ring-one" />
+              <div className="vt2-radar-ring vt2-ring-two" />
+              <div className="vt2-radar-ring vt2-ring-three" />
+              <div className="vt2-radar-axis vt2-axis-x" />
+              <div className="vt2-radar-axis vt2-axis-y" />
+              <div className="vt2-radar-core"><MessageCircle size={32} /></div>
+              <i className="vt2-radar-point vt2-point-one" />
+              <i className="vt2-radar-point vt2-point-two" />
+              <i className="vt2-radar-point vt2-point-three" />
             </div>
             <div className="text-center">
-              <p className="text-lg font-black">상대 찾는 중...</p>
+              <span className="vt2-scan-status"><i /> SEARCHING FOR A SIGNAL</span>
+              <p className="vt2-matching-title text-lg font-black">상대 찾는 중...</p>
               <p className="mt-1 text-sm text-slate-500 dark:text-white/50">{matchingTime}초째 우주 전파 송신 중이야.</p>
             </div>
             <button
               onClick={cancelMatching}
               disabled={isBusy}
-              className="rounded-2xl border border-slate-200 bg-white px-6 py-2.5 text-sm text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
+              className="vt2-cancel-button rounded-2xl border border-slate-200 bg-white px-6 py-2.5 text-sm text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
             >
               매칭 취소
             </button>
@@ -641,9 +655,9 @@ export default function CommunityPage() {
         )}
 
         {talkState === "chat" && room && (
-          <div className="flex h-[78vh] overflow-hidden rounded-[2rem] border border-slate-200/60 bg-white/80 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-2xl">
+          <div className="vt2-chat flex h-[78vh] overflow-hidden rounded-[2rem] border border-slate-200/60 bg-white/80 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-2xl">
             <div className="flex min-w-0 flex-1 flex-col">
-              <header className="flex items-center justify-between border-b border-slate-200 bg-slate-50/50 px-5 py-4 dark:border-white/10 dark:bg-white/[0.05]">
+              <header className="vt2-chat-header flex items-center justify-between border-b border-slate-200 bg-slate-50/50 px-5 py-4 dark:border-white/10 dark:bg-white/[0.05]">
                 <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-500 dark:text-fuchsia-200/80">
                     Connected with
@@ -672,7 +686,7 @@ export default function CommunityPage() {
                 </button>
               </header>
 
-              <div className="flex-1 space-y-3 overflow-y-auto px-4 py-5">
+              <div className="vt2-chat-messages flex-1 space-y-3 overflow-y-auto px-4 py-5">
                 <AnimatePresence initial={false}>
                   {messages.length === 0 ? (
                     <motion.div 
@@ -701,7 +715,7 @@ export default function CommunityPage() {
                             }`}
                         >
                           <div
-                            className={`max-w-[78%] rounded-3xl px-4 py-2 text-sm leading-6 shadow ${isMine
+                            className={`vt2-chat-bubble max-w-[78%] rounded-3xl px-4 py-2 text-sm leading-6 shadow ${isMine
                                 ? "rounded-br-md bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-fuchsia-500/10"
                                 : "rounded-bl-md border border-slate-100 bg-white text-slate-800 dark:border-none dark:bg-white/10 dark:text-slate-100"
                               }`}
@@ -717,7 +731,7 @@ export default function CommunityPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <footer className="border-t border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.04]">
+              <footer className="vt2-chat-compose border-t border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.04]">
                 <div className="flex gap-2">
                   <input
                     value={messageInput}
@@ -735,13 +749,13 @@ export default function CommunityPage() {
                         ? "메시지를 입력해줘"
                         : "상대가 나가서 보낼 수 없어요"
                     }
-                    className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-violet-400 disabled:opacity-50 dark:border-white/10 dark:bg-white/10 dark:text-white dark:focus:border-fuchsia-300/60"
+                    className="vt2-chat-input min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-violet-400 disabled:opacity-50 dark:border-white/10 dark:bg-white/10 dark:text-white dark:focus:border-fuchsia-300/60"
                   />
 
                   <button
                     onClick={sendMessage}
                     disabled={!messageInput.trim() || !isOpponentConnected}
-                    className="rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 text-white transition hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="vt2-chat-send rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 text-white transition hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label="Send message"
                   >
                     <Send className="h-5 w-5" />
