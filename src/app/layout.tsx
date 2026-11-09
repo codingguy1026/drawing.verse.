@@ -14,6 +14,7 @@ import "./dverse-weather.css";
 import "./dverse-auth-actions.css";
 import "./dverse-studio.css";
 import "./liquid-refraction.css";
+import "./community/verse-talk-v2.css";
 
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
