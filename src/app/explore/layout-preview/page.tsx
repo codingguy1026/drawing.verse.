@@ -61,8 +61,16 @@ export default function ExploreLayoutPreviewPage() {
         <aside aria-label="보조 탐색" className="self-start rounded-xl border border-dashed border-slate-300 p-4 dark:border-slate-700">
           <h2 className="font-semibold">보조 영역</h2>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            공지, 태그, 추천 링크를 배치할 공간입니다. 작은 화면에서는 본문 아래로 이동합니다.
+            자주 사용하는 탐색 경로를 모았어요. 작은 화면에서는 본문 아래로 이동합니다.
           </p>
+          <nav aria-label="빠른 탐색 링크" className="mt-4 flex flex-col gap-2">
+            <Link href="/universe" className="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800">
+              유니버스 둘러보기
+            </Link>
+            <Link href="/" className="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800">
+              홈으로 돌아가기
+            </Link>
+          </nav>
         </aside>
       </div>
     </main>
