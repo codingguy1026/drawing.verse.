@@ -1,0 +1,316 @@
+/*
+ * Drawing Verse | Verse Orbit Fusion
+ * A reversible presentation layer merging the existing NASA-inspired
+ * Verse Navigator with the soft violet cards of the concept artwork.
+ *
+ * Scope: current .dv-site-shell only. No routing, content, auth, or
+ * interactive behavior is changed here.
+ */
+
+.dv-site-shell {
+  --dv-fusion-indigo: #7158ec;
+  --dv-fusion-lavender: #b89cff;
+  --dv-fusion-coral: #ff6b72;
+  --dv-fusion-border: rgba(129, 101, 183, .21);
+  --dv-fusion-shadow: 0 18px 48px rgba(48, 36, 92, .11);
+  --dv-fusion-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+.dark .dv-site-shell {
+  --dv-fusion-border: rgba(186, 160, 255, .20);
+  --dv-fusion-shadow: 0 22px 58px rgba(0, 0, 0, .36);
+}
+
+/* A quieter mission-control shell with the original brand mark preserved. */
+.dv-site-shell .dv-subpage-rail {
+  border: 1px solid var(--dv-fusion-border);
+  border-radius: 26px;
+  background:
+    radial-gradient(ellipse at 80% 0%, rgba(184, 156, 255, .19), transparent 49%),
+    linear-gradient(165deg, rgba(255,255,255,.95), rgba(246,243,255,.87) 72%, rgba(247,244,255,.92));
+  box-shadow: var(--dv-fusion-shadow), inset 0 1px 0 rgba(255,255,255,.82);
+}
+
+.dark .dv-site-shell .dv-subpage-rail {
+  background:
+    radial-gradient(ellipse at 70% 0%, rgba(113, 88, 236, .18), transparent 48%),
+    radial-gradient(ellipse at 4% 90%, rgba(255,107,114,.055), transparent 35%),
+    linear-gradient(167deg, rgba(16, 17, 35, .96), rgba(11, 12, 28, .94));
+  box-shadow: var(--dv-fusion-shadow), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.dv-site-shell .dv-frame-brand {
+  border: 1px solid rgba(155, 129, 219, .16);
+  border-radius: 19px;
+  background: linear-gradient(115deg, rgba(255,107,114,.075), rgba(184,156,255,.15));
+}
+
+.dark .dv-site-shell .dv-frame-brand {
+  border-color: rgba(184,156,255,.14);
+  background: linear-gradient(112deg, rgba(255,107,114,.075), rgba(113,88,236,.15));
+}
+
+.dv-site-shell .dv-frame-link {
+  border-radius: 13px;
+  transition: background .22s ease, border-color .22s ease, box-shadow .22s ease, color .22s ease;
+}
+.dv-site-shell .dv-frame-link.is-active {
+  border-color: rgba(113,88,236,.22);
+  background: linear-gradient(100deg, rgba(255,107,114,.09), rgba(184,156,255,.20));
+  box-shadow: inset 3px 0 0 rgba(113,88,236,.72), 0 5px 20px rgba(113,88,236,.07);
+}
+.dark .dv-site-shell .dv-frame-link.is-active {
+  border-color: rgba(184,156,255,.22);
+  background: linear-gradient(100deg, rgba(255,107,114,.11), rgba(113,88,236,.22));
+  box-shadow: inset 3px 0 0 rgba(184,156,255,.83), 0 6px 22px rgba(113,88,236,.10);
+}
+
+.dv-site-shell .dv-subpage-contextbar {
+  border: 1px solid var(--dv-fusion-border);
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 94% 20%, rgba(184,156,255,.14), transparent 46%),
+    rgba(255,255,255,.88);
+  box-shadow: 0 12px 35px rgba(62, 42, 106, .085), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.dark .dv-site-shell .dv-subpage-contextbar {
+  background:
+    radial-gradient(ellipse at 95% 20%, rgba(113,88,236,.16), transparent 52%),
+    rgba(14,16,33,.89);
+  box-shadow: 0 15px 38px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.045);
+}
+
+.dv-site-shell .dv-context-path {
+  border-color: rgba(128,96,241,.17);
+  border-radius: 11px;
+  background: rgba(184,156,255,.065);
+}
+.dark .dv-site-shell .dv-context-path {
+  background: rgba(184,156,255,.07);
+  color: #d2c5ee;
+}
+
+/* HOME: the current orbital illustration stays; the hero becomes a panel. */
+.dv-site-shell[data-route="/"] .dv-home-hero {
+  isolation: isolate;
+  padding: clamp(30px, 4.2vw, 66px) clamp(20px, 4vw, 60px) clamp(34px, 4vw, 60px);
+  border: 1px solid rgba(128,96,241,.17);
+  border-radius: 30px;
+  background:
+    radial-gradient(ellipse at 82% 42%, rgba(161,136,241,.18), transparent 48%),
+    radial-gradient(ellipse at 12% 8%, rgba(255,128,149,.09), transparent 39%),
+    linear-gradient(135deg, #fff 0%, #faf8ff 54%, #f3efff 100%);
+  box-shadow: 0 30px 82px rgba(80,61,126,.11), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.dark .dv-site-shell[data-route="/"] .dv-home-hero {
+  border-color: rgba(184,156,255,.23);
+  background:
+    radial-gradient(ellipse at 79% 42%, rgba(108,83,216,.31), transparent 47%),
+    radial-gradient(ellipse at 13% 8%, rgba(255,107,114,.085), transparent 38%),
+    linear-gradient(128deg, #101529 0%, #0c1022 50%, #171634 100%);
+  box-shadow: 0 35px 88px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.065);
+}
+
+.dv-site-shell[data-route="/"] .dv-home-hero::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(128,96,241,.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(128,96,241,.09) 1px, transparent 1px);
+  background-size: 46px 46px;
+  opacity: .31;
+  mask-image: linear-gradient(90deg, transparent 25%, #000 100%);
+}
+.dark .dv-site-shell[data-route="/"] .dv-home-hero::before {
+  opacity: .37;
+}
+.dv-site-shell[data-route="/"] .dv-home-hero::after {
+  content: "";
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  width: 72px;
+  height: 24px;
+  border-top: 1px solid rgba(128,96,241,.34);
+  border-right: 1px solid rgba(128,96,241,.34);
+  border-radius: 0 10px 0 0;
+  pointer-events: none;
+}
+.dark .dv-site-shell[data-route="/"] .dv-home-hero::after {
+  border-color: rgba(184,156,255,.3);
+}
+
+/* Preserve the original heading typography and warm coral-to-lavender brand. */
+.dv-site-shell[data-route="/"] .dv-home-copy {
+  position: relative;
+  z-index: 2;
+}
+.dv-site-shell[data-route="/"] .dv-home-title {
+  letter-spacing: -.052em;
+  line-height: 1.08;
+}
+.dv-site-shell[data-route="/"] .dv-home-copy > p {
+  max-width: 620px;
+}
+.dark .dv-site-shell[data-route="/"] .dv-home-copy > p {
+  color: rgba(235,233,255,.72);
+}
+.dv-site-shell[data-route="/"] .dv-home-actions a {
+  border-radius: 15px;
+  transition: transform .24s var(--dv-fusion-ease), box-shadow .24s ease, border-color .24s ease, background .24s ease;
+}
+.dv-site-shell[data-route="/"] .dv-home-actions a:hover {
+  transform: translateY(-2px);
+}
+.dv-site-shell[data-route="/"] .dv-home-actions > div:first-child a {
+  background: linear-gradient(110deg, #ff6b72, #986de9 58%, #7158ec);
+  color: #fff;
+  box-shadow: 0 12px 32px rgba(113,88,236,.24);
+}
+.dv-site-shell[data-route="/"] .dv-home-actions > div:first-child a:hover {
+  box-shadow: 0 15px 37px rgba(113,88,236,.33);
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit {
+  filter: drop-shadow(0 12px 32px rgba(113,88,236,.10));
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit a {
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(34,24,72,.07);
+  transition: transform .22s var(--dv-fusion-ease), border-color .22s ease, box-shadow .22s ease;
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit a:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 36px rgba(113,88,236,.15);
+}
+.dark .dv-site-shell[data-route="/"] .dv-home-orbit a {
+  border-color: rgba(184,156,255,.18);
+  background: rgba(21,22,48,.88);
+}
+
+/* Home telemetry, presented as an inset mission status strip. */
+.dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(2) {
+  margin-top: clamp(14px, 2.2vw, 26px);
+  padding: 24px clamp(20px, 3vw, 36px);
+  border: 1px solid rgba(128,96,241,.14);
+  border-radius: 22px;
+  background: rgba(255,255,255,.76);
+  box-shadow: 0 14px 38px rgba(72,50,114,.065);
+}
+.dark .dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(2) {
+  border-color: rgba(184,156,255,.14);
+  background: linear-gradient(105deg, rgba(17,21,43,.88), rgba(24,21,49,.78));
+  box-shadow: 0 14px 40px rgba(0,0,0,.17);
+}
+
+/* Featured universes: independent glass cards instead of a single flat table. */
+.dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(3) > .grid {
+  gap: 14px;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+.dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(3) > .grid > a {
+  border: 1px solid rgba(128,96,241,.18);
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(184,156,255,.18), transparent 58%),
+    #fff;
+  box-shadow: 0 10px 32px rgba(61,37,113,.08);
+  transition: transform .25s var(--dv-fusion-ease), border-color .25s ease, box-shadow .25s ease;
+}
+.dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(3) > .grid > a:hover {
+  transform: translateY(-5px);
+  border-color: rgba(128,96,241,.52);
+  box-shadow: 0 18px 40px rgba(84,54,158,.16);
+}
+.dark .dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(3) > .grid > a {
+  border-color: rgba(184,156,255,.19);
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(106,79,216,.22), transparent 57%),
+    #14182d;
+  box-shadow: 0 12px 35px rgba(0,0,0,.24);
+}
+.dark .dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(3) > .grid > a:hover {
+  border-color: rgba(184,156,255,.54);
+  box-shadow: 0 20px 44px rgba(40,26,91,.35);
+}
+
+/* The content and feed keep their information hierarchy while gaining depth. */
+.dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(4),
+.dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(5) {
+  border-color: rgba(128,96,241,.14);
+}
+.dark .dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(4),
+.dark .dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(5) {
+  border-color: rgba(184,156,255,.13);
+}
+.dv-site-shell[data-route="/"] .dv-subpage-slot main > section:last-of-type {
+  border-color: rgba(184,156,255,.31);
+  background:
+    radial-gradient(ellipse at 82% 20%, rgba(105,75,220,.32), transparent 45%),
+    radial-gradient(ellipse at 8% 100%, rgba(255,107,114,.13), transparent 46%),
+    linear-gradient(130deg, #111629, #1a1739);
+  box-shadow: 0 24px 64px rgba(20,15,55,.22);
+}
+
+/* Universe discovery cards echo the home concept, without replacing page UI. */
+.dv-site-shell .dvux-card {
+  border-radius: 20px;
+  box-shadow: 0 14px 32px rgba(4,9,24,.15);
+}
+.dv-site-shell .dvux-card:hover {
+  box-shadow: 0 22px 42px rgba(65,47,142,.2);
+}
+.dv-site-shell .dvux-hero {
+  border-radius: 26px;
+  background:
+    radial-gradient(ellipse at 76% 35%, rgba(98,82,194,.38), transparent 52%),
+    linear-gradient(115deg, #111a35, #161b3c 57%, #1c2250);
+  box-shadow: 0 26px 65px rgba(6,8,28,.3), inset 0 1px 0 rgba(255,255,255,.09);
+}
+
+/* Responsive shell must remain a horizontal dock on small screens. */
+@media (max-width: 767px) {
+  .dv-site-shell .dv-subpage-rail {
+    border-radius: 20px;
+  }
+  .dv-site-shell .dv-subpage-contextbar {
+    border-radius: 15px;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-hero {
+    min-height: 0;
+    padding: 36px 18px 32px;
+    border-radius: 23px;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-hero::after {
+    right: 14px;
+    top: 14px;
+    width: 42px;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit {
+    max-width: 100%;
+  }
+  .dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(2) {
+    padding: 18px;
+    border-radius: 18px;
+  }
+  .dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(3) > .grid {
+    gap: 12px;
+  }
+  .dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(3) > .grid > a {
+    border-radius: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dv-site-shell[data-route="/"] .dv-home-actions a,
+  .dv-site-shell[data-route="/"] .dv-home-orbit a,
+  .dv-site-shell[data-route="/"] .dv-subpage-slot main > section:nth-of-type(3) > .grid > a {
+    transition: none;
+    transform: none;
+  }
+}
