@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import RecentUniverseCards from "./recent-universe-cards";
 
 export const metadata: Metadata = {
   title: "콘텐츠 탐색 레이아웃 | Drawing Verse",
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const sections = [
-  { title: "최근 올라온 작품", description: "최신 창작물을 모아 볼 영역" },
+  { title: "최근 올라온 세계관", description: "최근 생성된 세계관 3개를 표시" },
   { title: "인기 세계관", description: "주목받는 세계관을 소개할 영역" },
   { title: "추천 창작자", description: "새로운 창작자를 발견할 영역" },
 ];
@@ -46,7 +47,7 @@ export default function ExploreLayoutPreviewPage() {
                 <h2 className="text-lg font-semibold">{section.title}</h2>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{section.description}</p>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {section.title === "최근 올라온 세계관" ? <RecentUniverseCards /> : <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {[1, 2, 3].map((item) => (
                   <div key={item} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
                     <div aria-hidden="true" className="aspect-[4/3] rounded-lg bg-slate-100 dark:bg-slate-800" />
@@ -54,7 +55,7 @@ export default function ExploreLayoutPreviewPage() {
                     <div className="mt-2 h-3 w-1/2 rounded bg-slate-100 dark:bg-slate-800" />
                   </div>
                 ))}
-              </div>
+              </div>}
             </section>
           ))}
         </div>
