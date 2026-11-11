@@ -33,12 +33,12 @@ export default function ExploreLayoutPreviewPage() {
         <div className="min-w-0 space-y-8">
           <section aria-label="탐색 도구" className="rounded-xl border border-dashed border-slate-300 p-4 dark:border-slate-700">
             <div className="flex flex-wrap gap-3">
-              <div className="min-w-0 flex-1 rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-500 dark:bg-slate-800">
-                검색 영역 (추후 연결)
-              </div>
-              <div className="rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-500 dark:bg-slate-800">
-                필터 영역
-              </div>
+              <Link href="/search" className="min-w-0 flex-1 rounded-lg border border-slate-300 px-4 py-3 text-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-600 dark:hover:bg-slate-800">
+                전체 콘텐츠 검색하기
+              </Link>
+              <Link href="/universe" className="rounded-lg border border-slate-300 px-4 py-3 text-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-600 dark:hover:bg-slate-800">
+                세계관 목록 보기
+              </Link>
             </div>
           </section>
           {sections.map((section) => (
