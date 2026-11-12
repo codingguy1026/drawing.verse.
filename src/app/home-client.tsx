@@ -13,11 +13,11 @@ import VersePulse from "@/components/Home/VersePulse";
 const feedTabs = ["전체", "Best", "Hot"] as const;
 type FeedTab = (typeof feedTabs)[number];
 const noticeRankings = [
-  "[공지] 홈 화면 리워크 의견 모아보기",
-  "[이벤트] 이번 주 인기 유니버스 선정 중",
-  "[안내] 신규 유저 가이드 업데이트",
+  "[공지] 드버스 커뮤니티 이용 안내",
+  "[안내] 관심 있는 Universe를 구독해 보세요",
+  "[안내] 신규 이용자 가이드 업데이트",
 ];
-const featuredTags = ["세계관", "팬아트", "시", "단편", "창작 커뮤니티"];
+const featuredTags = ["야구", "역사", "게임", "음악", "창작"];
 
 type HomeConfig = {
   heroTitle: string;
@@ -50,11 +50,11 @@ type HomeUniverse = {
 };
 
 const defaultHomeConfig: HomeConfig = {
-  heroTitle: "그림과 이야기,",
-  heroHighlight: "너만의 우주",
-  heroSuffix: "가 모이다",
+  heroTitle: "관심사가 모이고,",
+  heroHighlight: "Universe",
+  heroSuffix: "가 연결되는 곳",
   heroDesc:
-    "팬아트, 오리지널 세계관, 짧은 글, 긴 이야기까지. Drawing Verse에서는 당신의 상상이 빛나는 별이 됩니다.",
+    "좋아하는 주제로 Universe를 만들고, 게시글과 댓글로 소통하세요. Drawing Verse는 서로 다른 관심사가 연결되는 커뮤니티입니다.",
   tags: featuredTags,
   notices: noticeRankings,
 };
@@ -415,7 +415,7 @@ export default function HomeClient() {
             >
               <span className="h-2 w-2 rounded-full bg-[#ff6b72] shadow-[0_0_12px_rgba(255,107,114,.85)]" />
               <span className="min-w-0 text-[9px] font-black uppercase tracking-[.12em] text-slate-400 sm:text-[10px] sm:tracking-[.28em] dark:text-white/35">
-                Drawing Verse · Interverse Gateway
+                Drawing Verse · Community Network
               </span>
               <span className="hidden h-px w-10 bg-gradient-to-r sm:block from-[#ff6b72]/60 to-[#b89cff]/20" />
             </motion.div>
@@ -458,7 +458,7 @@ export default function HomeClient() {
                   href="/universe"
                   className="group inline-flex h-12 items-center gap-2.5 rounded-full bg-slate-950 px-6 text-sm font-black text-white shadow-[0_16px_40px_rgba(15,23,42,.18)] transition dark:bg-white dark:text-slate-950"
                 >
-                  Enter the Verse
+                  Universe 탐색
                   <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
                 </Link>
               </motion.div>
@@ -469,7 +469,7 @@ export default function HomeClient() {
                   className="inline-flex h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700 transition-colors hover:border-[#b89cff] hover:text-[#8060f1] dark:border-white/15 dark:bg-[#111016] dark:text-white/75"
                 >
                   <Sparkles size={15} />
-                  Create Universe
+                  Universe 만들기
                 </Link>
               </motion.div>
 
@@ -477,7 +477,7 @@ export default function HomeClient() {
                 href="/community"
                 className="px-3 py-3 text-sm font-black text-slate-600 transition hover:text-slate-900 dark:text-white/70 dark:hover:text-white"
               >
-                Community →
+                커뮤니티 보기 →
               </Link>
             </div>
 
@@ -534,8 +534,8 @@ export default function HomeClient() {
             <div className="absolute left-1/2 top-1/2 h-[58%] w-px -translate-x-1/2 -translate-y-1/2 -rotate-[55deg] bg-gradient-to-b from-transparent via-[#ff6b72]/20 to-transparent" />
 
             {(universes.length ? universes.slice(0, 4) : [
-              { slug: "universe", name: "Discover", description: "", members: 0, tags: [] },
-              { slug: "community", name: "Stories", description: "", members: 0, tags: [] },
+              { slug: "universe", name: "Universe 탐색", description: "", members: 0, tags: [] },
+              { slug: "community", name: "커뮤니티", description: "", members: 0, tags: [] },
               { slug: "gallery", name: "Gallery", description: "", members: 0, tags: [] },
               { slug: "wormhole", name: "Wormhole", description: "", members: 0, tags: [] },
             ]).map((universe, index) => {
@@ -605,7 +605,7 @@ export default function HomeClient() {
                 Network status
               </p>
               <p className="mt-1 text-sm font-black text-slate-700 dark:text-white/70">
-                Drawing Verse is alive right now.
+                지금 드버스에서 이어지는 이야기
               </p>
             </div>
             {[
@@ -632,7 +632,7 @@ export default function HomeClient() {
           <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[.24em] text-[#8a61dd]">
-                Orbit destinations
+                Community directory
               </p>
               <h2 className="mt-2 text-3xl font-black tracking-[-.045em] sm:text-4xl">
                 지금 열려 있는 Universe
