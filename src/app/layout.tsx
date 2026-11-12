@@ -14,6 +14,7 @@ import "./dverse-weather.css";
 import "./dverse-auth-actions.css";
 import "./dverse-studio.css";
 import "./liquid-refraction.css";
+import "./dverse-ground-control.css";
 
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f8f6ff",
+  themeColor: "#eef3f7",
   width: "device-width",
   initialScale: 1,
 };
