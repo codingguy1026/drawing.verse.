@@ -50,11 +50,11 @@ type HomeUniverse = {
 };
 
 const defaultHomeConfig: HomeConfig = {
-  heroTitle: "관심사가 모이고,",
-  heroHighlight: "Universe",
-  heroSuffix: "가 연결되는 곳",
+  heroTitle: "그림과 이야기,",
+  heroHighlight: "너만의 우주",
+  heroSuffix: "가 모이다",
   heroDesc:
-    "좋아하는 주제로 Universe를 만들고, 게시글과 댓글로 소통하세요. Drawing Verse는 서로 다른 관심사가 연결되는 커뮤니티입니다.",
+    "야구, 역사, 게임, 음악, 팬아트와 창작까지. 관심사별 Universe에서 글과 이야기를 나누고, 마음에 드는 세계를 함께 키워보세요.",
   tags: featuredTags,
   notices: noticeRankings,
 };
@@ -415,7 +415,7 @@ export default function HomeClient() {
             >
               <span className="h-2 w-2 rounded-full bg-[#ff6b72] shadow-[0_0_12px_rgba(255,107,114,.85)]" />
               <span className="min-w-0 text-[9px] font-black uppercase tracking-[.12em] text-slate-400 sm:text-[10px] sm:tracking-[.28em] dark:text-white/35">
-                Drawing Verse · Community Network
+                Drawing Verse · Interverse Gateway
               </span>
               <span className="hidden h-px w-10 bg-gradient-to-r sm:block from-[#ff6b72]/60 to-[#b89cff]/20" />
             </motion.div>
@@ -458,7 +458,7 @@ export default function HomeClient() {
                   href="/universe"
                   className="group inline-flex h-12 items-center gap-2.5 rounded-full bg-slate-950 px-6 text-sm font-black text-white shadow-[0_16px_40px_rgba(15,23,42,.18)] transition dark:bg-white dark:text-slate-950"
                 >
-                  Universe 탐색
+                  Enter the Verse
                   <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
                 </Link>
               </motion.div>
@@ -469,7 +469,7 @@ export default function HomeClient() {
                   className="inline-flex h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700 transition-colors hover:border-[#b89cff] hover:text-[#8060f1] dark:border-white/15 dark:bg-[#111016] dark:text-white/75"
                 >
                   <Sparkles size={15} />
-                  Universe 만들기
+                  Create Universe
                 </Link>
               </motion.div>
 
