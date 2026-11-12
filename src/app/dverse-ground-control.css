@@ -219,7 +219,7 @@
   background: var(--gc-panel) !important;
   border: 1px solid var(--gc-line) !important;
   box-shadow: none !important;
-  overflow: clip;
+  overflow: visible;
 }
 .dv-site-shell .dv-subpage-slot :where(section, article, aside, form)[class*="rounded-"][class*="border"] {
   border-color: var(--gc-line) !important;
@@ -291,11 +291,11 @@
   font-weight: 750;
   box-shadow: none !important;
 }
-.dv-site-shell[data-route="/"] .dv-home-actions a:first-child {
+.dv-site-shell[data-route="/"] .dv-home-actions > div:first-child a {
   background: var(--gc-ink) !important;
   color: var(--gc-panel) !important;
 }
-.dark .dv-site-shell[data-route="/"] .dv-home-actions a:first-child {
+.dark .dv-site-shell[data-route="/"] .dv-home-actions > div:first-child a {
   background: #c5e4fa !important;
   color: #10293b !important;
 }
@@ -490,9 +490,10 @@
   border-radius: 11px !important;
   box-shadow: none !important;
 }
-.dv-site-shell .dv-route-content :where(button, a)[class*="bg-violet-"],
-.dv-site-shell .dv-route-content :where(button, a)[class*="bg-purple-"],
-.dv-site-shell .dv-route-content :where(button, a)[class*="bg-indigo-"] {
+.dv-site-shell .dv-route-content :where(button, a)[class~="bg-violet-500"],
+.dv-site-shell .dv-route-content :where(button, a)[class~="bg-violet-600"],
+.dv-site-shell .dv-route-content :where(button, a)[class~="bg-purple-600"],
+.dv-site-shell .dv-route-content :where(button, a)[class~="bg-indigo-600"] {
   background: var(--gc-accent) !important;
   box-shadow: none !important;
   border-radius: 8px !important;
