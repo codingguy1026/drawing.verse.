@@ -15,6 +15,7 @@ import "./dverse-auth-actions.css";
 import "./dverse-studio.css";
 import "./liquid-refraction.css";
 import "./dverse-ground-control.css";
+import "./gallery/gallery-exhibition.css";
 
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import GlobalRouteLoader from "@/components/Common/GlobalRouteLoader";
