@@ -583,3 +583,82 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* 07 / Directory cards carry the topic, not a large decorative planet. */
+.dv-site-shell .dvux-world-art {
+  height: 64px !important;
+  border-bottom: 1px solid var(--gc-line);
+  background: var(--gc-panel-muted) !important;
+}
+.dv-site-shell .dvux-world-art::before {
+  opacity: .26;
+  background-image: linear-gradient(90deg, var(--gc-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dv-site-shell .dvux-art-orbit,
+.dv-site-shell .dvux-art-light,
+.dv-site-shell .dvux-currents { display: none !important; }
+.dv-site-shell .dvux-art-planet {
+  top: 11px;
+  left: 15px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--gc-line);
+  border-radius: 9px;
+  background: var(--gc-accent-soft) !important;
+  color: var(--gc-accent) !important;
+  font-size: 19px !important;
+  box-shadow: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+.dv-site-shell .dvux-chip,
+.dv-site-shell .dvux-popular-index {
+  color: var(--gc-accent) !important;
+  background: var(--gc-accent-soft) !important;
+  border: 1px solid var(--gc-line) !important;
+  border-radius: 5px !important;
+}
+.dv-site-shell .dvux-card-meta,
+.dv-site-shell .dvux-card-meta span,
+.dv-site-shell .dvux-popular-info small,
+.dv-site-shell .dvux-aside-card-accent p {
+  color: var(--gc-muted) !important;
+  border-color: var(--gc-line) !important;
+}
+.dv-site-shell .dvux-aside-card h3,
+.dv-site-shell .dvux-popular-row,
+.dv-site-shell .dvux-empty h3 {
+  color: var(--gc-ink) !important;
+}
+.dv-site-shell .dvux-popular-row {
+  border-color: var(--gc-line) !important;
+}
+.dv-site-shell .dvux-aside-card-accent,
+.dv-site-shell .dvux-empty,
+.dv-site-shell .dvux-galaxy-wrapper {
+  background: var(--gc-panel-muted) !important;
+  border-color: var(--gc-line) !important;
+}
+.dv-site-shell .dvux-empty p {
+  color: var(--gc-muted) !important;
+}
+.dv-site-shell .dvux-text-link {
+  color: var(--gc-accent) !important;
+}
+.dv-site-shell .dvux-text-link:hover {
+  text-decoration: underline;
+}
+.dv-site-shell .dvux-topbar,
+.dv-site-shell .dvux-toolbar-right {
+  border-color: var(--gc-line) !important;
+}
+.dv-site-shell .dvux-skeleton {
+  background: linear-gradient(90deg, var(--gc-panel-muted), var(--gc-line), var(--gc-panel-muted));
+  background-size: 200% 100%;
+}
+@media (max-width: 767px) {
+  .dv-site-shell .dvux-world-art { height: 58px !important; }
+  .dv-site-shell .dvux-art-planet { width: 36px; height: 36px; top: 10px; }
+}
