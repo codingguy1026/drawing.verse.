@@ -1,0 +1,585 @@
+/*
+ * Drawing Verse / Ground Control
+ * Site-wide, community-first visual direction. November 2026.
+ *
+ * Deliberately separated from legacy CSS so the redesign can be reviewed,
+ * rolled back or iterated on without touching data, auth, routing or content.
+ * Brand logo stays. Universe remains the primary community unit.
+ */
+
+/* 01 / Quiet technical palette. Both appearance modes are fully supported. */
+.dv-site-shell {
+  --gc-bg: #eef3f7;
+  --gc-panel: #ffffff;
+  --gc-panel-muted: #f6f9fb;
+  --gc-ink: #192c3f;
+  --gc-muted: #5f7384;
+  --gc-line: #d5e0e9;
+  --gc-accent: #276f9f;
+  --gc-accent-soft: #e8f2fa;
+  --gc-signal: #0d817d;
+  --gc-shadow: 0 12px 36px rgba(22, 43, 62, .045);
+  --dv-bg: var(--gc-bg);
+  --dv-surface: var(--gc-panel);
+  --dv-surface-2: var(--gc-panel-muted);
+  --dv-border: var(--gc-line);
+  --dv-ring: rgba(39,111,159,.22);
+  --dv-studio-outline: #276f9f;
+  --dv-studio-ink: var(--gc-ink);
+  --dv-studio-muted: var(--gc-muted);
+  color: var(--gc-ink);
+  background: var(--gc-bg);
+  font-family: var(--font-inter), var(--font-noto), system-ui, sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+.dark .dv-site-shell {
+  --gc-bg: #091521;
+  --gc-panel: #112232;
+  --gc-panel-muted: #152b3c;
+  --gc-ink: #e8f1f7;
+  --gc-muted: #a7bac9;
+  --gc-line: #284154;
+  --gc-accent: #83c5ed;
+  --gc-accent-soft: #1b394f;
+  --gc-signal: #71d6c6;
+  --gc-shadow: 0 12px 42px rgba(0,0,0,.16);
+  --dv-ring: rgba(131,197,237,.24);
+  --dv-studio-outline: #83c5ed;
+}
+.dv-site-shell::selection, .dv-site-shell ::selection {
+  background: rgba(39,111,159,.22);
+}
+.dv-site-shell :where(a, button, input, textarea, select, [role="button"]):focus-visible {
+  outline: 2px solid var(--gc-accent) !important;
+  outline-offset: 3px;
+}
+.dv-site-shell :where(input, textarea, select) {
+  accent-color: var(--gc-accent);
+}
+.dv-site-shell :where(h1, h2, h3) {
+  letter-spacing: -.035em;
+}
+.dv-site-shell :where(button, a) {
+  -webkit-tap-highlight-color: transparent;
+}
+.dv-site-shell :where(.surface, .dv-glass, .dv-glass-premium) {
+  background: var(--gc-panel) !important;
+  border-color: var(--gc-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-site-shell[data-route]:not([data-route="/"]) {
+  background: var(--gc-bg) !important;
+}
+
+/* 02 / Functional desktop workspace: navigation, context, content. */
+@media (min-width: 1280px) {
+  .dv-subpage-frame:not(.dv-subpage-frame--focus) {
+    width: min(calc(100% - 3rem), 96rem);
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: 1.15rem;
+    padding-block: 1.25rem 3rem;
+  }
+}
+.dv-site-shell .dv-subpage-rail {
+  border: 1px solid var(--gc-line) !important;
+  border-radius: 17px !important;
+  background: var(--gc-panel) !important;
+  box-shadow: var(--gc-shadow) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.dv-site-shell .dv-rail-depth-shadow,
+.dv-site-shell .dv-rail-underplate,
+.dv-site-shell .dv-rail-stars,
+.dv-site-shell .dv-rail-orbit-line,
+.dv-site-shell .dv-frame-active-orbit,
+.dv-site-shell .dv-frame-node {
+  display: none !important;
+}
+.dv-site-shell .dv-frame-brand {
+  min-height: 82px;
+  margin: 0 !important;
+  padding: 1rem .9rem !important;
+  border: 0;
+  border-bottom: 1px solid var(--gc-line);
+  border-radius: 0 !important;
+  background: transparent !important;
+  transform: none !important;
+}
+.dv-site-shell .dv-frame-brand-mark {
+  width: 49px;
+  height: 46px;
+  flex-basis: 49px;
+}
+.dv-site-shell .dv-frame-brand-mark i { display: none; }
+.dv-site-shell .dv-frame-brand-mark img {
+  animation: none !important;
+  filter: none !important;
+}
+.dv-site-shell .dv-frame-brand-copy strong {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--gc-ink) !important;
+  font-size: .94rem;
+  font-weight: 820;
+}
+.dv-site-shell .dv-frame-brand-copy small,
+.dv-site-shell .dv-frame-group-label {
+  color: var(--gc-muted) !important;
+  letter-spacing: .14em;
+  font-size: .60rem;
+}
+.dv-site-shell .dv-frame-nav-scroll { padding: .8rem .7rem; }
+.dv-site-shell .dv-frame-group + .dv-frame-group {
+  padding-top: .8rem;
+  margin-top: .8rem;
+  border-top: 1px solid var(--gc-line);
+}
+.dv-site-shell .dv-frame-link {
+  min-height: 42px;
+  border-radius: 9px !important;
+  font-size: .82rem;
+  font-weight: 680;
+  color: var(--gc-muted) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.dv-site-shell .dv-frame-link:hover {
+  background: var(--gc-panel-muted) !important;
+  color: var(--gc-ink) !important;
+}
+.dv-site-shell .dv-frame-link.is-active {
+  background: var(--gc-accent-soft) !important;
+  color: var(--gc-accent) !important;
+  border-color: var(--gc-line) !important;
+}
+.dv-site-shell .dv-frame-link-icon {
+  background: transparent !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+.dv-site-shell .dv-frame-link-copy strong {
+  color: inherit !important;
+  font-weight: inherit;
+}
+.dv-site-shell .dv-frame-link-copy small {
+  color: var(--gc-muted) !important;
+  font-size: .59rem;
+  letter-spacing: .04em;
+}
+.dv-site-shell .dv-frame-rail-footer {
+  border-top: 1px solid var(--gc-line);
+  padding: 1rem .85rem !important;
+}
+.dv-site-shell .dv-frame-rail-footer p,
+.dv-site-shell .dv-frame-utility small { color: var(--gc-muted) !important; }
+.dv-site-shell .dv-frame-orbit-mark {
+  width: 36px;
+  height: 2px;
+  border-radius: 0;
+  background: var(--gc-accent);
+  opacity: .8;
+}
+.dv-site-shell .dv-subpage-stage { gap: .85rem; }
+.dv-site-shell .dv-subpage-contextbar {
+  min-height: 70px;
+  border: 1px solid var(--gc-line) !important;
+  border-radius: 14px !important;
+  background: var(--gc-panel) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.dv-site-shell .dv-context-signal {
+  width: 3px !important;
+  border-radius: 1px !important;
+  background: var(--gc-signal) !important;
+  box-shadow: none !important;
+}
+.dv-site-shell .dv-context-copy p {
+  color: var(--gc-muted) !important;
+  letter-spacing: .15em;
+}
+.dv-site-shell .dv-context-copy strong {
+  color: var(--gc-ink) !important;
+  font-size: 1.07rem;
+}
+.dv-site-shell .dv-context-path {
+  color: var(--gc-muted) !important;
+  border: 1px solid var(--gc-line);
+  background: var(--gc-panel-muted) !important;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: -.025em;
+}
+.dv-site-shell .dv-subpage-slot {
+  min-width: 0;
+  border-radius: 15px !important;
+  background: var(--gc-panel) !important;
+  border: 1px solid var(--gc-line) !important;
+  box-shadow: none !important;
+  overflow: clip;
+}
+.dv-site-shell .dv-subpage-slot :where(section, article, aside, form)[class*="rounded-"][class*="border"] {
+  border-color: var(--gc-line) !important;
+  border-radius: 11px !important;
+  box-shadow: none !important;
+}
+.dv-site-shell .dv-route-content :where(input, textarea, select) {
+  border-color: var(--gc-line);
+  border-radius: 9px !important;
+}
+.dv-site-shell .dv-route-content :where(input, textarea, select):focus-visible {
+  outline: 2px solid var(--gc-accent) !important;
+  outline-offset: 2px;
+}
+
+/* 03 / The home page is a community front page, not a product splash screen. */
+.dv-site-shell[data-route="/"] .dv-subpage-slot > div,
+.dv-site-shell[data-route="/"] .dv-subpage-slot > div > main {
+  background: var(--gc-panel) !important;
+}
+.dv-site-shell[data-route="/"] .dv-subpage-slot > div > main {
+  max-width: 100%;
+  padding-inline: clamp(1rem, 2vw, 2.4rem) !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-hero {
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.25fr) minmax(285px, .75fr) !important;
+  align-items: center !important;
+  gap: clamp(1.5rem, 3vw, 3rem) !important;
+  margin-top: 1rem;
+  margin-bottom: .5rem;
+  padding: clamp(1.75rem, 3vw, 3rem) !important;
+  border: 1px solid var(--gc-line);
+  border-radius: 16px;
+  background: linear-gradient(125deg, var(--gc-panel-muted), var(--gc-panel));
+  overflow: hidden;
+}
+.dv-site-shell[data-route="/"] .dv-home-copy {
+  padding-top: 0 !important;
+  max-width: 700px;
+}
+.dv-site-shell[data-route="/"] .dv-home-copy::before { display: none; }
+.dv-site-shell[data-route="/"] .dv-home-title {
+  font-size: clamp(2.05rem, 3.8vw, 3.65rem) !important;
+  line-height: 1.17 !important;
+  letter-spacing: -.057em !important;
+  color: var(--gc-ink) !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-title > span:last-child {
+  color: var(--gc-ink) !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-title > span[class*="bg-clip-text"] {
+  background: none !important;
+  -webkit-text-fill-color: var(--gc-accent) !important;
+  color: var(--gc-accent) !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-copy > p {
+  max-width: 40rem;
+  margin-top: 1.5rem;
+  color: var(--gc-muted) !important;
+  line-height: 1.85;
+}
+.dv-site-shell[data-route="/"] .dv-home-actions { gap: .65rem; }
+.dv-site-shell[data-route="/"] .dv-home-actions a {
+  min-height: 44px;
+  height: auto;
+  border-radius: 9px !important;
+  font-weight: 750;
+  box-shadow: none !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-actions a:first-child {
+  background: var(--gc-ink) !important;
+  color: var(--gc-panel) !important;
+}
+.dark .dv-site-shell[data-route="/"] .dv-home-actions a:first-child {
+  background: #c5e4fa !important;
+  color: #10293b !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-actions + div > span {
+  border: 1px solid var(--gc-line) !important;
+  background: var(--gc-panel) !important;
+  border-radius: 6px !important;
+  color: var(--gc-muted) !important;
+}
+
+/* Reuse the live Universe data as an actual directory instead of floating planets. */
+.dv-site-shell[data-route="/"] .dv-home-orbit {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: center;
+  gap: .7rem;
+  min-height: 0 !important;
+  height: auto !important;
+  width: 100%;
+  max-width: 510px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit > :not(.z-20):not(:last-child) {
+  display: none !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a {
+  width: 100% !important;
+  height: 100%;
+  min-height: 116px;
+  border-radius: 10px !important;
+  background: var(--gc-panel) !important;
+  border: 1px solid var(--gc-line) !important;
+  box-shadow: none !important;
+  color: var(--gc-ink) !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a:hover {
+  border-color: var(--gc-accent) !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a p {
+  color: var(--gc-ink) !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit > :last-child {
+  position: relative !important;
+  grid-column: 1 / -1;
+  inset: auto !important;
+  width: 100% !important;
+  transform: none !important;
+  border: 1px solid var(--gc-line) !important;
+  border-radius: 10px !important;
+  background: var(--gc-panel) !important;
+  box-shadow: none !important;
+}
+.dv-site-shell[data-route="/"] .dv-home-orbit > :last-child p {
+  color: var(--gc-ink) !important;
+}
+.dv-site-shell[data-route="/"] .dv-subpage-slot > div > main > section:nth-of-type(n+2) {
+  border-color: var(--gc-line) !important;
+}
+.dv-site-shell[data-route="/"] .dv-subpage-slot > div > main > section h2 {
+  color: var(--gc-ink) !important;
+}
+.dv-site-shell[data-route="/"] .dv-subpage-slot > div > main > section a[class*="bg-white"] {
+  background: var(--gc-panel) !important;
+  border-color: var(--gc-line) !important;
+  color: var(--gc-ink) !important;
+}
+
+/* 04 / Universe is the community directory, not a fantasy-game dashboard. */
+.dv-site-shell .dv-universe-redesign {
+  --dvux-bg: var(--gc-panel);
+  --dvux-panel: var(--gc-panel);
+  --dvux-panel-hi: var(--gc-panel-muted);
+  --dvux-border: var(--gc-line);
+  --dvux-text: var(--gc-ink);
+  --dvux-muted: var(--gc-muted);
+  --dvux-coral: var(--gc-signal);
+  --dvux-lavender: var(--gc-accent);
+  color: var(--gc-ink) !important;
+  color-scheme: normal;
+  background: var(--gc-panel) !important;
+}
+.dv-site-shell .dvux-hero {
+  min-height: 228px;
+  border: 1px solid var(--gc-line) !important;
+  border-left: 4px solid var(--gc-accent) !important;
+  background: var(--gc-panel-muted) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+.dv-site-shell .dvux-hero::after,
+.dv-site-shell .dvux-hero .dvux-stars,
+.dv-site-shell .dvux-hero .dvux-celestial {
+  display: none !important;
+}
+.dv-site-shell .dvux-hero-copy {
+  width: 100%;
+  max-width: 780px;
+  padding: clamp(1.25rem, 3vw, 2.35rem);
+}
+.dv-site-shell .dvux-topbar-heading strong,
+.dv-site-shell .dvux-hero h1,
+.dv-site-shell .dvux-section-head h2,
+.dv-site-shell .dvux-stat strong,
+.dv-site-shell .dvux-card h3 {
+  color: var(--gc-ink) !important;
+}
+.dv-site-shell .dvux-hero h1 em {
+  background: none !important;
+  -webkit-text-fill-color: var(--gc-accent) !important;
+  color: var(--gc-accent) !important;
+}
+.dv-site-shell .dvux-hero-copy p,
+.dv-site-shell .dvux-eyebrow,
+.dv-site-shell .dvux-topbar-heading span,
+.dv-site-shell .dvux-stat span,
+.dv-site-shell .dvux-section-head p,
+.dv-site-shell .dvux-result-count,
+.dv-site-shell .dvux-card-desc {
+  color: var(--gc-muted) !important;
+}
+.dv-site-shell .dvux-stats { gap: .6rem; }
+.dv-site-shell .dvux-stat,
+.dv-site-shell .dvux-card,
+.dv-site-shell .dvux-aside-card {
+  background: var(--gc-panel) !important;
+  color: var(--gc-ink) !important;
+  border: 1px solid var(--gc-line) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+.dv-site-shell .dvux-card:hover {
+  transform: none !important;
+  border-color: var(--gc-accent) !important;
+}
+.dv-site-shell .dvux-search,
+.dv-site-shell .dvux-sort,
+.dv-site-shell .dvux-view-switch {
+  color: var(--gc-ink) !important;
+  border: 1px solid var(--gc-line) !important;
+  border-radius: 9px !important;
+  background: var(--gc-panel-muted) !important;
+}
+.dv-site-shell .dvux-search input,
+.dv-site-shell .dvux-sort select,
+.dv-site-shell .dvux-sort option {
+  color: var(--gc-ink) !important;
+  background: var(--gc-panel-muted) !important;
+}
+.dv-site-shell .dvux-filter {
+  border: 1px solid var(--gc-line) !important;
+  border-radius: 7px !important;
+  background: var(--gc-panel) !important;
+  color: var(--gc-muted) !important;
+}
+.dv-site-shell .dvux-filter.is-active,
+.dv-site-shell .dvux-view-switch button.is-active {
+  color: var(--gc-accent) !important;
+  border-color: var(--gc-accent) !important;
+  background: var(--gc-accent-soft) !important;
+}
+.dv-site-shell .dvux-button-primary {
+  background: var(--gc-accent) !important;
+  border-color: var(--gc-accent) !important;
+  border-radius: 8px !important;
+  color: var(--gc-panel) !important;
+  box-shadow: none !important;
+}
+.dark .dv-site-shell .dvux-button-primary { color: #091521 !important; }
+.dv-site-shell .dvux-button-secondary {
+  color: var(--gc-ink) !important;
+  background: var(--gc-panel) !important;
+  border-color: var(--gc-line) !important;
+  box-shadow: none !important;
+}
+
+/* 05 / One shared design language for feed, posts, images, profiles and forms. */
+.dv-site-shell .dv-route-content :where(main, div)[class*="min-h-screen"] {
+  background-color: var(--gc-panel);
+}
+.dv-site-shell .dv-route-content :where(article, section, aside)[class*="border"][class*="rounded"] {
+  border-color: var(--gc-line) !important;
+  border-radius: 11px !important;
+  box-shadow: none !important;
+}
+.dv-site-shell .dv-route-content :where(button, a)[class*="bg-violet-"],
+.dv-site-shell .dv-route-content :where(button, a)[class*="bg-purple-"],
+.dv-site-shell .dv-route-content :where(button, a)[class*="bg-indigo-"] {
+  background: var(--gc-accent) !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+}
+.dv-site-shell .dv-route-content :where(button, a)[class*="bg-slate-950"] {
+  background: var(--gc-ink) !important;
+  color: var(--gc-panel) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+.dv-site-shell .dv-route-content :where(article, a)[class*="hover:-translate-y"]:hover {
+  transform: none !important;
+}
+.dv-site-shell[data-route="/search"] .dv-route-content section li,
+.dv-site-shell[data-route^="/post/"] .dv-route-content article,
+.dv-site-shell[data-route^="/universe/"] [data-ui="universe-detail"] {
+  border-color: var(--gc-line) !important;
+}
+.dv-site-shell .dv-focus-brandbar {
+  border: 1px solid var(--gc-line) !important;
+  border-radius: 13px !important;
+  background: var(--gc-panel) !important;
+  box-shadow: none !important;
+}
+.dv-site-shell .dv-subpage-frame--focus .dv-subpage-slot {
+  background: var(--gc-panel) !important;
+}
+
+/* 06 / Small screens: the dock stays discoverable and never covers content. */
+@media (max-width: 1279px) and (min-width: 768px) {
+  .dv-site-shell .dv-frame-brand {
+    padding: .45rem !important;
+    justify-content: center;
+  }
+  .dv-site-shell .dv-frame-brand-mark {
+    width: 49px;
+    height: 45px;
+    flex-basis: 49px;
+  }
+}
+@media (max-width: 1060px) {
+  .dv-site-shell[data-route="/"] .dv-home-hero {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit {
+    max-width: 100% !important;
+  }
+}
+@media (max-width: 767px) {
+  .dv-site-shell .dv-subpage-rail {
+    border-radius: 11px !important;
+  }
+  .dv-site-shell .dv-frame-brand {
+    border: 0;
+    margin: .2rem !important;
+    padding: .25rem !important;
+    min-height: 48px;
+  }
+  .dv-site-shell .dv-subpage-contextbar,
+  .dv-site-shell .dv-subpage-slot {
+    border-radius: 11px !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-hero {
+    margin-top: .35rem;
+    padding: 1.25rem !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-title {
+    font-size: clamp(1.85rem, 7vw, 2.8rem) !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .45rem;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a {
+    min-height: 102px;
+    padding: .7rem;
+  }
+  .dv-site-shell .dvux-hero { min-height: 0; }
+  .dv-site-shell .dvux-hero-copy { padding: 1.25rem; }
+  .dv-site-shell .dvux-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dv-site-shell .dv-home-orbit > *,
+  .dv-site-shell .dv-frame-link,
+  .dv-site-shell .dvux-card {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
