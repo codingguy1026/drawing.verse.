@@ -4,26 +4,21 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Sparkles,
   Image as ImageIcon,
   Heart,
   MessageCircle,
   Search,
-  Filter,
   ArrowRight,
-  LayoutGrid,
   Zap,
   Upload,
   AlertCircle,
   SlidersHorizontal,
   Eye,
   Clock3,
-  Star,
   Grid3X3,
   Rows3,
   X,
 } from "lucide-react";
-import { m } from "framer-motion";
 import { supabase } from "@/lib/supabase/client";
 
 type GalleryItem = {
@@ -139,7 +134,7 @@ function GalleryCard({
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-violet-500/10 via-indigo-500/10 to-sky-500/10">
+          <div className="flex h-full w-full items-center justify-center bg-slate-100 dark:bg-white/5">
             <ImageIcon className="h-10 w-10 text-slate-300 dark:text-white/30" />
           </div>
         )}
