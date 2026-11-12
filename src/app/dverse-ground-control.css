@@ -9,22 +9,22 @@
 
 /* 01 / Quiet technical palette. Both appearance modes are fully supported. */
 .dv-site-shell {
-  --gc-bg: #eef3f7;
+  --gc-bg: #f7f7fc;
   --gc-panel: #ffffff;
-  --gc-panel-muted: #f6f9fb;
-  --gc-ink: #192c3f;
-  --gc-muted: #5f7384;
-  --gc-line: #d5e0e9;
-  --gc-accent: #276f9f;
-  --gc-accent-soft: #e8f2fa;
-  --gc-signal: #0d817d;
+  --gc-panel-muted: #f7f5fc;
+  --gc-ink: #28253a;
+  --gc-muted: #666077;
+  --gc-line: #e3dfee;
+  --gc-accent: #7456d6;
+  --gc-accent-soft: #f0eaff;
+  --gc-signal: #e76679;
   --gc-shadow: 0 12px 36px rgba(22, 43, 62, .045);
   --dv-bg: var(--gc-bg);
   --dv-surface: var(--gc-panel);
   --dv-surface-2: var(--gc-panel-muted);
   --dv-border: var(--gc-line);
-  --dv-ring: rgba(39,111,159,.22);
-  --dv-studio-outline: #276f9f;
+  --dv-ring: rgba(116,86,214,.22);
+  --dv-studio-outline: #7456d6;
   --dv-studio-ink: var(--gc-ink);
   --dv-studio-muted: var(--gc-muted);
   color: var(--gc-ink);
@@ -33,21 +33,21 @@
   font-feature-settings: "tnum" 1;
 }
 .dark .dv-site-shell {
-  --gc-bg: #091521;
-  --gc-panel: #112232;
-  --gc-panel-muted: #152b3c;
-  --gc-ink: #e8f1f7;
-  --gc-muted: #a7bac9;
-  --gc-line: #284154;
-  --gc-accent: #83c5ed;
-  --gc-accent-soft: #1b394f;
-  --gc-signal: #71d6c6;
+  --gc-bg: #090b18;
+  --gc-panel: #131627;
+  --gc-panel-muted: #1b1e33;
+  --gc-ink: #f3f0ff;
+  --gc-muted: #b7b0ca;
+  --gc-line: #34324d;
+  --gc-accent: #c8b7ff;
+  --gc-accent-soft: #2a234c;
+  --gc-signal: #ff8799;
   --gc-shadow: 0 12px 42px rgba(0,0,0,.16);
-  --dv-ring: rgba(131,197,237,.24);
-  --dv-studio-outline: #83c5ed;
+  --dv-ring: rgba(200,183,255,.24);
+  --dv-studio-outline: #c8b7ff;
 }
 .dv-site-shell::selection, .dv-site-shell ::selection {
-  background: rgba(39,111,159,.22);
+  background: rgba(128,96,241,.22);
 }
 .dv-site-shell :where(a, button, input, textarea, select, [role="button"]):focus-visible {
   outline: 2px solid var(--gc-accent) !important;
@@ -235,130 +235,180 @@
   outline-offset: 2px;
 }
 
-/* 03 / The home page is a community front page, not a product splash screen. */
-.dv-site-shell[data-route="/"] .dv-subpage-slot > div,
-.dv-site-shell[data-route="/"] .dv-subpage-slot > div > main {
+/* 03 / A hybrid home: restore the original cosmic orbit, brand gradients and
+   motion, while keeping the new readable community sections and navigation.
+   This is a refinement of the existing live home, not a separate template. */
+.dv-site-shell[data-route="/"] {
+  background:
+    radial-gradient(ellipse at 12% 18%, rgba(255,107,114,.065), transparent 38%),
+    radial-gradient(ellipse at 86% 16%, rgba(128,96,241,.095), transparent 43%),
+    var(--gc-bg) !important;
+}
+.dark .dv-site-shell[data-route="/"] {
+  background:
+    radial-gradient(ellipse at 10% 14%, rgba(255,107,114,.075), transparent 38%),
+    radial-gradient(ellipse at 90% 14%, rgba(128,96,241,.16), transparent 43%),
+    var(--gc-bg) !important;
+}
+.dv-site-shell[data-route="/"] .dv-subpage-slot {
   background: var(--gc-panel) !important;
 }
+.dv-site-shell[data-route="/"] .dv-subpage-slot > div {
+  background: transparent !important;
+}
 .dv-site-shell[data-route="/"] .dv-subpage-slot > div > main {
-  max-width: 100%;
-  padding-inline: clamp(1rem, 2vw, 2.4rem) !important;
+  max-width: none;
+  padding-inline: clamp(1rem, 2.15vw, 2.25rem) !important;
+  background: transparent !important;
 }
 .dv-site-shell[data-route="/"] .dv-home-hero {
-  min-height: 0 !important;
+  isolation: isolate;
+  min-height: 570px !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 1.25fr) minmax(285px, .75fr) !important;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr) !important;
   align-items: center !important;
-  gap: clamp(1.5rem, 3vw, 3rem) !important;
-  margin-top: 1rem;
-  margin-bottom: .5rem;
-  padding: clamp(1.75rem, 3vw, 3rem) !important;
-  border: 1px solid var(--gc-line);
-  border-radius: 16px;
-  background: linear-gradient(125deg, var(--gc-panel-muted), var(--gc-panel));
+  gap: clamp(.6rem, 1.8vw, 2.2rem) !important;
+  margin-top: .8rem;
+  margin-bottom: 1.2rem;
+  padding: clamp(1.2rem, 2.4vw, 2.2rem) !important;
+  border: 1px solid rgba(160,135,207,.23);
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 80% 28%, rgba(184,156,255,.24), transparent 47%),
+    radial-gradient(ellipse at 8% 80%, rgba(255,107,114,.105), transparent 41%),
+    linear-gradient(130deg, #fffdfd 0%, #faf8ff 52%, #f5f6ff 100%) !important;
   overflow: hidden;
+  box-shadow: 0 15px 44px rgba(78,54,132,.06);
+}
+.dark .dv-site-shell[data-route="/"] .dv-home-hero {
+  border-color: rgba(184,156,255,.21);
+  background:
+    radial-gradient(ellipse at 78% 30%, rgba(128,96,241,.28), transparent 49%),
+    radial-gradient(ellipse at 8% 82%, rgba(255,107,114,.115), transparent 42%),
+    linear-gradient(130deg, #171425 0%, #101326 58%, #11172b 100%) !important;
+  box-shadow: 0 18px 50px rgba(0,0,0,.22);
+}
+/* Technical star chart is a faint texture, never a substitute for content. */
+.dv-site-shell[data-route="/"] .dv-home-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .23;
+  border-radius: inherit;
+  background-image:
+    radial-gradient(circle at 20% 18%, rgba(128,96,241,.8) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 72% 62%, rgba(255,107,114,.8) 0 1px, transparent 1.5px);
+  background-size: 71px 77px, 119px 111px;
+  mask-image: linear-gradient(90deg, transparent 12%, #000 56%, #000 100%);
 }
 .dv-site-shell[data-route="/"] .dv-home-copy {
-  padding-top: 0 !important;
-  max-width: 700px;
+  position: relative;
+  z-index: 2;
+  padding-top: .8rem !important;
+  max-width: 690px;
 }
-.dv-site-shell[data-route="/"] .dv-home-copy::before { display: none; }
+.dv-site-shell[data-route="/"] .dv-home-copy::before {
+  display: block;
+  opacity: .8;
+  top: 80px;
+}
 .dv-site-shell[data-route="/"] .dv-home-title {
-  font-size: clamp(2.05rem, 3.8vw, 3.65rem) !important;
-  line-height: 1.17 !important;
-  letter-spacing: -.057em !important;
+  font-size: clamp(2.4rem, 4.6vw, 4.95rem) !important;
+  line-height: 1.075 !important;
+  letter-spacing: -.058em !important;
   color: var(--gc-ink) !important;
 }
 .dv-site-shell[data-route="/"] .dv-home-title > span:last-child {
   color: var(--gc-ink) !important;
 }
 .dv-site-shell[data-route="/"] .dv-home-title > span[class*="bg-clip-text"] {
-  background: none !important;
-  -webkit-text-fill-color: var(--gc-accent) !important;
-  color: var(--gc-accent) !important;
+  color: #8060f1 !important;
+  background: linear-gradient(96deg, #ef4c5f 0%, #ff6b72 30%, #b89cff 68%, #8060f1 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.dark .dv-site-shell[data-route="/"] .dv-home-title > span[class*="bg-clip-text"] {
+  background: linear-gradient(96deg, #ff9292 0%, #ff6b72 30%, #dfcaff 68%, #b89cff 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
 }
 .dv-site-shell[data-route="/"] .dv-home-copy > p {
-  max-width: 40rem;
   margin-top: 1.5rem;
+  max-width: 600px;
   color: var(--gc-muted) !important;
   line-height: 1.85;
 }
-.dv-site-shell[data-route="/"] .dv-home-actions { gap: .65rem; }
+.dv-site-shell[data-route="/"] .dv-home-actions { gap: .75rem; }
 .dv-site-shell[data-route="/"] .dv-home-actions a {
-  min-height: 44px;
-  height: auto;
-  border-radius: 9px !important;
-  font-weight: 750;
+  min-height: 46px;
+  border-radius: 11px !important;
+  font-weight: 800;
   box-shadow: none !important;
 }
 .dv-site-shell[data-route="/"] .dv-home-actions > div:first-child a {
-  background: var(--gc-ink) !important;
-  color: var(--gc-panel) !important;
+  border: 1px solid rgba(128,96,241,.38) !important;
+  background: linear-gradient(112deg, #e95a70, #805ee0) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(121,84,198,.15) !important;
 }
-.dark .dv-site-shell[data-route="/"] .dv-home-actions > div:first-child a {
-  background: #c5e4fa !important;
-  color: #10293b !important;
+.dv-site-shell[data-route="/"] .dv-home-actions > div:first-child a:hover {
+  box-shadow: 0 12px 30px rgba(121,84,198,.25) !important;
+  filter: brightness(1.06);
+}
+.dv-site-shell[data-route="/"] .dv-home-actions > div:nth-child(2) a {
+  border: 1px solid rgba(128,96,241,.28) !important;
+  background: rgba(255,255,255,.66) !important;
+  color: #7054c5 !important;
+}
+.dark .dv-site-shell[data-route="/"] .dv-home-actions > div:nth-child(2) a {
+  background: rgba(24,22,44,.65) !important;
+  color: #d6c7ff !important;
 }
 .dv-site-shell[data-route="/"] .dv-home-actions + div > span {
   border: 1px solid var(--gc-line) !important;
-  background: var(--gc-panel) !important;
-  border-radius: 6px !important;
+  background: color-mix(in srgb, var(--gc-panel) 78%, transparent) !important;
+  border-radius: 7px !important;
   color: var(--gc-muted) !important;
 }
 
-/* Reuse the live Universe data as an actual directory instead of floating planets. */
+/* Crucial: preserve all of the original absolute planet positions and
+   Framer Motion orbital movement. No grid conversion or transform reset. */
 .dv-site-shell[data-route="/"] .dv-home-orbit {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-content: center;
-  gap: .7rem;
-  min-height: 0 !important;
-  height: auto !important;
-  width: 100%;
-  max-width: 510px !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-}
-.dv-site-shell[data-route="/"] .dv-home-orbit > :not(.z-20):not(:last-child) {
-  display: none !important;
-}
-.dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 {
+  display: block !important;
   position: relative !important;
-  inset: auto !important;
-  left: auto !important;
-  top: auto !important;
-  right: auto !important;
-  bottom: auto !important;
-  transform: none !important;
+  min-height: 470px !important;
+  width: 100%;
+  max-width: 550px !important;
+  margin-inline: auto !important;
+  margin-top: 0 !important;
 }
 .dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a {
-  width: 100% !important;
-  height: 100%;
-  min-height: 116px;
-  border-radius: 10px !important;
-  background: var(--gc-panel) !important;
-  border: 1px solid var(--gc-line) !important;
-  box-shadow: none !important;
+  width: 150px;
+  border: 1px solid rgba(163,144,217,.33) !important;
+  border-radius: 15px !important;
+  background: color-mix(in srgb, var(--gc-panel) 84%, transparent) !important;
   color: var(--gc-ink) !important;
+  box-shadow: 0 10px 26px rgba(72,53,110,.09) !important;
+  backdrop-filter: blur(12px);
 }
 .dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a:hover {
-  border-color: var(--gc-accent) !important;
+  border-color: #a98cf2 !important;
+  box-shadow: 0 14px 32px rgba(120,85,197,.18) !important;
 }
 .dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a p {
   color: var(--gc-ink) !important;
 }
-.dv-site-shell[data-route="/"] .dv-home-orbit > :last-child {
-  position: relative !important;
-  grid-column: 1 / -1;
-  inset: auto !important;
-  width: 100% !important;
-  transform: none !important;
-  border: 1px solid var(--gc-line) !important;
-  border-radius: 10px !important;
-  background: var(--gc-panel) !important;
-  box-shadow: none !important;
+.dv-site-shell[data-route="/"] .dv-home-orbit > .absolute.bottom-3 {
+  border: 1px solid rgba(163,144,217,.32) !important;
+  border-radius: 13px !important;
+  background: color-mix(in srgb, var(--gc-panel) 89%, transparent) !important;
+  box-shadow: 0 10px 28px rgba(62,43,110,.12) !important;
+  backdrop-filter: blur(12px);
 }
-.dv-site-shell[data-route="/"] .dv-home-orbit > :last-child p {
+.dv-site-shell[data-route="/"] .dv-home-orbit > .absolute.bottom-3 p:not(:first-child) {
   color: var(--gc-ink) !important;
 }
 .dv-site-shell[data-route="/"] .dv-subpage-slot > div > main > section:nth-of-type(n+2) {
@@ -371,6 +421,83 @@
   background: var(--gc-panel) !important;
   border-color: var(--gc-line) !important;
   color: var(--gc-ink) !important;
+}
+/* Sidebar gets a trace of original starfield without covering its labels. */
+.dv-site-shell[data-route="/"] .dv-rail-stars {
+  display: block !important;
+  opacity: .28;
+}
+.dv-site-shell[data-route="/"] .dv-frame-brand {
+  background: linear-gradient(110deg, rgba(255,107,114,.075), rgba(184,156,255,.10)) !important;
+}
+.dv-site-shell[data-route="/"] .dv-frame-orbit-mark {
+  background: linear-gradient(90deg, #ff6b72, #b89cff, #8060f1);
+  width: 100%;
+  height: 3px;
+  opacity: .72;
+}
+@media (min-width: 1280px) and (max-width: 1480px) {
+  .dv-site-shell[data-route="/"] .dv-home-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-title {
+    font-size: clamp(2.3rem, 3.75vw, 3.8rem) !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit {
+    height: 480px !important;
+    max-width: 490px !important;
+  }
+}
+@media (max-width: 1100px) {
+  .dv-site-shell[data-route="/"] .dv-home-hero {
+    grid-template-columns: 1fr !important;
+    min-height: 0 !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit {
+    height: 450px !important;
+    max-width: 520px !important;
+    margin-top: .4rem !important;
+  }
+}
+@media (max-width: 640px) {
+  .dv-site-shell[data-route="/"] .dv-home-hero {
+    margin-top: .3rem;
+    padding: 1.15rem .95rem 1.3rem !important;
+    border-radius: 17px;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-copy {
+    padding-top: 2.9rem !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-copy::before { display: none; }
+  .dv-site-shell[data-route="/"] .dv-home-title {
+    font-size: clamp(2rem, 8.5vw, 3rem) !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit {
+    height: 420px !important;
+    min-height: 420px !important;
+    max-width: 450px !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a {
+    width: clamp(112px, 32vw, 145px);
+    padding: .7rem !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit > .absolute.bottom-3 {
+    bottom: 4px !important;
+  }
+}
+@media (max-width: 360px) {
+  .dv-site-shell[data-route="/"] .dv-home-orbit {
+    height: 385px !important;
+    min-height: 385px !important;
+  }
+  .dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a {
+    width: 108px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 {
+    animation: none !important;
+  }
 }
 
 /* 04 / Universe is the community directory, not a fantasy-game dashboard. */
@@ -534,15 +661,6 @@
     flex-basis: 49px;
   }
 }
-@media (max-width: 1060px) {
-  .dv-site-shell[data-route="/"] .dv-home-hero {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-  .dv-site-shell[data-route="/"] .dv-home-orbit {
-    max-width: 100% !important;
-  }
-}
 @media (max-width: 767px) {
   .dv-site-shell .dv-subpage-rail {
     border-radius: 11px !important;
@@ -557,27 +675,11 @@
   .dv-site-shell .dv-subpage-slot {
     border-radius: 11px !important;
   }
-  .dv-site-shell[data-route="/"] .dv-home-hero {
-    margin-top: .35rem;
-    padding: 1.25rem !important;
-  }
-  .dv-site-shell[data-route="/"] .dv-home-title {
-    font-size: clamp(1.85rem, 7vw, 2.8rem) !important;
-  }
-  .dv-site-shell[data-route="/"] .dv-home-orbit {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: .45rem;
-  }
-  .dv-site-shell[data-route="/"] .dv-home-orbit > .z-20 a {
-    min-height: 102px;
-    padding: .7rem;
-  }
   .dv-site-shell .dvux-hero { min-height: 0; }
   .dv-site-shell .dvux-hero-copy { padding: 1.25rem; }
   .dv-site-shell .dvux-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .dv-site-shell .dv-home-orbit > *,
   .dv-site-shell .dv-frame-link,
   .dv-site-shell .dvux-card {
     animation: none !important;
