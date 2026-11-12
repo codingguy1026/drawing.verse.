@@ -171,7 +171,7 @@ export default function GalleryUploadPage() {
     "내 프로필";
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-950 dark:bg-[#03050a] dark:text-white sm:px-6 sm:py-10">
+    <main className="dv-gallery-upload min-h-screen bg-slate-50 px-4 py-8 text-slate-950 dark:bg-[#03050a] dark:text-white sm:px-6 sm:py-10">
       <div className="mx-auto w-full max-w-3xl">
         <Link href="/gallery" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-950 dark:text-white/70 dark:hover:text-white">
           <ArrowLeft className="size-4" />
@@ -200,11 +200,11 @@ export default function GalleryUploadPage() {
           </div>
         </header>
 
-        <form onSubmit={handleSubmit} className="py-8">
+        <form onSubmit={handleSubmit} className="dv-gallery-upload-form py-8">
           <section>
             <h2 className="text-sm font-black">작품 이미지 <span className="text-rose-500">*</span></h2>
 
-            <label className="mt-3 flex min-h-72 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-white dark:border-white/15 dark:bg-white/[0.03]">
+            <label className="dv-gallery-upload-dropzone mt-3 flex min-h-72 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-white dark:border-white/15 dark:bg-white/[0.03]">
               {previewUrl ? (
                 <img src={previewUrl} alt="작품 미리보기" className="max-h-[32rem] w-full object-contain" />
               ) : (
