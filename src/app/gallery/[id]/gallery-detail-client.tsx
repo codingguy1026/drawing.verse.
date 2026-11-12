@@ -132,7 +132,7 @@ export default function GalleryDetailClient({ id }: { id: string }) {
     "알 수 없는 사용자";
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-950 dark:bg-[#03050a] dark:text-white sm:px-6 sm:py-10">
+    <main className="dv-gallery-detail min-h-screen bg-slate-50 px-4 py-8 text-slate-950 dark:bg-[#03050a] dark:text-white sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl">
         <Link href="/gallery" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-950 dark:text-white/70 dark:hover:text-white">
           <ArrowLeft className="size-4" />
@@ -140,7 +140,7 @@ export default function GalleryDetailClient({ id }: { id: string }) {
         </Link>
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)] lg:items-start">
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
+          <section className="dv-gallery-detail-work overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
             {imageUrl ? (
               <img src={imageUrl} alt={item.title || "작품"} className="max-h-[75vh] w-full object-contain" />
             ) : (
@@ -150,7 +150,7 @@ export default function GalleryDetailClient({ id }: { id: string }) {
             )}
           </section>
 
-          <aside className="min-w-0">
+          <aside className="dv-gallery-detail-info min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500">
               <span>{item.category || item.tag || "아트워크"}</span>
               <span>·</span>
