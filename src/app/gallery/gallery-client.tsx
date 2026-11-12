@@ -144,29 +144,9 @@ function GalleryCard({
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-        <div className="absolute left-4 top-4 rounded-full bg-white/80 px-3 py-1 text-[10px] font-black text-slate-700 shadow-sm backdrop-blur-md dark:bg-black/35 dark:text-white">
+        <span className="dv-gallery-card-badge">
           {item.category || "아트워크"}
-        </div>
-
-        <div className="absolute bottom-4 left-4 right-4 flex translate-y-3 items-center justify-between opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          <div className="flex gap-2">
-            <div className="flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-md">
-              <Heart className="h-3 w-3" />
-              {likes}
-            </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-md">
-              <MessageCircle className="h-3 w-3" />
-              {comments}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-md">
-            <Eye className="h-3 w-3" />
-            {views}
-          </div>
-        </div>
+        </span>
       </Link>
 
       <div className={cn("dv-gallery-card-info flex flex-1 flex-col", viewMode === "compact" ? "p-5" : "p-6")}>
@@ -176,9 +156,11 @@ function GalleryCard({
           </h3>
         </Link>
 
-        <p className="mt-2 text-xs font-medium text-slate-400 dark:text-slate-500">
-          {item.category || "아트워크"} · 조회 {views}
-        </p>
+        <div className="dv-gallery-card-stats" aria-label="작품 반응">
+          <span><Eye className="h-3.5 w-3.5" aria-hidden="true" />{views}</span>
+          <span><Heart className="h-3.5 w-3.5" aria-hidden="true" />{likes}</span>
+          <span><MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />{comments}</span>
+        </div>
 
         <div className="mt-auto flex items-center justify-between pt-5">
           <div className="flex min-w-0 items-center gap-2">
@@ -639,6 +621,7 @@ export default function GalleryPage() {
             </div>
           ) : (
             <div
+              data-view={viewMode}
               className={cn(
                 "dv-gallery-work-grid grid gap-8",
                 viewMode === "grid"
