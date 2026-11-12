@@ -32,11 +32,11 @@ export default function ExploreLayoutPreviewPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
         <div className="min-w-0 space-y-8">
           <section aria-label="탐색 도구" className="rounded-xl border border-dashed border-slate-300 p-4 dark:border-slate-700">
-            <div className="flex flex-wrap gap-3">
-              <Link href="/search" className="min-w-0 flex-1 rounded-lg border border-slate-300 px-4 py-3 text-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-600 dark:hover:bg-slate-800">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link href="/search" className="min-w-0 w-full flex-1 rounded-lg border border-slate-300 px-4 py-3 text-sm sm:w-auto hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-600 dark:hover:bg-slate-800">
                 전체 콘텐츠 검색하기
               </Link>
-              <Link href="/universe" className="rounded-lg border border-slate-300 px-4 py-3 text-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-600 dark:hover:bg-slate-800">
+              <Link href="/universe" className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm sm:w-auto hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-600 dark:hover:bg-slate-800">
                 세계관 목록 보기
               </Link>
             </div>
@@ -47,7 +47,7 @@ export default function ExploreLayoutPreviewPage() {
                 <h2 className="text-lg font-semibold">{section.title}</h2>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{section.description}</p>
               </div>
-              {section.title === "최근 올라온 세계관" ? <RecentUniverseCards /> : <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {section.title === "최근 올라온 세계관" ? <RecentUniverseCards /> : <div className="grid min-w-0 gap-3 sm:grid-cols-2">
                 {[1, 2, 3].map((item) => (
                   <div key={item} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
                     <div aria-hidden="true" className="aspect-[4/3] rounded-lg bg-slate-100 dark:bg-slate-800" />
