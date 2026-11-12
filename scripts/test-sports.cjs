@@ -4,7 +4,7 @@ const os = require('node:os');
 const path = require('node:path');
 const ts = require('typescript');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'drawing-sports-'));
-for (const name of ['types', 'config', 'model', 'demo', 'validate']) {
+for (const name of ['types', 'config', 'model', 'demo', 'validate', 'thesportsdb']) {
   const source = fs.readFileSync(path.join(__dirname, '../src/lib/sports', `${name}.ts`), 'utf8');
   fs.writeFileSync(path.join(temp, `${name}.js`), ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText);
 }

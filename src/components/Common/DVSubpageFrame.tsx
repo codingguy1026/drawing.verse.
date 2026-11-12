@@ -65,7 +65,7 @@ function routeMeta(pathname: string) {
   if (pathname.includes("/system/create")) return { eyebrow: "STELLAR GENESIS", title: "Create System", tone: "coral" };
   if (pathname.includes("/system/")) return { eyebrow: "STELLAR ORBIT", title: "Stellar System", tone: "lavender" };
   if (pathname.startsWith("/universe/create")) return { eyebrow: "GENESIS", title: "Create Universe", tone: "coral" };
-  if (pathname.startsWith("/universe")) return { eyebrow: "VERSE MAP", title: "Universe", tone: "lavender" };
+  if (pathname.startsWith("/universe")) return { eyebrow: "UNIVERSE DIRECTORY", title: "Universe", tone: "lavender" };
   if (pathname.startsWith("/post/new")) return { eyebrow: "TRANSMISSION", title: "Create Post", tone: "coral" };
   if (pathname.startsWith("/post/")) return { eyebrow: "TRANSMISSION", title: "Post", tone: "lavender" };
   if (pathname.startsWith("/profile/") || pathname.startsWith("/users/") || pathname === "/me") {
@@ -202,12 +202,12 @@ export default function DVSubpageFrame({ children }: { children: ReactNode }) {
           </span>
           <span className="dv-frame-brand-copy">
             <strong>Drawing Verse</strong>
-            <small>Verse Navigator</small>
+            <small>COMMUNITY NETWORK</small>
           </span>
         </Link>
 
         <div className="dv-frame-nav-scroll">
-          <DockGroup label="VERSE MAP" items={verseItems} pathname={pathname} orbit />
+          <DockGroup label="COMMUNITIES" items={verseItems} pathname={pathname} orbit />
           <DockGroup label="TOOLS" items={toolItems} pathname={pathname} />
           {!authLoading && user ? (
             <button
@@ -251,7 +251,7 @@ export default function DVSubpageFrame({ children }: { children: ReactNode }) {
           )}
           {signOutError && <p role="alert" className="dv-frame-auth-error">{signOutError}</p>}
           <span className="dv-frame-orbit-mark" />
-          <p>Drawing Verse · Navigator</p>
+          <p>DRAWING VERSE / NETWORK</p>
         </div>
       </aside>
 
