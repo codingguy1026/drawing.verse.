@@ -114,7 +114,7 @@ function GalleryCard({
   return (
     <article
       className={cn(
-        "group relative flex overflow-hidden border bg-white shadow-sm transition-all duration-500",
+        "dv-gallery-card group relative flex overflow-hidden border bg-white shadow-sm transition-all duration-500",
         "hover:-translate-y-2 hover:shadow-[0_24px_70px_rgba(49,46,129,0.14)]",
         "dark:border-white/10 dark:bg-[#0b0e14]/70 dark:hover:shadow-[0_24px_70px_rgba(0,0,0,0.45)]",
         viewMode === "compact"
@@ -125,7 +125,7 @@ function GalleryCard({
       <Link
         href={`/gallery/${item.id}`}
         className={cn(
-          "relative block shrink-0 overflow-hidden",
+          "dv-gallery-card-image relative block shrink-0 overflow-hidden",
           viewMode === "compact" ? "h-36 w-32 sm:h-44 sm:w-44" : "aspect-[4/5] w-full"
         )}
         aria-label={`${title} 작품 상세 보기`}
@@ -169,7 +169,7 @@ function GalleryCard({
         </div>
       </Link>
 
-      <div className={cn("flex flex-1 flex-col", viewMode === "compact" ? "p-5" : "p-6")}>
+      <div className={cn("dv-gallery-card-info flex flex-1 flex-col", viewMode === "compact" ? "p-5" : "p-6")}>
         <Link href={`/gallery/${item.id}`} className="group/title">
           <h3 className="line-clamp-1 text-lg font-black tracking-tight text-slate-950 transition-colors group-hover/title:text-indigo-600 dark:text-white dark:group-hover/title:text-indigo-300">
             {title}
@@ -350,61 +350,92 @@ export default function GalleryPage() {
       .slice(0, 3);
   }, [items, profiles]);
 
+  const latestExhibit = items.find((item) => Boolean(item.thumbnail_url));
+  const creatorCount = new Set(items.map((item) => item.user_id).filter(Boolean)).size;
+
   return (
-    <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-white">
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <header className="mb-14 flex flex-col items-center text-center">
-          <div className="mb-6 flex items-center gap-2 rounded-full border border-violet-500/10 bg-violet-500/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-violet-600 shadow-sm dark:border-white/10 dark:text-violet-300">
-            <Sparkles className="h-3 w-3 animate-pulse" />
-            Celestial Art Hall
-          </div>
-
-          <h1 className="max-w-4xl text-5xl font-black leading-tight tracking-tighter sm:text-6xl lg:text-7xl">
-            상상이 모여
-            <br />
-            <span className="bg-gradient-to-r from-violet-600 via-indigo-500 to-sky-400 bg-clip-text text-transparent dark:from-violet-300 dark:via-indigo-200 dark:to-sky-200">
-              빛나는 갤러리
-            </span>
-          </h1>
-
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-slate-500 dark:text-slate-400 sm:text-lg">
-            Drawing Verse의 창작자들이 새겨놓은 우주의 파편들이에요.
-            감성 가득한 아트워크 속에서 드가이만의 영감을 찾아보자구요.
-          </p>
-
-          <div className="mt-10 grid w-full max-w-3xl gap-3 sm:grid-cols-[1fr_auto]">
-            <div className="flex items-center gap-3 rounded-[28px] border border-slate-200 bg-white/70 p-2 shadow-sm backdrop-blur-xl transition-all focus-within:border-violet-400 focus-within:ring-4 focus-within:ring-violet-500/10 dark:border-white/10 dark:bg-white/5">
-              <Search className="ml-3 h-5 w-5 text-slate-400" />
+    <main className="dv-gallery-page relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 transition-colors duration-700 dark:bg-[#03050a] dark:text-white">
+      <div className="dv-gallery-container relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <header className="dv-gallery-hero">
+          <div className="dv-gallery-intro">
+            <div className="dv-gallery-eyebrow">
+              <span className="dv-gallery-accent-line" aria-hidden="true" />
+              DRAWING VERSE / GALLERY
+              <span className="dv-gallery-edition">EXHIBITION 01</span>
+            </div>
+            <h1>
+              서로의 상상이 모이는
+              <span>작은 전시관.</span>
+            </h1>
+            <p className="dv-gallery-description">
+              그림 한 장에도 이야기가 있죠. 일러스트부터 스케치와 팬아트까지,
+              드버스의 창작자들이 남긴 작품을 발견하고 감상해 보세요.
+            </p>
+            <div className="dv-gallery-hero-footer">
+              <div className="dv-gallery-metrics" aria-label="갤러리 현황">
+                <div><strong>{items.length}</strong><span>전시 작품</span></div>
+                <div><strong>{creatorCount}</strong><span>참여 창작자</span></div>
+              </div>
+              <Link href="/gallery/upload" className="dv-gallery-upload-button">
+                <Upload className="h-4 w-4" aria-hidden="true" />
+                내 작품 전시하기
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="dv-gallery-search" role="search">
+              <Search className="h-4 w-4" aria-hidden="true" />
               <input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                type="text"
-                placeholder="작품명, 작가, 카테고리를 검색해 보세요"
-                className="w-full bg-transparent p-2 text-sm font-bold text-slate-800 outline-none placeholder:text-slate-400 dark:text-white"
+                type="search"
+                aria-label="갤러리 작품 검색"
+                placeholder="작품 제목, 창작자, 카테고리 검색"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="mr-1 flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white"
                   aria-label="검색어 지우기"
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
             </div>
+          </div>
 
-            <Link
-              href="/gallery/upload"
-              className="flex items-center justify-center gap-2 rounded-[28px] bg-slate-950 px-6 py-4 text-sm font-black text-white shadow-xl shadow-slate-900/10 transition-all hover:-translate-y-0.5 hover:bg-indigo-600 dark:bg-white dark:text-slate-950 dark:hover:bg-indigo-200"
-            >
-              <Upload className="h-4 w-4" />
-              작품 업로드
-            </Link>
+          <div className="dv-gallery-featured" aria-label="최근 등록된 작품 미리보기">
+            {latestExhibit ? (
+              <Link href={`/gallery/${latestExhibit.id}`} className="dv-gallery-featured-link">
+                <div className="dv-gallery-featured-image">
+                  <Image
+                    src={latestExhibit.thumbnail_url!}
+                    alt={latestExhibit.title?.trim() || "최근 등록된 작품"}
+                    fill
+                    sizes="(max-width: 900px) 100vw, 480px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="dv-gallery-featured-caption">
+                  <span>JUST ARRIVED / 최근 등록</span>
+                  <strong>{latestExhibit.title?.trim() || "제목 없는 작품"}</strong>
+                  <small>{latestExhibit.category || "아트워크"} · {formatDate(latestExhibit.created_at)}</small>
+                </div>
+              </Link>
+            ) : (
+              <div className="dv-gallery-featured-empty">
+                <span>DRAWING VERSE / OPEN EXHIBITION</span>
+                <div className="dv-gallery-featured-mark" aria-hidden="true">
+                  <ImageIcon className="h-10 w-10" />
+                  <span className="dv-gallery-featured-orbit" />
+                </div>
+                <strong>첫 작품이 전시될 공간</strong>
+                <p>하나의 작품으로 이 전시관이 시작돼요.</p>
+              </div>
+            )}
           </div>
         </header>
 
-        <section className="mb-10 rounded-[36px] border border-slate-200/70 bg-white/65 p-4 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] sm:p-5">
+        <section className="dv-gallery-filterbar mb-10 rounded-[36px] border border-slate-200/70 bg-white/65 p-4 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] sm:p-5" aria-label="갤러리 작품 필터">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
@@ -412,6 +443,7 @@ export default function GalleryPage() {
                   key={cat}
                   type="button"
                   onClick={() => setActiveCategory(cat)}
+                  aria-pressed={activeCategory === cat}
                   className={cn(
                     "rounded-full px-5 py-2.5 text-xs font-black tracking-wider transition-all active:scale-95",
                     activeCategory === cat
@@ -434,6 +466,7 @@ export default function GalleryPage() {
                       key={option.value}
                       type="button"
                       onClick={() => setSortMode(option.value)}
+                      aria-pressed={sortMode === option.value}
                       className={cn(
                         "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black transition",
                         sortMode === option.value
@@ -452,6 +485,7 @@ export default function GalleryPage() {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
+                  aria-pressed={viewMode === "grid"}
                   className={cn(
                     "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black transition",
                     viewMode === "grid"
@@ -466,6 +500,7 @@ export default function GalleryPage() {
                 <button
                   type="button"
                   onClick={() => setViewMode("compact")}
+                  aria-pressed={viewMode === "compact"}
                   className={cn(
                     "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black transition",
                     viewMode === "compact"
@@ -520,7 +555,7 @@ export default function GalleryPage() {
           )}
         </section>
 
-        <section className="mb-24">
+        <section className="dv-gallery-collection mb-24">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-500 dark:text-indigo-300">
@@ -531,7 +566,7 @@ export default function GalleryPage() {
                   Live Gallery
                 </p>
                 <h2 className="mt-1 text-2xl font-black tracking-tight">
-                  최근 등록된 작품
+                  작품 둘러보기
                 </h2>
               </div>
             </div>
@@ -605,7 +640,7 @@ export default function GalleryPage() {
           ) : (
             <div
               className={cn(
-                "grid gap-8",
+                "dv-gallery-work-grid grid gap-8",
                 viewMode === "grid"
                   ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                   : "grid-cols-1 lg:grid-cols-2"
@@ -618,11 +653,11 @@ export default function GalleryPage() {
           )}
         </section>
 
-        <section className="border-t border-slate-200 py-12 dark:border-white/10">
+        <section className="dv-gallery-creators border-t border-slate-200 py-12 dark:border-white/10">
           <div className="mb-7">
             <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Creators</p>
             <h2 className="mt-1 text-2xl font-black tracking-tight">최근 작품을 올린 창작자</h2>
-            <p className="mt-2 text-sm text-slate-500">샘플 계정 대신 실제 갤러리 활동이 있는 프로필만 표시합니다.</p>
+            <p className="mt-2 text-sm text-slate-500">실제 작품을 올린 창작자들의 공간을 만나보세요.</p>
           </div>
 
           {creators.length === 0 ? (
