@@ -47,15 +47,18 @@ export default function ExploreLayoutPreviewPage() {
                 <h2 className="text-lg font-semibold">{section.title}</h2>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{section.description}</p>
               </div>
-              {section.title === "최근 올라온 세계관" ? <RecentUniverseCards /> : <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-                {[1, 2, 3].map((item) => (
-                  <div key={item} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
-                    <div aria-hidden="true" className="aspect-[4/3] rounded-lg bg-slate-100 dark:bg-slate-800" />
-                    <div className="mt-3 h-4 w-2/3 rounded bg-slate-100 dark:bg-slate-800" />
-                    <div className="mt-2 h-3 w-1/2 rounded bg-slate-100 dark:bg-slate-800" />
-                  </div>
-                ))}
-              </div>}
+              {section.title === "최근 올라온 세계관" ? (
+                <RecentUniverseCards />
+              ) : (
+                <div className="rounded-xl border border-dashed border-slate-300 p-5 dark:border-slate-700">
+                  <p className="text-sm font-medium">아직 준비 중인 영역입니다.</p>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    {section.title === "인기 세계관"
+                      ? "인기 기준을 정한 뒤 실제 세계관 목록을 연결할 예정입니다."
+                      : "추천 기준을 정한 뒤 실제 창작자 목록을 연결할 예정입니다."}
+                  </p>
+                </div>
+              )}
             </section>
           ))}
         </div>
