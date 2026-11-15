@@ -30,7 +30,7 @@ export default function ExploreLayoutPreviewPage() {
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
-        <div className="min-w-0 space-y-8">
+        <div className="order-2 min-w-0 space-y-8 lg:order-1">
           <section aria-label="탐색 도구" className="rounded-xl border border-dashed border-slate-300 p-4 dark:border-slate-700">
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link href="/search" className="min-w-0 w-full flex-1 rounded-lg border border-slate-300 px-4 py-3 text-sm sm:w-auto hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-600 dark:hover:bg-slate-800">
@@ -62,7 +62,7 @@ export default function ExploreLayoutPreviewPage() {
             </section>
           ))}
         </div>
-        <aside aria-label="보조 탐색" className="self-start rounded-xl border border-dashed border-slate-300 p-4 dark:border-slate-700">
+        <aside aria-label="보조 탐색" className="order-1 self-start rounded-xl border border-dashed border-slate-300 p-4 lg:order-2 dark:border-slate-700">
           <h2 className="font-semibold">보조 영역</h2>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             자주 사용하는 탐색 경로를 모았어요. 작은 화면에서는 본문 아래로 이동합니다.
