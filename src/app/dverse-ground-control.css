@@ -765,3 +765,57 @@
   .dv-site-shell .dvux-world-art { height: 58px !important; }
   .dv-site-shell .dvux-art-planet { width: 36px; height: 36px; top: 10px; }
 }
+
+
+/* Mobile shell: keep the brand and navigation in one compact row.
+   Ground Control's desktop brand styles must not turn into a tall banner. */
+@media (max-width: 767px) {
+  .dv-site-shell .dv-subpage-frame:not(.dv-subpage-frame--focus) > .dv-subpage-rail {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    width: calc(100% - .75rem);
+    max-width: calc(100vw - .75rem);
+    height: 62px !important;
+    min-height: 62px !important;
+    padding: 0 .25rem !important;
+  }
+
+  .dv-site-shell .dv-subpage-rail > .dv-frame-brand {
+    display: flex !important;
+    flex: 0 0 52px !important;
+    width: 52px !important;
+    min-width: 52px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    align-items: center;
+    justify-content: center;
+    margin: 0 .2rem 0 0 !important;
+    padding: .2rem !important;
+    overflow: hidden;
+  }
+
+  .dv-site-shell .dv-subpage-rail .dv-frame-brand-mark {
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .dv-site-shell .dv-subpage-rail .dv-frame-brand-copy,
+  .dv-site-shell .dv-subpage-rail .dv-frame-rail-footer {
+    display: none !important;
+  }
+
+  .dv-site-shell .dv-subpage-rail > .dv-frame-nav-scroll {
+    display: flex !important;
+    flex: 1 1 0% !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    height: 100%;
+    align-items: center;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+}
