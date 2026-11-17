@@ -114,5 +114,5 @@ export default function WeatherAtmosphereSync() {
     };
   }, [mode, syncWeather]);
 
-  return null;
+  return <div className="dv-weather-scene" aria-hidden="true" />;
 }

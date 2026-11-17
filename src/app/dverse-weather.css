@@ -1,7 +1,6 @@
 /* Drawing Verse immersive weather atmosphere.
    Global, non-interactive layers keep the existing pages and controls intact. */
 html {
-  --dv-weather-tint: transparent;
   --dv-weather-accent: #8060f1;
   --dv-sky-top: transparent;
   --dv-sky-bottom: transparent;
@@ -9,7 +8,6 @@ html {
   --dv-weather-scene-opacity: 0;
 }
 html[data-dv-weather="sunny"] {
-  --dv-weather-tint: transparent;
   --dv-weather-accent: #cf8b2d;
   --dv-sky-top: rgba(151, 203, 252, .18);
   --dv-sky-bottom: rgba(221, 239, 255, .025);
@@ -17,7 +15,6 @@ html[data-dv-weather="sunny"] {
   --dv-weather-scene-opacity: 1;
 }
 html[data-dv-weather="cloudy"] {
-  --dv-weather-tint: transparent;
   --dv-weather-accent: #7d8ca8;
   --dv-sky-top: rgba(130, 150, 180, .28);
   --dv-sky-bottom: rgba(190, 201, 215, .09);
@@ -25,7 +22,6 @@ html[data-dv-weather="cloudy"] {
   --dv-weather-scene-opacity: 1;
 }
 html[data-dv-weather="rainy"] {
-  --dv-weather-tint: transparent;
   --dv-weather-accent: #478ac2;
   --dv-sky-top: rgba(52, 94, 145, .35);
   --dv-sky-bottom: rgba(108, 153, 186, .10);
@@ -33,7 +29,6 @@ html[data-dv-weather="rainy"] {
   --dv-weather-scene-opacity: 1;
 }
 html[data-dv-weather="snowy"] {
-  --dv-weather-tint: transparent;
   --dv-weather-accent: #65a9c6;
   --dv-sky-top: rgba(150, 202, 239, .28);
   --dv-sky-bottom: rgba(227, 243, 255, .11);
@@ -41,19 +36,13 @@ html[data-dv-weather="snowy"] {
   --dv-weather-scene-opacity: 1;
 }
 html[data-dv-weather="night"] {
-  --dv-weather-tint: transparent;
   --dv-weather-accent: #8872d4;
   --dv-sky-top: rgba(34, 38, 96, .33);
   --dv-sky-bottom: rgba(69, 49, 118, .09);
   --dv-sky-glow: rgba(156, 161, 255, .25);
   --dv-weather-scene-opacity: 1;
 }
-html[data-dv-weather="deep_space"] {
-  --dv-weather-tint: transparent;
-  --dv-weather-scene-opacity: 0;
-}
 
-/* The tint is shared by all routes, even those with opaque page backgrounds. */
 /* Preserve the page's original background and dark-mode palette. */
 html[data-dv-weather] :where(.dv-subpage-theme) {
   transition: background-color .6s ease;
@@ -62,33 +51,37 @@ html[data-dv-weather] :where(.dv-nav-shell, .dv-verse-dock) {
   border-color: color-mix(in srgb, var(--dv-weather-accent) 28%, transparent);
 }
 
-/* Viewport-level sky and drifting cloud layers. No DOM listeners or GPU canvas. */
-html[data-dv-weather] body::before,
-html[data-dv-weather] body::after {
-  content: "";
+/* Use a dedicated overlay because the global reset suppresses body pseudo-elements. */
+.dv-weather-scene {
   position: fixed;
   inset: 0;
+  overflow: clip;
   pointer-events: none;
   user-select: none;
   z-index: 30;
+}
+
+html[data-dv-weather]:where(:not([data-dv-weather="deep_space"])) .dv-weather-scene::before,
+html[data-dv-weather]:where(:not([data-dv-weather="deep_space"])) .dv-weather-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   opacity: var(--dv-weather-scene-opacity);
   transition: opacity 1.2s ease;
 }
-html[data-dv-weather] body::before {
+html[data-dv-weather] .dv-weather-scene::before {
   background:
     radial-gradient(ellipse 38vw 25vh at 88% 0%, var(--dv-sky-glow), transparent 78%),
     linear-gradient(180deg, var(--dv-sky-top) 0%, var(--dv-sky-bottom) 22%, transparent 48%);
   animation: dv-sky-breathe 16s ease-in-out infinite alternate;
 }
-html[data-dv-weather] body::after {
-  inset: 0;
-  z-index: 31;
+html[data-dv-weather] .dv-weather-scene::after {
   opacity: 0;
   background-repeat: repeat;
 }
 
 /* Visible cool-white cloud silhouettes in the upper sky, not a page-wide tint. */
-html[data-dv-weather="sunny"] body::after {
+html[data-dv-weather="sunny"] .dv-weather-scene::after {
   opacity: .92;
   background-image:
     radial-gradient(ellipse 95px 26px at 20% 18%, rgba(120,172,214,.26) 65%, transparent 74%),
@@ -101,8 +94,8 @@ html[data-dv-weather="sunny"] body::after {
   background-repeat: no-repeat;
   animation: dv-cloud-drift 34s ease-in-out infinite alternate;
 }
-html[data-dv-weather="cloudy"] body::after,
-html[data-dv-weather="rainy"] body::after {
+html[data-dv-weather="cloudy"] .dv-weather-scene::after,
+html[data-dv-weather="rainy"] .dv-weather-scene::after {
   opacity: .72;
   background-image:
     radial-gradient(ellipse 30vw 11vh at 16% 25%, rgba(225,232,242,.48), transparent 95%),
@@ -112,7 +105,7 @@ html[data-dv-weather="rainy"] body::after {
   animation: dv-cloud-drift 32s linear infinite;
 }
 /* Rain streaks layered over moving clouds, visible but never blocking content. */
-html[data-dv-weather="rainy"] body::after {
+html[data-dv-weather="rainy"] .dv-weather-scene::after {
   opacity: .62;
   background-image:
     repeating-linear-gradient(105deg, transparent 0 24px, rgba(164,211,247,.25) 25px, transparent 27px, transparent 57px),
@@ -120,7 +113,7 @@ html[data-dv-weather="rainy"] body::after {
   background-size: 180px 260px, 115vw 70vh;
   animation: dv-rain-fall .9s linear infinite;
 }
-html[data-dv-weather="snowy"] body::after {
+html[data-dv-weather="snowy"] .dv-weather-scene::after {
   opacity: .82;
   background-image:
     radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
@@ -130,7 +123,7 @@ html[data-dv-weather="snowy"] body::after {
   background-position: 0 0, 44px 35px, 19px 58px;
   animation: dv-snow-fall 11s linear infinite;
 }
-html[data-dv-weather="night"] body::after {
+html[data-dv-weather="night"] .dv-weather-scene::after {
   opacity: .68;
   background-image:
     radial-gradient(circle, rgba(236,237,255,.85) 0 1px, transparent 2px),
@@ -139,8 +132,8 @@ html[data-dv-weather="night"] body::after {
   background-position: 8px 19px, 57px 44px;
   animation: dv-stars-twinkle 5s ease-in-out infinite alternate;
 }
-html.dark[data-dv-weather] body::before { opacity: calc(var(--dv-weather-scene-opacity) * .72); }
-html.dark[data-dv-weather="rainy"] body::after { opacity: .42; }
+html.dark[data-dv-weather] .dv-weather-scene::before { opacity: calc(var(--dv-weather-scene-opacity) * .72); }
+html.dark[data-dv-weather="rainy"] .dv-weather-scene::after { opacity: .42; }
 
 @keyframes dv-sky-breathe {
   from { filter: brightness(.96); }
@@ -165,8 +158,8 @@ html.dark[data-dv-weather="rainy"] body::after { opacity: .42; }
 @media (prefers-reduced-motion: reduce) {
   html[data-dv-weather] body,
   html[data-dv-weather] .dv-subpage-theme,
-  html[data-dv-weather] body::before,
-  html[data-dv-weather] body::after {
+  html[data-dv-weather] .dv-weather-scene::before,
+  html[data-dv-weather] .dv-weather-scene::after {
     animation: none !important;
     transition: none !important;
   }
