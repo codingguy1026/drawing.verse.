@@ -1,14 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import {
   Activity, ArrowRight, ArrowUpRight, Compass, Heart, Images, MessageCircle,
-  Orbit, PenLine, Pencil, Plus,
+  Link2, Orbit, PenLine, Pencil, Plus,
 } from "lucide-react";
 import VersePulse from "@/components/Home/VersePulse";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { supabase } from "@/lib/supabase/client";
+import styles from "./home.module.css";
 
 const feedTabs = [
   { value: "all", label: "최신" },
@@ -47,10 +49,10 @@ type HomeUniverse = {
 };
 
 const defaultConfig: HomeConfig = {
-  heroTitle: "Drawing",
-  heroHighlight: "Verse",
-  heroSuffix: "",
-  heroDesc: "좋아하는 유니버스에서 그림과 이야기를 나눠요.",
+  heroTitle: "그림과 이야기,",
+  heroHighlight: "너만의 우주",
+  heroSuffix: "가 모이다",
+  heroDesc: "좋아하는 유니버스를 찾고 그림과 이야기를 나눠요.",
   tags: ["야구", "역사", "게임", "음악", "창작"],
   notices: [
     "[공지] 드버스 커뮤니티 이용 안내",
@@ -63,16 +65,23 @@ const destinations = [
   { href: "/gallery", label: "갤러리", icon: Images },
   { href: "/community", label: "Verse Talk", icon: MessageCircle },
   { href: "/sports", label: "스포츠 관제실", icon: Activity },
+  { href: "/wormhole", label: "Wormhole", icon: Link2 },
 ];
 
-const panelClass = "min-w-0 rounded-xl border border-slate-200 bg-white dark:border-white/12 dark:bg-[#101620]";
-const mutedClass = "text-slate-600 dark:text-slate-300";
-const focusClass = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:focus-visible:outline-sky-400";
-const actionClass = `inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-semibold ${focusClass}`;
-const secondaryAction = `${actionClass} border-slate-300 bg-white hover:bg-slate-100 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10`;
-const primaryAction = `${actionClass} border-transparent bg-slate-900 text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white`;
-const textLink = `inline-flex min-h-10 items-center gap-1.5 rounded px-1 text-sm font-semibold text-sky-800 hover:underline dark:text-sky-300 ${focusClass}`;
-const fieldClass = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal dark:border-white/15 dark:bg-slate-950 ${focusClass}`;
+const orbitDestinations = [
+  { href: "/universe", label: "유니버스" },
+  { href: "/gallery", label: "갤러리" },
+  { href: "/community", label: "Verse Talk" },
+  { href: "/wormhole", label: "Wormhole" },
+];
+
+const panelClass = `min-w-0 rounded-xl border ${styles.panel}`;
+const mutedClass = styles.muted;
+const actionClass = "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-semibold";
+const secondaryAction = `${actionClass} ${styles.secondary}`;
+const primaryAction = `${actionClass} ${styles.primary}`;
+const textLink = `inline-flex min-h-10 items-center gap-1.5 rounded px-1 text-sm font-semibold hover:underline ${styles.accent}`;
+const fieldClass = `w-full rounded-lg border px-3 py-2 font-normal ${styles.secondary}`;
 
 const formatCount = new Intl.NumberFormat("ko-KR");
 const formatDate = new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric" });
@@ -273,32 +282,65 @@ export default function HomeClient() {
     void reload.current?.();
   };
 
+  const latestPost = errors.posts ? undefined : posts[0];
+  const orbitUniverses = errors.universes ? [] : universes;
+  const orbitLinks = [
+    ...orbitUniverses.map((universe) => ({
+      href: `/universe/${encodeURIComponent(universe.slug)}`,
+      label: universe.name,
+    })),
+    ...orbitDestinations,
+  ].slice(0, orbitDestinations.length);
+
   return (
-    <main className="mx-auto w-full max-w-[1280px] px-4 py-5 text-slate-950 sm:px-6 sm:py-8 lg:px-8 dark:text-slate-100">
-      <header className="mb-5 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-b border-slate-200 pb-5 dark:border-white/12">
+    <main className={`mx-auto w-full max-w-[1280px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8 ${styles.page}`}>
+      <header className={`mb-5 ${styles.hero}`}>
         <div className="min-w-0">
-          <h1 className="break-words text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-            {config.heroTitle} <span className="text-sky-800 dark:text-sky-300">{config.heroHighlight}</span>{config.heroSuffix}
+          <h1 className={`text-3xl font-black leading-tight tracking-tight sm:text-4xl xl:text-[clamp(2.25rem,3.6vw,3.5rem)] ${styles.heroTitle}`}>
+            {config.heroTitle} <span className={styles.heroHighlight}>{config.heroHighlight}</span>{config.heroSuffix}
           </h1>
-          <p className={`mt-1.5 max-w-2xl break-words text-sm leading-6 ${mutedClass}`}>{config.heroDesc}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href="/explore" className={secondaryAction}>
-            <Compass size={16} aria-hidden="true" /> Explore
-          </Link>
-          <Link href="/universe/write" className={primaryAction}>
-            <PenLine size={16} aria-hidden="true" /> 글 쓰기
-          </Link>
-          {user && !userLoading && !draft && (
-            <button
-              type="button"
-              className={`inline-flex min-h-10 items-center gap-1.5 rounded px-2 text-sm ${mutedClass} ${focusClass}`}
-              onClick={() => { updateDraft(config); setFeedback(null); }}
-            >
-              <Pencil size={14} aria-hidden="true" /> 홈 편집
-            </button>
+          <p className={`mt-2 max-w-2xl break-words text-sm leading-6 ${mutedClass}`}>{config.heroDesc}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <Link href="/explore" className={primaryAction}>
+              <Compass size={16} aria-hidden="true" /> Explore
+            </Link>
+            <Link href="/universe/write" className={secondaryAction}>
+              <PenLine size={16} aria-hidden="true" /> 글 쓰기
+            </Link>
+            {user && !userLoading && !draft && (
+              <button
+                type="button"
+                className={`inline-flex min-h-10 items-center gap-1.5 rounded px-2 text-sm ${mutedClass}`}
+                onClick={() => { updateDraft(config); setFeedback(null); }}
+              >
+                <Pencil size={14} aria-hidden="true" /> 홈 편집
+              </button>
+            )}
+          </div>
+          {latestPost && (
+            <Link href={latestPost.href} className={`mt-4 flex min-h-10 items-center gap-2.5 rounded-md px-3 py-2 text-sm ${styles.latestSignal}`}>
+              <span className={`shrink-0 text-xs font-bold ${styles.accent}`}>최신 글</span>
+              <span className="min-w-0 flex-1 truncate font-medium">{latestPost.title}</span>
+              <ArrowUpRight size={14} aria-hidden="true" className={`shrink-0 ${mutedClass}`} />
+            </Link>
           )}
         </div>
+
+        <nav aria-label="유니버스 오빗" className={styles.orbit}>
+          <div className={styles.orbitDrawing} aria-hidden="true">
+            <Image src="/branding/dverse-logo-mark.svg" alt="" width={56} height={46} />
+          </div>
+          <ul className={styles.orbitLinks}>
+            {orbitLinks.map(({ href, label }) => (
+              <li key={href} className="min-w-0">
+                <Link href={href} className={`flex min-h-11 items-center gap-2 px-3 py-2 text-sm font-semibold ${styles.orbitLink}`}>
+                  <Orbit size={16} className={`shrink-0 ${styles.accent}`} aria-hidden="true" />
+                  <span className="min-w-0 truncate">{label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </header>
 
       {draft && (
@@ -349,16 +391,16 @@ export default function HomeClient() {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.49fr)] lg:items-start">
         <section aria-labelledby="home-feed-heading" className={`${panelClass} overflow-hidden`}>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 sm:px-5 dark:border-white/12">
+          <div className={`flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 sm:px-5 ${styles.divider}`}>
             <h2 id="home-feed-heading" className="text-lg font-bold">최근 올라온 글</h2>
-            <div role="group" aria-label="글 정렬" className="inline-flex items-center gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-950">
+            <div role="group" aria-label="글 정렬" className={`inline-flex items-center gap-0.5 rounded-lg p-0.5 ${styles.surfaceMuted}`}>
               {feedTabs.map(({ value, label }) => (
                 <button
                   key={value}
                   type="button"
                   aria-pressed={feedSort === value}
                   onClick={() => setFeedSort(value)}
-                  className={`min-h-9 rounded-md px-2.5 py-1.5 text-xs font-semibold ${focusClass} ${feedSort === value ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white" : mutedClass}`}
+                  className={`min-h-9 rounded-md px-2.5 py-1.5 text-xs font-semibold ${styles.sortButton} ${mutedClass}`}
                 >
                   {label}
                 </button>
@@ -379,14 +421,14 @@ export default function HomeClient() {
               <Link href="/universe/write" className={textLink}>첫 이야기 쓰기 <ArrowRight size={14} aria-hidden="true" /></Link>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-200 dark:divide-white/12">
+            <ul className={styles.divided}>
               {ranked.slice(0, 7).map((post, index) => (
                 <li key={post.id}>
                   <Link
                     href={post.href}
-                    className={`block px-4 sm:px-5 hover:bg-slate-100 dark:hover:bg-white/8 ${focusClass} focus-visible:-outline-offset-2 ${index === 0 ? "border-s-2 border-s-sky-600 bg-sky-50/60 py-4 dark:border-s-sky-400 dark:bg-sky-300/8" : "py-3.5"}`}
+                    className={`block px-4 sm:px-5 ${styles.surfaceHover} focus-visible:-outline-offset-2 ${index === 0 ? `py-4 ${styles.leadPost}` : "py-3.5"}`}
                   >
-                    <p className="break-words text-xs font-semibold text-sky-800 dark:text-sky-300">{post.universe}</p>
+                    <p className={`break-words text-xs font-semibold ${styles.accent}`}>{post.universe}</p>
                     <h3 className={`mt-1 break-words font-semibold leading-snug ${index === 0 ? "text-xl" : "text-base"}`}>{post.title}</h3>
                     <div className={`mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs ${mutedClass}`}>
                       <span className="min-w-0 break-words">
@@ -420,12 +462,12 @@ export default function HomeClient() {
             ) : universes.length === 0 ? (
               <p className={`py-3 text-sm ${mutedClass}`}>아직 공개 유니버스가 없어요.</p>
             ) : (
-              <ul className="divide-y divide-slate-200 dark:divide-white/12">
+              <ul className={styles.divided}>
                 {universes.map((universe) => (
                   <li key={universe.slug}>
                     <Link href={`/universe/${encodeURIComponent(universe.slug)}`}
-                      className={`flex min-w-0 gap-2.5 rounded-md px-1 py-3 hover:bg-slate-100 dark:hover:bg-white/8 ${focusClass}`}>
-                      <Orbit size={16} className="mt-0.5 shrink-0 text-sky-800 dark:text-sky-300" aria-hidden="true" />
+                      className={`flex min-w-0 gap-2.5 rounded-md px-1 py-3 ${styles.surfaceHover}`}>
+                      <Orbit size={16} className={`mt-0.5 shrink-0 ${styles.accent}`} aria-hidden="true" />
                       <div className="min-w-0">
                         <h3 className="break-words text-sm font-semibold">{universe.name}</h3>
                         {universe.description && <p className={`mt-0.5 line-clamp-2 break-words text-xs leading-5 ${mutedClass}`}>{universe.description}</p>}
@@ -448,8 +490,8 @@ export default function HomeClient() {
             <ul className="mt-2">
               {destinations.map(({ href, label, icon: Icon }) => (
                 <li key={href}>
-                  <Link href={href} className={`flex min-h-10 items-center gap-2 rounded-md px-1 text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/8 ${focusClass}`}>
-                    <Icon size={16} className="shrink-0 text-sky-800 dark:text-sky-300" aria-hidden="true" />
+                  <Link href={href} className={`flex min-h-10 items-center gap-2 rounded-md px-1 text-sm font-medium ${styles.surfaceHover}`}>
+                    <Icon size={16} className={`shrink-0 ${styles.accent}`} aria-hidden="true" />
                     {label}
                     <ArrowUpRight size={13} className={`ms-auto shrink-0 ${mutedClass}`} aria-hidden="true" />
                   </Link>
@@ -457,11 +499,11 @@ export default function HomeClient() {
               ))}
             </ul>
             {config.tags.some((tag) => tag.trim()) && (
-              <ul aria-label="관심 주제" className="mt-2 flex flex-wrap gap-1.5 border-t border-slate-200 pt-3 dark:border-white/12">
+              <ul aria-label="관심 주제" className={`mt-2 flex flex-wrap gap-1.5 border-t pt-3 ${styles.divider}`}>
                 {config.tags.filter((tag) => tag.trim()).map((tag, index) => (
                   <li key={`${tag}-${index}`} className="min-w-0">
                     <Link href={`/search?query=${encodeURIComponent(tag)}`}
-                      className={`inline-flex min-h-8 max-w-full items-center break-all rounded-md bg-slate-100 px-2 text-xs font-medium hover:bg-slate-200 dark:bg-white/8 dark:hover:bg-white/15 ${focusClass}`}>
+                      className={`inline-flex min-h-8 max-w-full items-center break-all rounded-md px-2 text-xs font-medium hover:underline ${styles.surfaceMuted} ${styles.accent}`}>
                       #{tag}
                     </Link>
                   </li>
@@ -485,7 +527,7 @@ export default function HomeClient() {
         <h2 id="home-activity-heading" className="text-base font-bold">드버스 활동</h2>
         <dl className="mt-3 grid grid-cols-3 gap-2">
           {([["유니버스 게시글", counts.posts], [ "공개 유니버스", counts.universes ], [ "갤러리 작품", counts.artworks ]] as const).map(([label, count]) => (
-            <div key={label} className="rounded-md bg-slate-50 px-2.5 py-2 sm:px-4 dark:bg-white/5">
+            <div key={label} className={`rounded-md px-2.5 py-2 sm:px-4 ${styles.surfaceMuted}`}>
               <dt className={`break-words text-xs ${mutedClass}`}>{label}</dt>
               <dd className="mt-1 break-words text-lg font-semibold tabular-nums">{count === null ? "—" : formatCount.format(count)}</dd>
             </div>
