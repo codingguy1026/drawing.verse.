@@ -93,7 +93,7 @@ export default function PostDetail({ params }: PostDetailProps) {
                 .select("*")
                 .eq("universe_slug", slug);
 
-            query = /^\\d+$/.test(postId)
+            query = /^\d+$/.test(postId)
                 ? query.eq("id", Number(postId))
                 : query.eq("public_id", postId);
 
