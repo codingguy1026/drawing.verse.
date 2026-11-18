@@ -479,6 +479,13 @@ export default function HomeClient() {
               >
                 커뮤니티 보기 →
               </Link>
+
+              <Link
+                href="/sports"
+                className="px-3 py-3 text-sm font-black text-slate-600 transition hover:text-slate-900 dark:text-white/70 dark:hover:text-white"
+              >
+                스포츠 경기 관제실 →
+              </Link>
             </div>
 
             <div className="mt-8 flex max-w-[680px] flex-wrap gap-2">
