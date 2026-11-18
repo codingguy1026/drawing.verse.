@@ -640,3 +640,28 @@
       #16182e;
   }
 }
+
+/* Keep activity totals readable on narrow phones without changing the desktop layout. */
+@container (max-width: 25rem) {
+  .activityTotals {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .activityTotals div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .5rem .85rem;
+  }
+
+  .activityTotals div + div {
+    border-inline-start: 0;
+    border-top: 1px solid var(--gc-line);
+  }
+
+  .activityTotals dd {
+    margin-top: 0;
+    flex-shrink: 0;
+  }
+}
