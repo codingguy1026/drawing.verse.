@@ -14,7 +14,12 @@ export function TeamLogo({ team }: { team: Team }) {
 }
 const startTime = (value: string) => new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(value));
 
-export default function SportsPanel({ config, matchId, initialDemo = false }: { config: SportsConfig; matchId?: string; initialDemo?: boolean }) {
+export default function SportsPanel({ config, matchId, initialDemo = false, highlightsOnly = false }: {
+  config: SportsConfig;
+  matchId?: string;
+  initialDemo?: boolean;
+  highlightsOnly?: boolean;
+}) {
   const [demo, setDemo] = useState(initialDemo);
   const { feed, error, now, retry } = useSportsFeed(demo);
   const match = matchId ? feed?.matches.find(m => m.id === matchId && matchesScope(m, config)) : selectMatch(feed?.matches ?? [], config, now);
@@ -29,13 +34,13 @@ export default function SportsPanel({ config, matchId, initialDemo = false }: { 
     {error && <div role="status" className={styles.notice}>연결이 끊겼어요. {match ? "마지막으로 받은 기록을 표시합니다." : "경기 정보를 가져오지 못했어요."} <button onClick={retry}>다시 시도</button></div>}
     {!feed && !error && <p className={styles.empty} role="status">경기 정보를 불러오는 중…</p>}
     {feed?.mode === "unconfigured" && <p className={styles.empty}>경기 중계 연결을 준비 중이에요. 연결되면 경기와 다음 일정이 표시됩니다.</p>}
-    {feed && feed.mode !== "unconfigured" && !match && <p className={styles.empty}>{details ? "이 경기의 기록이 없거나 이 유니버스에 해당하지 않아요." : "진행 중인 경기와 등록된 다음 일정이 없어요."}</p>}
+    {feed && feed.mode !== "unconfigured" && !match && <p className={styles.empty}>{details ? "이 경기의 기록을 찾을 수 없어요." : "진행 중인 경기와 등록된 다음 일정이 없어요."}</p>}
     {match && <>
       <div className={styles.meta}><span>{match.league}</span><span className={stale ? styles.warning : styles.status}>{demo ? "예시 화면" : stale ? "업데이트 지연" : statusLabels[match.status]}</span></div>
       {details ? <Score match={match} /> : <Link className={styles.scoreLink} href={href} aria-label={`${match.home.name} 대 ${match.away.name} 경기 중계 보기`}><Score match={match} /><span className={styles.open}>경기 상황 보기 →</span></Link>}
       <div className={styles.schedule}>{startTime(match.startsAt)} (한국 시간){match.venue ? ` · ${match.venue}` : ""}</div>
       {match.status !== "scheduled" && <SportState match={match} detailed={details} />}
-      {details && <EventFeed match={match} />}
+      {details && <EventFeed match={match} highlightsOnly={highlightsOnly} />}
       <p className={styles.updated}>{demo ? "화면 확인용 고정 예시입니다." : `마지막 기록 ${new Date(match.updatedAt).toLocaleTimeString("ko-KR", { timeZone: "Asia/Seoul" })} · 한국 시간 · 10초마다 확인`}</p>
     </>}
   </section>;
@@ -85,8 +90,9 @@ export function SportState({ match, detailed }: { match: Match; detailed: boolea
     case "other": return <div className={styles.stats}><Stat label="진행 상황">{state.period}</Stat>{state.details.map((d,i) => <Stat key={i} label={d.label}>{d.value}</Stat>)}</div>;
   }
 }
-function EventFeed({ match }: { match: Match }) {
-  const latest = match.events[0];
+function EventFeed({ match, highlightsOnly }: { match: Match; highlightsOnly: boolean }) {
+  const events = highlightsOnly ? match.events.filter((event) => event.major) : match.events;
+  const latest = events[0];
   const previous = useRef(latest?.id);
   const [highlight, setHighlight] = useState<string>();
   useEffect(() => {
@@ -97,5 +103,22 @@ function EventFeed({ match }: { match: Match }) {
     const timer = setTimeout(() => setHighlight(undefined), 600);
     return () => clearTimeout(timer);
   }, [latest?.id, latest?.major]);
-  return <section className={styles.events}><h3>최근 플레이</h3><p className={styles.latest} aria-live="polite" aria-atomic="true">{latest ? `${latest.label} · ${latest.text}` : "아직 기록된 플레이가 없어요."}</p><ol>{match.events.map(event => <li key={event.id} className={highlight === event.id ? styles.eventChanged : ""}><span>{event.label}</span><p>{event.major && <b className={styles.major}>주요 장면 </b>}{event.text}</p></li>)}</ol></section>;
+  return (
+    <section className={styles.events}>
+      <h3>{highlightsOnly ? "주요 장면" : "최근 플레이"}</h3>
+      <p className={highlightsOnly && latest ? "sr-only" : styles.latest} aria-live="polite" aria-atomic="true">
+        {latest ? `${latest.label} · ${latest.text}` : highlightsOnly ? "아직 기록된 주요 장면이 없어요." : "아직 기록된 플레이가 없어요."}
+      </p>
+      {events.length > 0 && (
+        <ol>
+          {events.map((event) => (
+            <li key={event.id} className={highlight === event.id ? styles.eventChanged : ""}>
+              <span>{event.label}</span>
+              <p>{!highlightsOnly && event.major && <b className={styles.major}>주요 장면 </b>}{event.text}</p>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
 }

@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
+  Activity,
   Home,
   Images,
   Link2,
@@ -36,6 +37,7 @@ const verseItems: FrameItem[] = [
   { label: "Wormhole", href: "/wormhole", icon: Link2, accent: "#8b5cf6" },
   { label: "Community", href: "/community", icon: MessageCircle, accent: "#f472b6" },
   { label: "Gallery", href: "/gallery", icon: Images, accent: "#a78bfa" },
+  { label: "Sports", href: "/sports", icon: Activity, accent: "#f97316" },
 ];
 
 const toolItems: FrameItem[] = [
@@ -60,6 +62,7 @@ function isActive(pathname: string, href: string) {
 function routeMeta(pathname: string) {
   if (pathname === "/") return { eyebrow: "INTERVERSE GATEWAY", title: "Home", tone: "coral" };
   if (pathname.startsWith("/gallery")) return { eyebrow: "ART ORBIT", title: "Gallery", tone: "coral" };
+  if (pathname.startsWith("/sports")) return { eyebrow: "MATCH CENTER", title: "Sports", tone: "coral" };
   if (pathname.startsWith("/community")) return { eyebrow: "SOCIAL SIGNAL", title: "Community", tone: "coral" };
   if (pathname.startsWith("/wormhole")) return { eyebrow: "CROSS VERSE", title: "Wormhole", tone: "lavender" };
   if (pathname.includes("/system/create")) return { eyebrow: "STELLAR GENESIS", title: "Create System", tone: "coral" };
