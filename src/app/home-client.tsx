@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import {
@@ -49,10 +48,10 @@ type HomeUniverse = {
 };
 
 const defaultConfig: HomeConfig = {
-  heroTitle: "그림과 이야기,",
-  heroHighlight: "너만의 우주",
-  heroSuffix: "가 모이다",
-  heroDesc: "좋아하는 유니버스를 찾고 그림과 이야기를 나눠요.",
+  heroTitle: "너의 이야기가",
+  heroHighlight: "우주가 되는 곳",
+  heroSuffix: "",
+  heroDesc: "관심사로 모여 글과 그림을 나누는 커뮤니티.",
   tags: ["야구", "역사", "게임", "음악", "창작"],
   notices: [
     "[공지] 드버스 커뮤니티 이용 안내",
@@ -68,19 +67,10 @@ const destinations = [
   { href: "/wormhole", label: "Wormhole", icon: Link2 },
 ];
 
-const orbitDestinations = [
-  { href: "/universe", label: "유니버스" },
-  { href: "/gallery", label: "갤러리" },
-  { href: "/community", label: "Verse Talk" },
-  { href: "/wormhole", label: "Wormhole" },
-];
-
-const panelClass = `min-w-0 rounded-xl border ${styles.panel}`;
-const mutedClass = styles.muted;
-const actionClass = "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-semibold";
+const actionClass = "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold";
 const secondaryAction = `${actionClass} ${styles.secondary}`;
 const primaryAction = `${actionClass} ${styles.primary}`;
-const textLink = `inline-flex min-h-10 items-center gap-1.5 rounded px-1 text-sm font-semibold hover:underline ${styles.accent}`;
+const textLink = `inline-flex min-h-10 items-center gap-1.5 rounded text-sm font-semibold hover:underline ${styles.accent}`;
 const fieldClass = `w-full rounded-lg border px-3 py-2 font-normal ${styles.secondary}`;
 
 const formatCount = new Intl.NumberFormat("ko-KR");
@@ -138,6 +128,7 @@ export default function HomeClient() {
   const { user, loading: userLoading } = useSupabaseUser();
   const [posts, setPosts] = useState<HomePost[]>([]);
   const [universes, setUniverses] = useState<HomeUniverse[]>([]);
+  const [universeNames, setUniverseNames] = useState(() => new Map<string, string>());
   const [counts, setCounts] = useState<{ posts: number | null; universes: number | null; artworks: number | null }>({
     posts: null, universes: null, artworks: null,
   });
@@ -190,7 +181,8 @@ export default function HomeClient() {
         if (!active || version !== request) return;
 
         setErrors({ posts: Boolean(postsResult.error), universes: Boolean(universesResult.error) });
-        setPosts((postsResult.data ?? []).filter((post) => post.universe_slug).map((post) => ({
+        const postRows = (postsResult.data ?? []).filter((post) => post.universe_slug);
+        setPosts(postRows.map((post) => ({
           id: post.id,
           title: post.title || "제목 없는 글",
           href: `/universe/${encodeURIComponent(post.universe_slug)}/${encodeURIComponent(post.public_id || post.id)}`,
@@ -208,6 +200,21 @@ export default function HomeClient() {
           members: universe.subscriber_count ?? 0,
         })));
         setCounts({ posts: postsResult.count, universes: universesResult.count, artworks: galleryResult.count });
+
+        const names = new Map<string, string>(
+          (universesResult.data ?? []).map(({ slug, name }) => [slug, name]),
+        );
+        setUniverseNames(names);
+        const missing = [...new Set<string>(postRows.map((post) => post.universe_slug))]
+          .filter((slug) => !names.has(slug));
+        if (missing.length) {
+          void Promise.resolve(supabase.from("universes").select("slug,name").in("slug", missing))
+            .then(({ data }) => {
+              if (!active || version !== request || !data?.length) return;
+              setUniverseNames(new Map([...names, ...data.map(({ slug, name }) => [slug, name] as const)]));
+            })
+            .catch((error) => console.warn("Failed to load universe names", error));
+        }
       } catch (error) {
         if (!active || version !== request) return;
         console.error("Failed to load home data", error);
@@ -283,68 +290,60 @@ export default function HomeClient() {
   };
 
   const latestPost = errors.posts ? undefined : posts[0];
-  const orbitUniverses = errors.universes ? [] : universes;
-  const orbitLinks = [
-    ...orbitUniverses.map((universe) => ({
-      href: `/universe/${encodeURIComponent(universe.slug)}`,
-      label: universe.name,
-    })),
-    ...orbitDestinations,
-  ].slice(0, orbitDestinations.length);
 
   return (
-    <main className={`mx-auto w-full max-w-[1280px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8 ${styles.page}`}>
-      <header className={`mb-5 ${styles.hero}`}>
-        <div className="min-w-0">
-          <h1 className={`text-3xl font-black leading-tight tracking-tight sm:text-4xl xl:text-[clamp(2.25rem,3.6vw,3.5rem)] ${styles.heroTitle}`}>
-            {config.heroTitle} <span className={styles.heroHighlight}>{config.heroHighlight}</span>{config.heroSuffix}
+    <main className={`mx-auto w-full max-w-[1320px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 ${styles.page}`}>
+      <header className={styles.hero}>
+        <div className={styles.intro}>
+          <h1 className={styles.title}>
+            {config.heroTitle} <span>{config.heroHighlight}{config.heroSuffix}</span>
           </h1>
-          <p className={`mt-2 max-w-2xl break-words text-sm leading-6 ${mutedClass}`}>{config.heroDesc}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Link href="/explore" className={primaryAction}>
+          <p className={styles.description}>{config.heroDesc}</p>
+          <div className="mt-5 flex flex-wrap gap-2.5">
+            <Link href="/explore" className={`${actionClass} ${styles.heroPrimary}`}>
               <Compass size={16} aria-hidden="true" /> Explore
             </Link>
-            <Link href="/universe/write" className={secondaryAction}>
+            <Link href="/universe/write" className={`${actionClass} ${styles.heroSecondary}`}>
               <PenLine size={16} aria-hidden="true" /> 글 쓰기
             </Link>
-            {user && !userLoading && !draft && (
-              <button
-                type="button"
-                className={`inline-flex min-h-10 items-center gap-1.5 rounded px-2 text-sm ${mutedClass}`}
-                onClick={() => { updateDraft(config); setFeedback(null); }}
-              >
-                <Pencil size={14} aria-hidden="true" /> 홈 편집
-              </button>
-            )}
           </div>
-          {latestPost && (
-            <Link href={latestPost.href} className={`mt-4 flex min-h-10 items-center gap-2.5 rounded-md px-3 py-2 text-sm ${styles.latestSignal}`}>
-              <span className={`shrink-0 text-xs font-bold ${styles.accent}`}>최신 글</span>
-              <span className="min-w-0 flex-1 truncate font-medium">{latestPost.title}</span>
-              <ArrowUpRight size={14} aria-hidden="true" className={`shrink-0 ${mutedClass}`} />
-            </Link>
-          )}
         </div>
-
-        <nav aria-label="유니버스 오빗" className={styles.orbit}>
-          <div className={styles.orbitDrawing} aria-hidden="true">
-            <Image src="/branding/dverse-logo-mark.svg" alt="" width={56} height={46} />
-          </div>
-          <ul className={styles.orbitLinks}>
-            {orbitLinks.map(({ href, label }) => (
-              <li key={href} className="min-w-0">
-                <Link href={href} className={`flex min-h-11 items-center gap-2 px-3 py-2 text-sm font-semibold ${styles.orbitLink}`}>
-                  <Orbit size={16} className={`shrink-0 ${styles.accent}`} aria-hidden="true" />
-                  <span className="min-w-0 truncate">{label}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        {latestPost && (
+          <Link href={latestPost.href} className={styles.featured}>
+            <div className="min-w-0">
+              <p className={styles.featuredLabel}>가장 최근에 올라온 글</p>
+              <p className={styles.featuredTitle}>{latestPost.title}</p>
+              <p className={styles.featuredMeta}>
+                {universeNames.get(latestPost.universe) || latestPost.author}
+              </p>
+            </div>
+            <ArrowUpRight size={19} className="mt-0.5 shrink-0" aria-hidden="true" />
+          </Link>
+        )}
       </header>
 
+      <nav aria-label="바로가기" className={styles.shortcuts}>
+        <ul>
+          {destinations.map(({ href, label, icon: Icon }) => (
+            <li key={href}>
+              <Link href={href} className={styles.shortcut}>
+                <Icon size={17} className="shrink-0" aria-hidden="true" />
+                <span>{label}</span>
+                <ArrowUpRight size={13} className={styles.shortcutArrow} aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {user && !userLoading && !draft && (
+          <button type="button" className={styles.edit}
+            onClick={() => { updateDraft(config); setFeedback(null); }}>
+            <Pencil size={15} aria-hidden="true" /> 홈 편집
+          </button>
+        )}
+      </nav>
+
       {draft && (
-        <form onSubmit={saveHome} className={`${panelClass} mb-5 space-y-4 p-4 sm:p-5`}>
+        <form onSubmit={saveHome} className={`${styles.panel} mb-6 space-y-4 p-4 sm:p-5`}>
           <h2 className="text-lg font-bold">내 홈 편집</h2>
           <fieldset disabled={saving} className="min-w-0 space-y-3">
             <div className="grid gap-3 sm:grid-cols-3">
@@ -387,20 +386,19 @@ export default function HomeClient() {
           </div>
         </form>
       )}
-      {saveMessage && <p role="status" className={`mb-4 text-sm ${mutedClass}`}>{saveMessage}</p>}
+      {saveMessage && <p role="status" className={`mb-4 text-sm ${styles.muted}`}>{saveMessage}</p>}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.49fr)] lg:items-start">
-        <section aria-labelledby="home-feed-heading" className={`${panelClass} overflow-hidden`}>
-          <div className={`flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 sm:px-5 ${styles.divider}`}>
-            <h2 id="home-feed-heading" className="text-lg font-bold">최근 올라온 글</h2>
-            <div role="group" aria-label="글 정렬" className={`inline-flex items-center gap-0.5 rounded-lg p-0.5 ${styles.surfaceMuted}`}>
+      <div className={styles.content}>
+        <section aria-labelledby="home-feed-heading" className={styles.panel}>
+          <div className={styles.panelHeading}>
+            <h2 id="home-feed-heading">최근 올라온 글</h2>
+            <div role="group" aria-label="글 정렬" className={styles.feedSort}>
               {feedTabs.map(({ value, label }) => (
                 <button
                   key={value}
                   type="button"
                   aria-pressed={feedSort === value}
                   onClick={() => setFeedSort(value)}
-                  className={`min-h-9 rounded-md px-2.5 py-1.5 text-xs font-semibold ${styles.sortButton} ${mutedClass}`}
                 >
                   {label}
                 </button>
@@ -409,36 +407,36 @@ export default function HomeClient() {
           </div>
 
           {loading ? (
-            <p role="status" className={`px-4 py-8 text-sm sm:px-5 ${mutedClass}`}>글을 불러오는 중…</p>
+            <p role="status" className={`${styles.panelMessage} ${styles.muted}`}>글을 불러오는 중…</p>
           ) : errors.posts ? (
-            <div className="space-y-2 px-4 py-6 sm:px-5">
-              <p role="status" className={`text-sm ${mutedClass}`}>글 목록을 불러오지 못했어요.</p>
+            <div className={styles.panelMessage}>
+              <p role="status" className={`mb-3 ${styles.muted}`}>글 목록을 불러오지 못했어요.</p>
               <button type="button" className={secondaryAction} onClick={retry}>다시 시도</button>
             </div>
           ) : ranked.length === 0 ? (
-            <div className="px-4 py-6 sm:px-5">
-              <p className={`text-sm ${mutedClass}`}>아직 올라온 글이 없어요.</p>
+            <div className={styles.panelMessage}>
+              <p className={styles.muted}>아직 올라온 글이 없어요.</p>
               <Link href="/universe/write" className={textLink}>첫 이야기 쓰기 <ArrowRight size={14} aria-hidden="true" /></Link>
             </div>
           ) : (
-            <ul className={styles.divided}>
-              {ranked.slice(0, 7).map((post, index) => (
+            <ul className={styles.rows}>
+              {ranked.slice(0, 7).map((post) => (
                 <li key={post.id}>
-                  <Link
-                    href={post.href}
-                    className={`block px-4 sm:px-5 ${styles.surfaceHover} focus-visible:-outline-offset-2 ${index === 0 ? `py-4 ${styles.leadPost}` : "py-3.5"}`}
-                  >
-                    <p className={`break-words text-xs font-semibold ${styles.accent}`}>{post.universe}</p>
-                    <h3 className={`mt-1 break-words font-semibold leading-snug ${index === 0 ? "text-xl" : "text-base"}`}>{post.title}</h3>
-                    <div className={`mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs ${mutedClass}`}>
-                      <span className="min-w-0 break-words">
+                  <Link href={post.href} className={styles.feedLink}>
+                    <div className="min-w-0">
+                      {universeNames.get(post.universe) && (
+                        <p className={styles.place}>{universeNames.get(post.universe)}</p>
+                      )}
+                      <h3>{post.title}</h3>
+                      <p className={styles.postByline}>
                         {post.author}{post.createdAt > 0 && <> · <time dateTime={new Date(post.createdAt).toISOString()}>{formatDate.format(post.createdAt)}</time></>}
-                      </span>
-                      <span className="flex items-center gap-3">
-                        <span className="inline-flex items-center gap-1"><Heart size={13} aria-hidden="true" /><span className="sr-only">좋아요 </span>{formatCount.format(post.likes)}</span>
-                        <span className="inline-flex items-center gap-1"><MessageCircle size={13} aria-hidden="true" /><span className="sr-only">댓글 </span>{formatCount.format(post.comments)}</span>
-                      </span>
+                      </p>
                     </div>
+                    <span className={styles.postCounts}>
+                      <span><Heart size={14} aria-hidden="true" /><span className="sr-only">좋아요 </span>{formatCount.format(post.likes)}</span>
+                      <span><MessageCircle size={14} aria-hidden="true" /><span className="sr-only">댓글 </span>{formatCount.format(post.comments)}</span>
+                    </span>
+                    <ArrowUpRight size={16} className={styles.feedArrow} aria-hidden="true" />
                   </Link>
                 </li>
               ))}
@@ -446,32 +444,31 @@ export default function HomeClient() {
           )}
         </section>
 
-        <aside aria-label="유니버스와 탐색" className="min-w-0 space-y-4">
-          <section aria-labelledby="home-universes-heading" className={`${panelClass} p-4`}>
-            <div className="flex flex-wrap items-center justify-between gap-x-2">
-              <h2 id="home-universes-heading" className="text-base font-bold">새 유니버스</h2>
-              <Link href="/universe" className={textLink}>목록 <ArrowRight size={13} aria-hidden="true" /></Link>
+        <aside aria-label="유니버스와 탐색" className="min-w-0 space-y-5">
+          <section aria-labelledby="home-universes-heading" className={styles.panel}>
+            <div className={styles.panelHeading}>
+              <h2 id="home-universes-heading">새 유니버스</h2>
+              <Link href="/universe" className={textLink}>전체 보기 <ArrowRight size={13} aria-hidden="true" /></Link>
             </div>
             {loading ? (
-              <p role="status" className={`py-3 text-sm ${mutedClass}`}>유니버스를 불러오는 중…</p>
+              <p role="status" className={`${styles.panelMessage} ${styles.muted}`}>유니버스를 불러오는 중…</p>
             ) : errors.universes ? (
-              <div className="space-y-2 py-2">
-                <p role="status" className={`text-sm ${mutedClass}`}>유니버스를 불러오지 못했어요.</p>
+              <div className={styles.panelMessage}>
+                <p role="status" className={`mb-3 ${styles.muted}`}>유니버스를 불러오지 못했어요.</p>
                 <button type="button" className={secondaryAction} onClick={retry}>다시 시도</button>
               </div>
             ) : universes.length === 0 ? (
-              <p className={`py-3 text-sm ${mutedClass}`}>아직 공개 유니버스가 없어요.</p>
+              <p className={`${styles.panelMessage} ${styles.muted}`}>아직 공개 유니버스가 없어요.</p>
             ) : (
-              <ul className={styles.divided}>
+              <ul className={styles.rows}>
                 {universes.map((universe) => (
                   <li key={universe.slug}>
-                    <Link href={`/universe/${encodeURIComponent(universe.slug)}`}
-                      className={`flex min-w-0 gap-2.5 rounded-md px-1 py-3 ${styles.surfaceHover}`}>
-                      <Orbit size={16} className={`mt-0.5 shrink-0 ${styles.accent}`} aria-hidden="true" />
+                    <Link href={`/universe/${encodeURIComponent(universe.slug)}`} className={styles.universeLink}>
+                      <span className={styles.universeIcon} aria-hidden="true"><Orbit size={18} /></span>
                       <div className="min-w-0">
-                        <h3 className="break-words text-sm font-semibold">{universe.name}</h3>
-                        {universe.description && <p className={`mt-0.5 line-clamp-2 break-words text-xs leading-5 ${mutedClass}`}>{universe.description}</p>}
-                        <p className={`mt-1 break-words text-xs ${mutedClass}`}>
+                        <h3>{universe.name}</h3>
+                        {universe.description && <p className={styles.universeDescription}>{universe.description}</p>}
+                        <p className={styles.postByline}>
                           {universe.category && `${universe.category} · `}구독 {formatCount.format(universe.members)}
                         </p>
                       </div>
@@ -480,56 +477,44 @@ export default function HomeClient() {
                 ))}
               </ul>
             )}
-            <Link href="/universe/create" className={`${secondaryAction} mt-2 w-full`}>
-              <Plus size={15} aria-hidden="true" /> 유니버스 만들기
-            </Link>
+            <div className={styles.panelFooter}>
+              <Link href="/universe/create" className={textLink}>
+                <Plus size={15} aria-hidden="true" /> 유니버스 만들기
+              </Link>
+            </div>
           </section>
 
-          <nav aria-labelledby="home-discover-heading" className={`${panelClass} p-4`}>
-            <h2 id="home-discover-heading" className="text-base font-bold">둘러보기</h2>
-            <ul className="mt-2">
-              {destinations.map(({ href, label, icon: Icon }) => (
-                <li key={href}>
-                  <Link href={href} className={`flex min-h-10 items-center gap-2 rounded-md px-1 text-sm font-medium ${styles.surfaceHover}`}>
-                    <Icon size={16} className={`shrink-0 ${styles.accent}`} aria-hidden="true" />
-                    {label}
-                    <ArrowUpRight size={13} className={`ms-auto shrink-0 ${mutedClass}`} aria-hidden="true" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            {config.tags.some((tag) => tag.trim()) && (
-              <ul aria-label="관심 주제" className={`mt-2 flex flex-wrap gap-1.5 border-t pt-3 ${styles.divider}`}>
-                {config.tags.filter((tag) => tag.trim()).map((tag, index) => (
-                  <li key={`${tag}-${index}`} className="min-w-0">
-                    <Link href={`/search?query=${encodeURIComponent(tag)}`}
-                      className={`inline-flex min-h-8 max-w-full items-center break-all rounded-md px-2 text-xs font-medium hover:underline ${styles.surfaceMuted} ${styles.accent}`}>
-                      #{tag}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </nav>
-
-          {config.notices.some((notice) => notice.trim()) && (
-            <section aria-labelledby="home-notices-heading" className={`${panelClass} p-4`}>
-              <h2 id="home-notices-heading" className="text-base font-bold">공지와 안내</h2>
-              <ul className={`mt-2 space-y-2 break-words text-sm leading-6 ${mutedClass}`}>
-                {config.notices.filter((notice) => notice.trim()).map((notice, index) => <li key={`${notice}-${index}`}>{notice}</li>)}
-              </ul>
+          {(config.notices.some((notice) => notice.trim()) || config.tags.some((tag) => tag.trim())) && (
+            <section aria-labelledby="home-notices-heading" className={styles.panel}>
+              <div className={styles.panelHeading}>
+                <h2 id="home-notices-heading">{config.notices.some((notice) => notice.trim()) ? "공지와 안내" : "관심 주제"}</h2>
+              </div>
+              {config.notices.some((notice) => notice.trim()) && (
+                <ul className={styles.notices}>
+                  {config.notices.filter((notice) => notice.trim()).map((notice, index) => <li key={`${notice}-${index}`}>{notice}</li>)}
+                </ul>
+              )}
+              {config.tags.some((tag) => tag.trim()) && (
+                <ul aria-label="관심 주제" className={styles.tags}>
+                  {config.tags.filter((tag) => tag.trim()).map((tag, index) => (
+                    <li key={`${tag}-${index}`}>
+                      <Link href={`/search?query=${encodeURIComponent(tag)}`}>#{tag}</Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           )}
         </aside>
       </div>
 
-      <section aria-labelledby="home-activity-heading" className={`${panelClass} mt-5 p-4 sm:p-5`}>
-        <h2 id="home-activity-heading" className="text-base font-bold">드버스 활동</h2>
-        <dl className="mt-3 grid grid-cols-3 gap-2">
-          {([["유니버스 게시글", counts.posts], [ "공개 유니버스", counts.universes ], [ "갤러리 작품", counts.artworks ]] as const).map(([label, count]) => (
-            <div key={label} className={`rounded-md px-2.5 py-2 sm:px-4 ${styles.surfaceMuted}`}>
-              <dt className={`break-words text-xs ${mutedClass}`}>{label}</dt>
-              <dd className="mt-1 break-words text-lg font-semibold tabular-nums">{count === null ? "—" : formatCount.format(count)}</dd>
+      <section aria-labelledby="home-activity-heading" className={`${styles.panel} ${styles.activity}`}>
+        <h2 id="home-activity-heading">드버스 활동</h2>
+        <dl>
+          {([["유니버스 게시글", counts.posts], ["공개 유니버스", counts.universes], ["갤러리 작품", counts.artworks]] as const).map(([label, count]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{count === null ? "—" : formatCount.format(count)}</dd>
             </div>
           ))}
         </dl>
