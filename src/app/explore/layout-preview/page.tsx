@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import RecentUniverseCards from "./recent-universe-cards";
+import RecentUniverseCards from "../recent-universe-cards";
 
 export const metadata: Metadata = {
   title: "콘텐츠 탐색 레이아웃 | Drawing Verse",
