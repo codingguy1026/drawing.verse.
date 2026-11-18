@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import {
   Activity, ArrowRight, ArrowUpRight, Compass, Heart, Images, MessageCircle,
-  Link2, Orbit, PenLine, Pencil, Plus,
+  Link2, Orbit, PenLine, Pencil, Plus, Radio, ScrollText,
 } from "lucide-react";
 import VersePulse from "@/components/Home/VersePulse";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
@@ -31,6 +31,7 @@ type HomeConfig = {
 type HomePost = {
   id: string | number;
   title: string;
+  excerpt: string;
   href: string;
   author: string;
   universe: string;
@@ -61,10 +62,10 @@ const defaultConfig: HomeConfig = {
 };
 
 const destinations = [
-  { href: "/gallery", label: "갤러리", icon: Images },
-  { href: "/community", label: "Verse Talk", icon: MessageCircle },
-  { href: "/sports", label: "스포츠 관제실", icon: Activity },
-  { href: "/wormhole", label: "Wormhole", icon: Link2 },
+  { href: "/gallery", label: "갤러리", description: "창작 작품 둘러보기", icon: Images },
+  { href: "/community", label: "Verse Talk", description: "실시간으로 대화하기", icon: MessageCircle },
+  { href: "/sports", label: "스포츠 관제실", description: "KBO 일정과 결과 보기", icon: Activity },
+  { href: "/wormhole", label: "Wormhole", description: "두 유니버스 함께 보기", icon: Link2 },
 ];
 
 const actionClass = "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold";
@@ -185,6 +186,7 @@ export default function HomeClient() {
         setPosts(postRows.map((post) => ({
           id: post.id,
           title: post.title || "제목 없는 글",
+          excerpt: typeof post.content === "string" ? post.content.trim().slice(0, 280).replace(/\s+/g, " ") : "",
           href: `/universe/${encodeURIComponent(post.universe_slug)}/${encodeURIComponent(post.public_id || post.id)}`,
           author: post.author || "알 수 없는 작성자",
           universe: post.universe_slug,
@@ -290,6 +292,8 @@ export default function HomeClient() {
   };
 
   const latestPost = errors.posts ? undefined : posts[0];
+  const notices = config.notices.filter((notice) => notice.trim());
+  const tags = config.tags.filter((tag) => tag.trim());
 
   return (
     <main className={`mx-auto w-full max-w-[1320px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 ${styles.page}`}>
@@ -324,23 +328,27 @@ export default function HomeClient() {
 
       <nav aria-label="바로가기" className={styles.shortcuts}>
         <ul>
-          {destinations.map(({ href, label, icon: Icon }) => (
+          {destinations.map(({ href, label, description, icon: Icon }) => (
             <li key={href}>
               <Link href={href} className={styles.shortcut}>
-                <Icon size={17} className="shrink-0" aria-hidden="true" />
-                <span>{label}</span>
-                <ArrowUpRight size={13} className={styles.shortcutArrow} aria-hidden="true" />
+                <span className={styles.shortcutIcon}><Icon size={19} aria-hidden="true" /></span>
+                <ArrowUpRight size={15} className={styles.shortcutArrow} aria-hidden="true" />
+                <span className={styles.shortcutTitle}>{label}</span>
+                <span className={styles.shortcutDescription}>{description}</span>
               </Link>
             </li>
           ))}
         </ul>
-        {user && !userLoading && !draft && (
+      </nav>
+
+      {user && !userLoading && !draft && (
+        <div className={styles.editBar}>
           <button type="button" className={styles.edit}
             onClick={() => { updateDraft(config); setFeedback(null); }}>
             <Pencil size={15} aria-hidden="true" /> 홈 편집
           </button>
-        )}
-      </nav>
+        </div>
+      )}
 
       {draft && (
         <form onSubmit={saveHome} className={`${styles.panel} mb-6 space-y-4 p-4 sm:p-5`}>
@@ -389,9 +397,9 @@ export default function HomeClient() {
       {saveMessage && <p role="status" className={`mb-4 text-sm ${styles.muted}`}>{saveMessage}</p>}
 
       <div className={styles.content}>
-        <section aria-labelledby="home-feed-heading" className={styles.panel}>
+        <section id="home-feed" aria-labelledby="home-feed-heading" className={`${styles.panel} ${styles.feed}`}>
           <div className={styles.panelHeading}>
-            <h2 id="home-feed-heading">최근 올라온 글</h2>
+            <h2 id="home-feed-heading"><ScrollText size={19} aria-hidden="true" /> 최근 올라온 글</h2>
             <div role="group" aria-label="글 정렬" className={styles.feedSort}>
               {feedTabs.map(({ value, label }) => (
                 <button
@@ -428,6 +436,7 @@ export default function HomeClient() {
                         <p className={styles.place}>{universeNames.get(post.universe)}</p>
                       )}
                       <h3>{post.title}</h3>
+                      {post.excerpt && <p className={styles.postExcerpt}>{post.excerpt}</p>}
                       <p className={styles.postByline}>
                         {post.author}{post.createdAt > 0 && <> · <time dateTime={new Date(post.createdAt).toISOString()}>{formatDate.format(post.createdAt)}</time></>}
                       </p>
@@ -447,7 +456,7 @@ export default function HomeClient() {
         <aside aria-label="유니버스와 탐색" className="min-w-0 space-y-5">
           <section aria-labelledby="home-universes-heading" className={styles.panel}>
             <div className={styles.panelHeading}>
-              <h2 id="home-universes-heading">새 유니버스</h2>
+              <h2 id="home-universes-heading"><Orbit size={19} aria-hidden="true" /> 새 유니버스</h2>
               <Link href="/universe" className={textLink}>전체 보기 <ArrowRight size={13} aria-hidden="true" /></Link>
             </div>
             {loading ? (
@@ -460,7 +469,7 @@ export default function HomeClient() {
             ) : universes.length === 0 ? (
               <p className={`${styles.panelMessage} ${styles.muted}`}>아직 공개 유니버스가 없어요.</p>
             ) : (
-              <ul className={styles.rows}>
+              <ul className={styles.universeList}>
                 {universes.map((universe) => (
                   <li key={universe.slug}>
                     <Link href={`/universe/${encodeURIComponent(universe.slug)}`} className={styles.universeLink}>
@@ -468,10 +477,12 @@ export default function HomeClient() {
                       <div className="min-w-0">
                         <h3>{universe.name}</h3>
                         {universe.description && <p className={styles.universeDescription}>{universe.description}</p>}
-                        <p className={styles.postByline}>
-                          {universe.category && `${universe.category} · `}구독 {formatCount.format(universe.members)}
+                        <p className={styles.universeMeta}>
+                          {universe.category && <span>{universe.category}</span>}
+                          구독 {formatCount.format(universe.members)}
                         </p>
                       </div>
+                      <ArrowUpRight size={14} className={styles.universeArrow} aria-hidden="true" />
                     </Link>
                   </li>
                 ))}
@@ -484,19 +495,19 @@ export default function HomeClient() {
             </div>
           </section>
 
-          {(config.notices.some((notice) => notice.trim()) || config.tags.some((tag) => tag.trim())) && (
+          {(notices.length > 0 || tags.length > 0) && (
             <section aria-labelledby="home-notices-heading" className={styles.panel}>
               <div className={styles.panelHeading}>
-                <h2 id="home-notices-heading">{config.notices.some((notice) => notice.trim()) ? "공지와 안내" : "관심 주제"}</h2>
+                <h2 id="home-notices-heading">{notices.length > 0 ? "공지와 안내" : "관심 주제"}</h2>
               </div>
-              {config.notices.some((notice) => notice.trim()) && (
+              {notices.length > 0 && (
                 <ul className={styles.notices}>
-                  {config.notices.filter((notice) => notice.trim()).map((notice, index) => <li key={`${notice}-${index}`}>{notice}</li>)}
+                  {notices.map((notice, index) => <li key={`${notice}-${index}`}>{notice}</li>)}
                 </ul>
               )}
-              {config.tags.some((tag) => tag.trim()) && (
+              {tags.length > 0 && (
                 <ul aria-label="관심 주제" className={styles.tags}>
-                  {config.tags.filter((tag) => tag.trim()).map((tag, index) => (
+                  {tags.map((tag, index) => (
                     <li key={`${tag}-${index}`}>
                       <Link href={`/search?query=${encodeURIComponent(tag)}`}>#{tag}</Link>
                     </li>
@@ -509,16 +520,24 @@ export default function HomeClient() {
       </div>
 
       <section aria-labelledby="home-activity-heading" className={`${styles.panel} ${styles.activity}`}>
-        <h2 id="home-activity-heading">드버스 활동</h2>
-        <dl>
-          {([["유니버스 게시글", counts.posts], ["공개 유니버스", counts.universes], ["갤러리 작품", counts.artworks]] as const).map(([label, count]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>{count === null ? "—" : formatCount.format(count)}</dd>
-            </div>
-          ))}
-        </dl>
-        <VersePulse />
+        <div className={styles.panelHeading}>
+          <h2 id="home-activity-heading"><Radio size={19} aria-hidden="true" /> 드버스 활동</h2>
+        </div>
+        <div className={styles.activityBody}>
+          <dl className={styles.activityTotals}>
+            {([
+              ["유니버스 게시글", counts.posts, "#home-feed"],
+              ["공개 유니버스", counts.universes, "/universe"],
+              ["갤러리 작품", counts.artworks, "/gallery"],
+            ] as const).map(([label, count, href]) => (
+              <div key={label}>
+                <dt><Link href={href}>{label}</Link></dt>
+                <dd>{count === null ? "—" : formatCount.format(count)}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className={styles.pulse}><VersePulse /></div>
+        </div>
       </section>
     </main>
   );
