@@ -64,6 +64,14 @@ export default function ExplorePage() {
               최근 만들어진 유니버스
             </h2>
             <RecentUniverseCards />
+            <div className="mt-4 flex justify-start sm:justify-end">
+              <Link
+                href="/universe"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800"
+              >
+                전체 유니버스 보기 →
+              </Link>
+            </div>
           </section>
         </div>
 
