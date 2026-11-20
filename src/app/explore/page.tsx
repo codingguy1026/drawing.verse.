@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const discoveryLinks = [
   { title: "추천 콘텐츠", description: "갤러리에서 창작자들의 작품을 둘러보세요.", href: "/gallery" },
   { title: "최근 업데이트", description: "최근 만들어진 공개 유니버스를 만나보세요.", href: "#recent-universes" },
-  { title: "인기 콘텐츠", description: "구독자가 많은 유니버스를 둘러보세요.", href: "/universe" },
+  { title: "인기 콘텐츠", description: "구독자가 많은 유니버스를 둘러보세요.", href: "#popular-universes" },
   { title: "카테고리", description: "관심 있는 분야로 바로 이동하세요.", href: "#explore-categories" },
 ];
 
@@ -71,6 +71,19 @@ export default function ExplorePage() {
               >
                 전체 유니버스 보기 →
               </Link>
+            </div>
+          </section>
+
+          <section id="popular-universes" aria-labelledby="popular-universes-heading" className="scroll-mt-24">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 id="popular-universes-heading" className="text-xl font-semibold">인기 유니버스</h2>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">많은 사람이 관심을 갖는 세계를 찾아보세요.</p>
+              </div>
+              <Link href="/universe" className="inline-flex min-h-11 items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800">유니버스 둘러보기 →</Link>
+            </div>
+            <div className="mt-4 rounded-xl border border-dashed border-slate-300 p-5 dark:border-slate-700">
+              <p className="text-sm text-slate-600 dark:text-slate-300">인기 순위는 집계 기준을 연결한 뒤 이곳에 표시됩니다.</p>
             </div>
           </section>
         </div>
