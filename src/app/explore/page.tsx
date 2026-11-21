@@ -82,9 +82,15 @@ export default function ExplorePage() {
               </div>
               <Link href="/universe" className="inline-flex min-h-11 items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800">유니버스 둘러보기 →</Link>
             </div>
-            <div className="mt-4 rounded-xl border border-dashed border-slate-300 p-5 dark:border-slate-700">
-              <p className="text-sm text-slate-600 dark:text-slate-300">인기 순위는 집계 기준을 연결한 뒤 이곳에 표시됩니다.</p>
-            </div>
+            <ol aria-label="인기 유니버스 목록 준비 중" className="mt-4 grid gap-3 sm:grid-cols-3">
+              {[1, 2, 3].map((position) => (
+                <li key={position} className="flex min-h-32 flex-col rounded-xl border border-dashed border-slate-300 p-4 dark:border-slate-700">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">자리 {position}</span>
+                  <p className="mt-3 text-sm font-medium">유니버스 준비 중</p>
+                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">구독자 수 집계 연결 후 표시됩니다.</p>
+                </li>
+              ))}
+            </ol>
           </section>
         </div>
 
