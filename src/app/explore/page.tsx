@@ -110,12 +110,12 @@ export default function ExplorePage() {
 
           <nav id="explore-categories" aria-labelledby="explore-categories-heading" className="scroll-mt-24">
             <h2 id="explore-categories-heading" className="font-semibold">카테고리</h2>
-            <ul className="mt-2 space-y-1">
+            <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-1">
               {categories.map(({ label, href }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="block rounded-lg px-3 py-2 text-sm hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:hover:bg-slate-800"
+                    className="flex min-h-11 items-center rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800"
                   >
                     {label}
                   </Link>
