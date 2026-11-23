@@ -33,7 +33,7 @@ export default function ExplorePage() {
         </div>
         <Link
           href="/search"
-          className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-medium hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-slate-300 px-4 py-3 text-sm font-medium hover:bg-slate-100 sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800"
         >
           전체 검색
         </Link>
@@ -80,7 +80,7 @@ export default function ExplorePage() {
                 <h2 id="popular-universes-heading" className="text-xl font-semibold">인기 유니버스</h2>
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">많은 사람이 관심을 갖는 세계를 찾아보세요.</p>
               </div>
-              <Link href="/universe" className="inline-flex min-h-11 items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800">유니버스 둘러보기 →</Link>
+              <Link href="/universe" className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-700 dark:hover:bg-slate-800">유니버스 둘러보기 →</Link>
             </div>
             <ol aria-label="인기 유니버스 목록 준비 중" className="mt-4 grid gap-3 sm:grid-cols-3">
               {[1, 2, 3].map((position) => (
