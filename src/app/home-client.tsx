@@ -307,8 +307,8 @@ export default function HomeClient() {
             <Link href="/explore" className={`${actionClass} ${styles.heroPrimary}`}>
               <Compass size={16} aria-hidden="true" /> Explore
             </Link>
-            <Link href="/universe/write" className={`${actionClass} ${styles.heroSecondary}`}>
-              <PenLine size={16} aria-hidden="true" /> 글 쓰기
+            <Link href="#home-feed" className={`${actionClass} ${styles.heroSecondary}`}>
+              <ScrollText size={16} aria-hidden="true" /> 게시글 보기
             </Link>
           </div>
         </div>
@@ -326,23 +326,8 @@ export default function HomeClient() {
         )}
       </header>
 
-      <nav aria-label="바로가기" className={styles.shortcuts}>
-        <ul>
-          {destinations.map(({ href, label, description, icon: Icon }) => (
-            <li key={href}>
-              <Link href={href} className={styles.shortcut}>
-                <span className={styles.shortcutIcon}><Icon size={19} aria-hidden="true" /></span>
-                <ArrowUpRight size={15} className={styles.shortcutArrow} aria-hidden="true" />
-                <span className={styles.shortcutTitle}>{label}</span>
-                <span className={styles.shortcutDescription}>{description}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
       {user && !userLoading && !draft && (
-        <div className={styles.editBar}>
+        <div className={styles.editBar} style={{ marginBlock: ".75rem .7rem" }}>
           <button type="button" className={styles.edit}
             onClick={() => { updateDraft(config); setFeedback(null); }}>
             <Pencil size={15} aria-hidden="true" /> 홈 편집
@@ -396,10 +381,10 @@ export default function HomeClient() {
       )}
       {saveMessage && <p role="status" className={`mb-4 text-sm ${styles.muted}`}>{saveMessage}</p>}
 
-      <div className={styles.content}>
+      <div className={`${styles.content} mt-5`}>
         <section id="home-feed" aria-labelledby="home-feed-heading" className={`${styles.panel} ${styles.feed}`}>
           <div className={styles.panelHeading}>
-            <h2 id="home-feed-heading"><ScrollText size={19} aria-hidden="true" /> 최근 올라온 글</h2>
+            <h2 id="home-feed-heading"><ScrollText size={19} aria-hidden="true" /> 커뮤니티 피드</h2>
             <div role="group" aria-label="글 정렬" className={styles.feedSort}>
               {feedTabs.map(({ value, label }) => (
                 <button
@@ -411,6 +396,19 @@ export default function HomeClient() {
                   {label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className="border-b border-[var(--gc-line)] p-4 sm:p-5">
+            <p className="text-sm font-semibold">오늘은 어떤 이야기를 나눌까요?</p>
+            <p className={`mt-1 text-xs ${styles.muted}`}>유니버스에 글을 남기거나 갤러리에 작품을 올려보세요.</p>
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Link href="/universe/write" className={primaryAction}>
+                <PenLine size={16} aria-hidden="true" /> 글 쓰기
+              </Link>
+              <Link href="/gallery/upload" className={secondaryAction}>
+                <Images size={16} aria-hidden="true" /> 작품 올리기
+              </Link>
             </div>
           </div>
 
@@ -518,6 +516,21 @@ export default function HomeClient() {
           )}
         </aside>
       </div>
+
+      <nav aria-label="바로가기" className={styles.shortcuts}>
+        <ul>
+          {destinations.map(({ href, label, description, icon: Icon }) => (
+            <li key={href}>
+              <Link href={href} className={styles.shortcut}>
+                <span className={styles.shortcutIcon}><Icon size={19} aria-hidden="true" /></span>
+                <ArrowUpRight size={15} className={styles.shortcutArrow} aria-hidden="true" />
+                <span className={styles.shortcutTitle}>{label}</span>
+                <span className={styles.shortcutDescription}>{description}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       <section aria-labelledby="home-activity-heading" className={`${styles.panel} ${styles.activity}`}>
         <div className={styles.panelHeading}>
