@@ -13,6 +13,7 @@ import styles from "./home.module.css";
 
 const feedTabs = [
   { value: "all", label: "최신" },
+  { value: "following", label: "구독 중" },
   { value: "best", label: "Best" },
   { value: "hot", label: "Hot" },
 ] as const;
@@ -137,6 +138,8 @@ export default function HomeClient() {
   const [errors, setErrors] = useState({ posts: false, universes: false });
   const reload = useRef<(() => Promise<void>) | null>(null);
   const [feedSort, setFeedSort] = useState<FeedSort>("all");
+  const [following, setFollowing] = useState<{ userId: string; posts: HomePost[]; names: Map<string, string>; error: boolean; hasSubscriptions: boolean } | null>(null);
+  const [followingRetry, setFollowingRetry] = useState(0);
 
   const [saved, setSaved] = useState<PersonalConfig | null>(null);
   const [editor, setEditor] = useState<PersonalConfig | null>(null);
@@ -240,6 +243,60 @@ export default function HomeClient() {
     };
   }, [userId]);
 
+  useEffect(() => {
+    if (!userId || feedSort !== "following") return;
+    let active = true;
+    let version = 0;
+    const owner = userId;
+    async function loadFollowing() {
+      const request = ++version;
+      try {
+        const subscriptions = await supabase.from("universe_subscriptions")
+          .select("universe_slug").eq("user_id", owner);
+        if (subscriptions.error) throw subscriptions.error;
+        const slugs = [...new Set<string>((subscriptions.data ?? []).map(row => String(row.universe_slug)))];
+        if (!active || request !== version) return;
+        if (!slugs.length) {
+          setFollowing({ userId: owner, posts: [], names: new Map(), error: false, hasSubscriptions: false });
+          return;
+        }
+        const allowed = await supabase.from("universes").select("slug,name")
+          .in("slug", slugs).eq("moderation_status", "active");
+        if (allowed.error) throw allowed.error;
+        const names = new Map<string, string>((allowed.data ?? []).map(row => [row.slug, row.name]));
+        const visibleSlugs = [...names.keys()];
+        const result = visibleSlugs.length
+          ? await supabase.from("posts").select("*").in("universe_slug", visibleSlugs)
+            .order("created_at", { ascending: false }).limit(10)
+          : { data: [], error: null };
+        if (result.error) throw result.error;
+        const postRows = (result.data ?? []).filter(post => post.universe_slug);
+          const followingPosts: HomePost[] = postRows.map((post) => ({
+          id: post.id,
+          title: post.title || "제목 없는 글",
+          excerpt: typeof post.content === "string" ? post.content.trim().slice(0, 280).replace(/\s+/g, " ") : "",
+          href: `/universe/${encodeURIComponent(post.universe_slug)}/${encodeURIComponent(post.public_id || post.id)}`,
+          author: post.author || "알 수 없는 작성자",
+          universe: post.universe_slug,
+          createdAt: Date.parse(post.created_at) || 0,
+          likes: post.like_count ?? post.likes_count ?? 0,
+          comments: post.comment_count ?? post.comments_count ?? 0,
+          }));
+
+        if (active && request === version) setFollowing({ userId: owner, posts: followingPosts, names, error: false, hasSubscriptions: true });
+      } catch (error) {
+        console.warn("Failed to load following feed", error);
+        if (active && request === version) setFollowing({ userId: owner, posts: [], names: new Map(), error: true, hasSubscriptions: false });
+      }
+    }
+    void loadFollowing();
+    const channel = supabase.channel(`home-following:${++homeFeedSubscription}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, () => void loadFollowing())
+      .on("postgres_changes", { event: "*", schema: "public", table: "universe_subscriptions", filter: `user_id=eq.${owner}` }, () => void loadFollowing())
+      .subscribe();
+    return () => { active = false; void supabase.removeChannel(channel); };
+  }, [userId, feedSort, followingRetry]);
+
   function updateDraft(next: HomeConfig) {
     if (userId) setEditor({ userId, config: next });
   }
@@ -281,7 +338,10 @@ export default function HomeClient() {
     }
   }
 
-  const ranked = feedSort === "all" ? posts : [...posts].sort((a, b) => {
+  const currentFollowing = following?.userId === userId ? following : null;
+  const isFollowing = feedSort === "following";
+  const feedNames = isFollowing ? currentFollowing?.names : universeNames;
+  const ranked = isFollowing ? currentFollowing?.posts ?? [] : feedSort === "all" ? posts : [...posts].sort((a, b) => {
     const weight = feedSort === "hot" ? 2 : 1;
     return b.likes + b.comments * weight - (a.likes + a.comments * weight) || b.createdAt - a.createdAt;
   });
@@ -391,7 +451,7 @@ export default function HomeClient() {
                   key={value}
                   type="button"
                   aria-pressed={feedSort === value}
-                  onClick={() => setFeedSort(value)}
+                  onClick={() => { if (value === "following" && feedSort !== value) setFollowing(null); setFeedSort(value); }}
                 >
                   {label}
                 </button>
@@ -412,17 +472,22 @@ export default function HomeClient() {
             </div>
           </div>
 
-          {loading ? (
+          {isFollowing && !userLoading && !userId ? (
+            <div className={styles.panelMessage}>
+              <p className={styles.muted}>로그인하면 구독한 유니버스의 글을 모아볼 수 있어요.</p>
+              <Link href="/auth/login" className={textLink}>로그인하기 <ArrowRight size={14} aria-hidden="true" /></Link>
+            </div>
+          ) : (isFollowing ? userLoading || !currentFollowing : loading) ? (
             <p role="status" className={`${styles.panelMessage} ${styles.muted}`}>글을 불러오는 중…</p>
-          ) : errors.posts ? (
+          ) : (isFollowing ? currentFollowing?.error : errors.posts) ? (
             <div className={styles.panelMessage}>
               <p role="status" className={`mb-3 ${styles.muted}`}>글 목록을 불러오지 못했어요.</p>
-              <button type="button" className={secondaryAction} onClick={retry}>다시 시도</button>
+              <button type="button" className={secondaryAction} onClick={() => { if (isFollowing) { setFollowing(null); setFollowingRetry(n => n + 1); } else retry(); }}>다시 시도</button>
             </div>
           ) : ranked.length === 0 ? (
             <div className={styles.panelMessage}>
-              <p className={styles.muted}>아직 올라온 글이 없어요.</p>
-              <Link href="/universe/write" className={textLink}>첫 이야기 쓰기 <ArrowRight size={14} aria-hidden="true" /></Link>
+              <p className={styles.muted}>{isFollowing ? currentFollowing?.hasSubscriptions ? "구독한 유니버스에 아직 글이 없어요." : "아직 구독한 유니버스가 없어요." : "아직 올라온 글이 없어요."}</p>
+              <Link href={isFollowing ? "/universe" : "/universe/write"} className={textLink}>{isFollowing ? "유니버스 둘러보기" : "첫 이야기 쓰기"} <ArrowRight size={14} aria-hidden="true" /></Link>
             </div>
           ) : (
             <ul className={styles.rows}>
@@ -430,8 +495,8 @@ export default function HomeClient() {
                 <li key={post.id}>
                   <Link href={post.href} className={styles.feedLink}>
                     <div className="min-w-0">
-                      {universeNames.get(post.universe) && (
-                        <p className={styles.place}>{universeNames.get(post.universe)}</p>
+                      {feedNames?.get(post.universe) && (
+                        <p className={styles.place}>{feedNames.get(post.universe)}</p>
                       )}
                       <h3>{post.title}</h3>
                       {post.excerpt && <p className={styles.postExcerpt}>{post.excerpt}</p>}
