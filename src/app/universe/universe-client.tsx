@@ -227,8 +227,8 @@ export default function UniversePage() {
           <div className="dvux-topbar-actions">
             <label className="dvux-search">
               <Search size={17} aria-hidden="true" />
-              <span className="sr-only">유니버스 검색</span>
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="우주 검색..." type="search" />
+              <span className="sr-only">현재 유니버스 목록 필터</span>
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="유니버스 목록 필터" type="search" />
               {search && <button type="button" onClick={() => setSearch("")} aria-label="검색어 지우기"><X size={14} /></button>}
             </label>
             <Link className="dvux-button dvux-button-primary" href="/universe/create">

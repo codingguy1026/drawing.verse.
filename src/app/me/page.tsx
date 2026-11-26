@@ -67,7 +67,8 @@ function nextThreshold(score: number) {
 export default function MePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = (searchParams.get("tab") as "posts" | "comments" | "subs") ?? "posts";
+  const requestedTab = searchParams.get("tab");
+  const initialTab = requestedTab === "comments" || requestedTab === "subs" ? requestedTab : "posts";
 
   const [tab, setTab] = useState<"posts" | "comments" | "subs">(initialTab);
 
@@ -176,7 +177,7 @@ export default function MePage() {
       const user = data.user;
 
       if (!user) {
-        router.replace("/auth/login");
+        router.replace("/login");
         return;
       }
 
@@ -307,6 +308,7 @@ export default function MePage() {
           </div>
 
           <div className="flex flex-col gap-3 md:items-end">
+            {uid && <Link href={`/users/${encodeURIComponent(uid)}`} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold hover:bg-white/10">공개 프로필 보기</Link>}
             <Link
               href={uid ? `/users/${uid}/edit` : "/me"}
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
@@ -388,7 +390,7 @@ export default function MePage() {
                     className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10 transition"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white line-clamp-1">{p.title}</p>
+                      {p.universe_slug ? <Link className="text-sm font-semibold text-white line-clamp-1 hover:underline" href={`/universe/${encodeURIComponent(p.universe_slug)}/${p.id}`}>{p.title}</Link> : <p className="text-sm font-semibold text-white line-clamp-1">{p.title}</p>}
                       <p className="mt-1 text-[11px] text-slate-400">
                         {p.universe_slug ?? "universe"} ·{" "}
                         {new Date(p.created_at).toLocaleDateString("ko-KR")}

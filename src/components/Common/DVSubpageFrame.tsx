@@ -42,8 +42,8 @@ const verseItems: FrameItem[] = [
 const toolItems: FrameItem[] = [
   { label: "새 글", href: "/universe/write", icon: PenLine, accent: "#ff6b72" },
   { label: "새 Universe", href: "/universe/create", icon: Sparkles, accent: "#b89cff" },
-  { label: "검색", href: "/search", icon: Search, accent: "#8a67e8" },
-  { label: "My Space", href: "/me", icon: UserRound, accent: "#ff7a7a" },
+  { label: "통합 검색", href: "/search", icon: Search, accent: "#8a67e8" },
+  { label: "내 활동", href: "/me", icon: UserRound, accent: "#ff7a7a" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -72,8 +72,9 @@ function routeMeta(pathname: string) {
   if (pathname.startsWith("/universe")) return { eyebrow: "UNIVERSE DIRECTORY", title: "Universe", tone: "lavender" };
   if (pathname.startsWith("/post/new")) return { eyebrow: "TRANSMISSION", title: "Create Post", tone: "coral" };
   if (pathname.startsWith("/post/")) return { eyebrow: "TRANSMISSION", title: "Post", tone: "lavender" };
-  if (pathname.startsWith("/profile/") || pathname.startsWith("/users/") || pathname === "/me") {
-    return { eyebrow: "IDENTITY", title: "My Space", tone: "lavender" };
+  if (pathname === "/me") return { eyebrow: "PERSONAL ACTIVITY", title: "내 활동", tone: "lavender" };
+  if (pathname.startsWith("/profile/") || pathname.startsWith("/users/")) {
+    return { eyebrow: "IDENTITY", title: "프로필", tone: "lavender" };
   }
   if (pathname.startsWith("/search")) return { eyebrow: "DEEP SCAN", title: "Search", tone: "lavender" };
   if (

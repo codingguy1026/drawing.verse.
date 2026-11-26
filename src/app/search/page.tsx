@@ -22,27 +22,25 @@ export default async function SearchPage({
 }) {
   const supabase = await createRequestSupabase();
   const { query } = await searchParams;
-  const trimmedQuery = query?.trim() ?? "";
+  const trimmedQuery = typeof query === "string" ? query.trim().slice(0, 100) : "";
 
   let universes: Universe[] = [];
   let posts: Post[] = [];
+  let failed = false;
 
   if (trimmedQuery && supabase) {
-    const result = await Promise.all([
-      supabase
-        .from("universes")
-        .select("id,slug,name,description")
-        .ilike("name", `%${trimmedQuery}%`)
-        .or(`description.ilike.%${trimmedQuery}%`)
-        .limit(50),
-      supabase
-        .from("posts")
-        .select("id,universe_slug,title")
-        .ilike("title", `%${trimmedQuery}%`)
-        .limit(50),
+    // Use separate predicates, not raw PostgREST filter interpolation.
+    const pattern = "%" + trimmedQuery.replace(/[\\%_]/g, value => "\\" + value) + "%";
+    const universeQuery = () => supabase.from("universes")
+      .select("id,slug,name,description").eq("visibility", "public").eq("moderation_status", "active");
+    const [byName, byDescription, postResults] = await Promise.all([
+      universeQuery().ilike("name", pattern).limit(50),
+      universeQuery().ilike("description", pattern).limit(50),
+      supabase.from("posts").select("id,universe_slug,title").not("universe_slug", "is", null).ilike("title", pattern).limit(50),
     ]);
-    universes = result[0].data || [];
-    posts = result[1].data || [];
+    failed = Boolean(byName.error || byDescription.error || postResults.error);
+    universes = [...new Map<number, Universe>([...(byName.data ?? []), ...(byDescription.data ?? [])].map(row => [row.id, row])).values()].slice(0, 50);
+    posts = postResults.data ?? [];
   }
 
   const hasResults = universes.length > 0 || posts.length > 0;
@@ -51,9 +49,9 @@ export default async function SearchPage({
     <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 sm:py-10">
       <header className="space-y-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">검색</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">통합 검색</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300">
-            유니버스와 게시글을 한곳에서 찾아보세요.
+            드버스 전체에서 유니버스와 게시글을 찾아보세요. 현재 목록만 좁히려면 각 페이지의 필터를 사용하세요.
           </p>
         </div>
         <form action="/search" method="get" role="search" className="flex flex-col gap-2 sm:flex-row">
@@ -62,6 +60,7 @@ export default async function SearchPage({
             id="verse-search-query"
             type="search"
             name="query"
+            maxLength={100}
             defaultValue={trimmedQuery}
             placeholder="유니버스 또는 게시글 검색"
             className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-white/15 dark:bg-white/10 dark:text-white"
@@ -97,7 +96,7 @@ export default async function SearchPage({
             </p>
           </div>
 
-          {!supabase ? (
+          {!supabase || failed ? (
             <section className="rounded-2xl border border-slate-200/80 bg-white/70 p-6 text-center dark:border-white/10 dark:bg-white/5">
               <p className="font-semibold text-slate-900 dark:text-white">검색 서비스에 연결할 수 없어요.</p>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">잠시 후 다시 시도해 주세요.</p>

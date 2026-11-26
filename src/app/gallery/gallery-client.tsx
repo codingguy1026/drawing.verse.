@@ -366,7 +366,7 @@ export default function GalleryPage() {
                 onChange={(event) => setSearchQuery(event.target.value)}
                 type="search"
                 aria-label="갤러리 작품 검색"
-                placeholder="작품 제목, 창작자, 카테고리 검색"
+                placeholder="갤러리 목록 필터 (제목, 창작자, 카테고리)"
               />
               {searchQuery && (
                 <button

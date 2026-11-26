@@ -356,14 +356,8 @@ function ProfileHero({
                             />
                         )}
 
-                        <button
-                            type="button"
-                            disabled
-                            title="준비 중인 기능이에요."
-                            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-600 opacity-80 dark:border-white/10 dark:bg-white/5 dark:text-white/65"
-                        >
-                            <MessageCircle size={17} /> 대화 · 준비 중
-                        </button>
+                        {isOwner && <Link href="/me" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white">내 활동 · 구독</Link>}
+
 
                         <button
                             type="button"
@@ -417,7 +411,7 @@ function RecentPosts({ posts }: { posts: Post[] }) {
                     </div>
 
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                        {post.title || "제목 없는 게시글"}
+                        {post.universe_slug ? <Link className="hover:underline" href={`/universe/${encodeURIComponent(post.universe_slug)}/${encodeURIComponent(post.id)}`}>{post.title || "제목 없는 게시글"}</Link> : post.title || "제목 없는 게시글"}
                     </h3>
 
                     <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
@@ -592,7 +586,7 @@ export default async function UserDetailPage({ params }: PageProps) {
 
     const [{ data: postsData }, { data: artworksData }, { data: universesData }] =
         await Promise.all([
-            supabase
+            userSupabase
                 .from("posts")
                 .select(
                     "id,title,content,universe_slug,created_at,like_count,comment_count,view_count"
@@ -601,14 +595,14 @@ export default async function UserDetailPage({ params }: PageProps) {
                 .order("created_at", { ascending: false })
                 .limit(3),
 
-            supabase
+            userSupabase
                 .from("gallery")
                 .select("id,title,thumbnail_url,category,created_at")
                 .eq("user_id", profile.id)
                 .order("created_at", { ascending: false })
                 .limit(6),
 
-            supabase
+            userSupabase
                 .from("universes")
                 .select("id,name,slug,description,subscriber_count")
                 .eq("owner_id", profile.id)
