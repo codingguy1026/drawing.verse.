@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
   Orbit,
-  MessageCircle,
   Image as ImageIcon,
   Menu,
   X,
@@ -27,7 +26,6 @@ import { squishyVariants } from "@/lib/animations";
 const NAV_ITEMS = [
   { href: "/", label: "Feed", icon: Home },
   { href: "/universe", label: "Universe", icon: Orbit },
-  { href: "/community", label: "Discuss", icon: MessageCircle },
   { href: "/gallery", label: "Gallery", icon: ImageIcon },
 ] as const;
 

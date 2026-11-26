@@ -63,7 +63,6 @@ const defaultConfig: HomeConfig = {
 
 const destinations = [
   { href: "/gallery", label: "갤러리", description: "창작 작품 둘러보기", icon: Images },
-  { href: "/community", label: "Verse Talk", description: "실시간으로 대화하기", icon: MessageCircle },
   { href: "/sports", label: "스포츠 관제실", description: "KBO 일정과 결과 보기", icon: Activity },
   { href: "/wormhole", label: "Wormhole", description: "두 유니버스 함께 보기", icon: Link2 },
 ];

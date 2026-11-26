@@ -11,7 +11,6 @@ import {
   Images,
   Link2,
   LogOut,
-  MessageCircle,
   Orbit,
   PenLine,
   Search,
@@ -34,7 +33,6 @@ const verseItems: FrameItem[] = [
   { label: "Home", href: "/", icon: Home, accent: "#ff6b72" },
   { label: "Universe", href: "/universe", icon: Orbit, accent: "#b89cff" },
   { label: "Wormhole", href: "/wormhole", icon: Link2, accent: "#8b5cf6" },
-  { label: "Verse Talk", href: "/community", icon: MessageCircle, accent: "#f472b6" },
   { label: "Gallery", href: "/gallery", icon: Images, accent: "#a78bfa" },
   { label: "Sports", href: "/sports", icon: Activity, accent: "#f97316" },
 ];
@@ -43,10 +41,11 @@ const toolItems: FrameItem[] = [
   { label: "새 글", href: "/universe/write", icon: PenLine, accent: "#ff6b72" },
   { label: "새 Universe", href: "/universe/create", icon: Sparkles, accent: "#b89cff" },
   { label: "통합 검색", href: "/search", icon: Search, accent: "#8a67e8" },
-  { label: "내 활동", href: "/me", icon: UserRound, accent: "#ff7a7a" },
+  { label: "내 프로필", href: "/me", icon: UserRound, accent: "#ff7a7a" },
 ];
 
 function isActive(pathname: string, href: string) {
+  if (href === "/me") return pathname === "/me";
   if (href === "/") return pathname === "/";
   if (href === "/universe") {
     return pathname === href || (
@@ -63,7 +62,7 @@ function routeMeta(pathname: string) {
   if (pathname === "/") return { eyebrow: "INTERVERSE GATEWAY", title: "Home", tone: "coral" };
   if (pathname.startsWith("/gallery")) return { eyebrow: "ART ORBIT", title: "Gallery", tone: "coral" };
   if (pathname.startsWith("/sports")) return { eyebrow: "MATCH CENTER", title: "Sports", tone: "coral" };
-  if (pathname.startsWith("/community")) return { eyebrow: "SOCIAL SIGNAL", title: "Verse Talk", tone: "coral" };
+  if (pathname.startsWith("/community")) return { eyebrow: "SOCIAL SIGNAL", title: "Wave 이전 안내", tone: "coral" };
   if (pathname.startsWith("/wormhole")) return { eyebrow: "CROSS VERSE", title: "Wormhole", tone: "lavender" };
   if (pathname.includes("/system/create")) return { eyebrow: "STELLAR GENESIS", title: "Create System", tone: "coral" };
   if (pathname.includes("/system/")) return { eyebrow: "STELLAR ORBIT", title: "Stellar System", tone: "lavender" };
@@ -72,7 +71,7 @@ function routeMeta(pathname: string) {
   if (pathname.startsWith("/universe")) return { eyebrow: "UNIVERSE DIRECTORY", title: "Universe", tone: "lavender" };
   if (pathname.startsWith("/post/new")) return { eyebrow: "TRANSMISSION", title: "Create Post", tone: "coral" };
   if (pathname.startsWith("/post/")) return { eyebrow: "TRANSMISSION", title: "Post", tone: "lavender" };
-  if (pathname === "/me") return { eyebrow: "PERSONAL ACTIVITY", title: "내 활동", tone: "lavender" };
+  if (pathname === "/me" || /^\/users\/[^/]+\/activity(?:\/|$)/.test(pathname)) return { eyebrow: "PERSONAL ACTIVITY", title: "내 활동", tone: "lavender" };
   if (pathname.startsWith("/profile/") || pathname.startsWith("/users/")) {
     return { eyebrow: "IDENTITY", title: "프로필", tone: "lavender" };
   }
@@ -213,7 +212,7 @@ export default function DVSubpageFrame({ children }: { children: ReactNode }) {
 
         <div className="dv-frame-nav-scroll">
           <DockGroup label="COMMUNITIES" items={verseItems} pathname={pathname} orbit />
-          <DockGroup label="TOOLS" items={toolItems} pathname={pathname} />
+          <DockGroup label="TOOLS" items={toolItems.map(item => item.href === "/me" && user ? { ...item, href: `/users/${encodeURIComponent(user.id)}` } : item)} pathname={pathname} />
           {!authLoading && user ? (
             <button
               type="button"

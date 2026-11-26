@@ -8,6 +8,7 @@ import { createServerClient } from "@supabase/ssr";
 import type { ElementType } from "react";
 import Image from "next/image";
 import FollowButton from "@/components/users/FollowButton";
+import ProfileSectionNav from "@/components/users/ProfileSectionNav";
 import {
     ArrowUpRight,
     BadgeCheck,
@@ -356,7 +357,7 @@ function ProfileHero({
                             />
                         )}
 
-                        {isOwner && <Link href="/me" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white">내 활동 · 구독</Link>}
+                        {isOwner && <Link href={`/users/${encodeURIComponent(profile.id)}/activity`} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-black text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white">내 활동 · 구독</Link>}
 
 
                         <button
@@ -641,6 +642,7 @@ export default async function UserDetailPage({ params }: PageProps) {
                     </button>
                 </nav>
 
+                {isOwner && <ProfileSectionNav id={profile.id} section="profile" />}
                 <ProfileHero
                     profile={profile}
                     isOwner={isOwner}
