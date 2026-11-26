@@ -7,7 +7,6 @@ import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   Activity,
-  Compass,
   Home,
   Images,
   Link2,
@@ -17,7 +16,6 @@ import {
   PenLine,
   Search,
   Sparkles,
-  Sun,
   UserRound,
 } from "lucide-react";
 import ThemeToggle from "@/components/Common/ThemeToggle";
@@ -34,18 +32,16 @@ type FrameItem = {
 
 const verseItems: FrameItem[] = [
   { label: "Home", href: "/", icon: Home, accent: "#ff6b72" },
-  { label: "Explore", href: "/explore", icon: Compass, accent: "#8a67e8" },
   { label: "Universe", href: "/universe", icon: Orbit, accent: "#b89cff" },
   { label: "Wormhole", href: "/wormhole", icon: Link2, accent: "#8b5cf6" },
-  { label: "Community", href: "/community", icon: MessageCircle, accent: "#f472b6" },
+  { label: "Verse Talk", href: "/community", icon: MessageCircle, accent: "#f472b6" },
   { label: "Gallery", href: "/gallery", icon: Images, accent: "#a78bfa" },
   { label: "Sports", href: "/sports", icon: Activity, accent: "#f97316" },
 ];
 
 const toolItems: FrameItem[] = [
-  { label: "새 글", href: "/post/new", icon: PenLine, accent: "#ff6b72" },
+  { label: "새 글", href: "/universe/write", icon: PenLine, accent: "#ff6b72" },
   { label: "새 Universe", href: "/universe/create", icon: Sparkles, accent: "#b89cff" },
-  { label: "항성계", href: "/universe", icon: Sun, accent: "#f59e0b" },
   { label: "검색", href: "/search", icon: Search, accent: "#8a67e8" },
   { label: "My Space", href: "/me", icon: UserRound, accent: "#ff7a7a" },
 ];
@@ -55,7 +51,9 @@ function isActive(pathname: string, href: string) {
   if (href === "/universe") {
     return pathname === href || (
       pathname.startsWith("/universe/") &&
-      !pathname.startsWith("/universe/create")
+      !pathname.startsWith("/universe/create") &&
+      !pathname.startsWith("/universe/write") &&
+      !pathname.endsWith("/write")
     );
   }
   return pathname === href || pathname.startsWith(href + "/");
@@ -63,14 +61,14 @@ function isActive(pathname: string, href: string) {
 
 function routeMeta(pathname: string) {
   if (pathname === "/") return { eyebrow: "INTERVERSE GATEWAY", title: "Home", tone: "coral" };
-  if (pathname === "/explore") return { eyebrow: "DISCOVER THE VERSE", title: "Explore", tone: "lavender" };
   if (pathname.startsWith("/gallery")) return { eyebrow: "ART ORBIT", title: "Gallery", tone: "coral" };
   if (pathname.startsWith("/sports")) return { eyebrow: "MATCH CENTER", title: "Sports", tone: "coral" };
-  if (pathname.startsWith("/community")) return { eyebrow: "SOCIAL SIGNAL", title: "Community", tone: "coral" };
+  if (pathname.startsWith("/community")) return { eyebrow: "SOCIAL SIGNAL", title: "Verse Talk", tone: "coral" };
   if (pathname.startsWith("/wormhole")) return { eyebrow: "CROSS VERSE", title: "Wormhole", tone: "lavender" };
   if (pathname.includes("/system/create")) return { eyebrow: "STELLAR GENESIS", title: "Create System", tone: "coral" };
   if (pathname.includes("/system/")) return { eyebrow: "STELLAR ORBIT", title: "Stellar System", tone: "lavender" };
   if (pathname.startsWith("/universe/create")) return { eyebrow: "GENESIS", title: "Create Universe", tone: "coral" };
+  if (pathname === "/universe/write" || (pathname.startsWith("/universe/") && pathname.endsWith("/write"))) return { eyebrow: "TRANSMISSION", title: "Create Post", tone: "coral" };
   if (pathname.startsWith("/universe")) return { eyebrow: "UNIVERSE DIRECTORY", title: "Universe", tone: "lavender" };
   if (pathname.startsWith("/post/new")) return { eyebrow: "TRANSMISSION", title: "Create Post", tone: "coral" };
   if (pathname.startsWith("/post/")) return { eyebrow: "TRANSMISSION", title: "Post", tone: "lavender" };

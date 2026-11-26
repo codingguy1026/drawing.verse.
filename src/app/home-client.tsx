@@ -14,8 +14,7 @@ import styles from "./home.module.css";
 const feedTabs = [
   { value: "all", label: "최신" },
   { value: "following", label: "구독 중" },
-  { value: "best", label: "Best" },
-  { value: "hot", label: "Hot" },
+  { value: "popular", label: "인기" },
 ] as const;
 
 type FeedSort = (typeof feedTabs)[number]["value"];
@@ -342,8 +341,7 @@ export default function HomeClient() {
   const isFollowing = feedSort === "following";
   const feedNames = isFollowing ? currentFollowing?.names : universeNames;
   const ranked = isFollowing ? currentFollowing?.posts ?? [] : feedSort === "all" ? posts : [...posts].sort((a, b) => {
-    const weight = feedSort === "hot" ? 2 : 1;
-    return b.likes + b.comments * weight - (a.likes + a.comments * weight) || b.createdAt - a.createdAt;
+    return b.likes + b.comments - (a.likes + a.comments) || b.createdAt - a.createdAt;
   });
 
   const retry = () => {
@@ -364,8 +362,8 @@ export default function HomeClient() {
           </h1>
           <p className={styles.description}>{config.heroDesc}</p>
           <div className="mt-5 flex flex-wrap gap-2.5">
-            <Link href="/explore" className={`${actionClass} ${styles.heroPrimary}`}>
-              <Compass size={16} aria-hidden="true" /> Explore
+            <Link href="/universe" className={`${actionClass} ${styles.heroPrimary}`}>
+              <Compass size={16} aria-hidden="true" /> Universe 탐색
             </Link>
             <Link href="#home-feed" className={`${actionClass} ${styles.heroSecondary}`}>
               <ScrollText size={16} aria-hidden="true" /> 게시글 보기
@@ -475,7 +473,7 @@ export default function HomeClient() {
           {isFollowing && !userLoading && !userId ? (
             <div className={styles.panelMessage}>
               <p className={styles.muted}>로그인하면 구독한 유니버스의 글을 모아볼 수 있어요.</p>
-              <Link href="/auth/login" className={textLink}>로그인하기 <ArrowRight size={14} aria-hidden="true" /></Link>
+              <Link href="/login" className={textLink}>로그인하기 <ArrowRight size={14} aria-hidden="true" /></Link>
             </div>
           ) : (isFollowing ? userLoading || !currentFollowing : loading) ? (
             <p role="status" className={`${styles.panelMessage} ${styles.muted}`}>글을 불러오는 중…</p>
