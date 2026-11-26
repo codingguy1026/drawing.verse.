@@ -83,6 +83,7 @@ export default function ActivityClient({ ownerId, initialTab }: { ownerId: strin
 
   useEffect(() => {
     let ignore = false;
+    let generation = 0;
 
     async function safeCountPosts(userId: string) {
       const result = await supabase
@@ -157,13 +158,19 @@ export default function ActivityClient({ ownerId, initialTab }: { ownerId: strin
 
     async function load() {
       if (ignore) return;
+      const request = ++generation;
       setLoading(true);
       setNote(null);
 
       const { data } = await supabase.auth.getUser();
+      if (ignore || request !== generation) return;
       const user = data.user;
 
       if (!user || user.id !== ownerId) {
+        setAuthEmail(null);
+        setPosts([]);
+        setSubs([]);
+        setStats({ postCount: 0, commentCount: 0, likeReceived: 0, subCount: 0 });
         router.replace("/login");
         return;
       }
@@ -171,7 +178,7 @@ export default function ActivityClient({ ownerId, initialTab }: { ownerId: strin
       const userId = user.id;
       const email = user.email ?? null;
 
-      if (!ignore) {
+      if (!ignore && request === generation) {
         setAuthEmail(email);
       }
 
@@ -197,7 +204,7 @@ export default function ActivityClient({ ownerId, initialTab }: { ownerId: strin
       // posts list
       const myPosts = await safeFetchPosts(userId);
 
-      if (!ignore) {
+      if (!ignore && request === generation) {
         setSubs(subsList);
         setPosts(myPosts);
 
