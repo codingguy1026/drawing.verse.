@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import {
-  Activity, ArrowRight, ArrowUpRight, Compass, Heart, Images, MessageCircle,
+  Activity, ArrowRight, ArrowUpRight, Bookmark, Compass, Heart, Images, MessageCircle,
   Link2, Orbit, PenLine, Pencil, Plus, Radio, ScrollText,
 } from "lucide-react";
 import VersePulse from "@/components/Home/VersePulse";
@@ -15,6 +15,7 @@ const feedTabs = [
   { value: "all", label: "최신" },
   { value: "following", label: "구독 중" },
   { value: "popular", label: "인기" },
+  { value: "saved", label: "북마크" },
 ] as const;
 
 type FeedSort = (typeof feedTabs)[number]["value"];
@@ -145,6 +146,65 @@ export default function HomeClient() {
   const [feedback, setFeedback] = useState<{ userId: string; message: string } | null>(null);
 
   const userId = user?.id;
+  const [bookmarkState, setBookmarkState] = useState<{ owner: string; ids: string[]; error: boolean } | null>(null);
+  const [bookmarkPosts, setBookmarkPosts] = useState<{ owner: string; key: string; posts: HomePost[]; error: boolean } | null>(null);
+  const bookmarkIds = bookmarkState?.owner === userId ? bookmarkState?.ids ?? [] : [];
+  const bookmarkKey = JSON.stringify(bookmarkIds);
+  useEffect(() => {
+    if (!userId) return;
+    const read = () => {
+      try {
+        const raw: unknown = JSON.parse(localStorage.getItem("dv_bookmarks:" + userId) ?? "[]");
+        setBookmarkState({ owner: userId, ids: Array.isArray(raw) ? raw.filter((id): id is string => typeof id === "string").slice(0, 100) : [], error: false });
+      } catch {
+        setBookmarkState({ owner: userId, ids: [], error: true });
+      }
+    };
+    read();
+    window.addEventListener("storage", read);
+    return () => window.removeEventListener("storage", read);
+  }, [userId]);
+
+  function toggleBookmark(id: string) {
+    if (!userId || bookmarkState?.owner !== userId || bookmarkState.error) return;
+    const ids = bookmarkIds.includes(id) ? bookmarkIds.filter(item => item !== id) : [id, ...bookmarkIds];
+    if (ids.length > 100) return;
+    try {
+      localStorage.setItem("dv_bookmarks:" + userId, JSON.stringify(ids));
+      setBookmarkState({ owner: userId, ids, error: false });
+    } catch {
+      setBookmarkState({ owner: userId, ids: bookmarkIds, error: true });
+    }
+  }
+
+  useEffect(() => {
+    if (!userId || feedSort !== "saved") return;
+    let active = true;
+    const ids: string[] = JSON.parse(bookmarkKey);
+    async function load() {
+      try {
+        if (!ids.length) {
+          if (active) setBookmarkPosts({ owner: userId!, key: bookmarkKey, posts: [], error: false });
+          return;
+        }
+        const { data, error } = await supabase.from("posts").select("*").in("id", ids);
+        if (error) throw error;
+        const rows: HomePost[] = (data ?? []).filter(post => post.universe_slug).map(post => ({
+          id: post.id, title: post.title || "제목 없는 글",
+          excerpt: typeof post.content === "string" ? post.content.trim().slice(0, 280) : "",
+          href: "/universe/" + encodeURIComponent(post.universe_slug) + "/" + encodeURIComponent(post.public_id || post.id),
+          author: post.author || "알 수 없는 작성자", universe: post.universe_slug,
+          createdAt: Date.parse(post.created_at) || 0, likes: post.like_count ?? post.likes_count ?? 0,
+          comments: post.comment_count ?? post.comments_count ?? 0,
+        }));
+        if (active) setBookmarkPosts({ owner: userId!, key: bookmarkKey, posts: ids.flatMap(id => rows.filter(post => String(post.id) === id)), error: false });
+      } catch {
+        if (active) setBookmarkPosts({ owner: userId!, key: bookmarkKey, posts: [], error: true });
+      }
+    }
+    void load();
+    return () => { active = false; };
+  }, [userId, feedSort, bookmarkKey]);
   const storageSnapshot = useSyncExternalStore(
     subscribeToHomeStorage,
     () => readHomeStorage(userId),
@@ -339,7 +399,9 @@ export default function HomeClient() {
   const currentFollowing = following?.userId === userId ? following : null;
   const isFollowing = feedSort === "following";
   const feedNames = isFollowing ? currentFollowing?.names : universeNames;
-  const ranked = isFollowing ? currentFollowing?.posts ?? [] : feedSort === "all" ? posts : [...posts].sort((a, b) => {
+  const isSaved = feedSort === "saved";
+  const currentBookmarks = bookmarkPosts?.owner === userId && bookmarkPosts?.key === bookmarkKey ? bookmarkPosts : null;
+  const ranked = isSaved ? currentBookmarks?.posts ?? [] : isFollowing ? currentFollowing?.posts ?? [] : feedSort === "all" ? posts : [...posts].sort((a, b) => {
     return b.likes + b.comments - (a.likes + a.comments) || b.createdAt - a.createdAt;
   });
 
@@ -469,14 +531,23 @@ export default function HomeClient() {
             </div>
           </div>
 
-          {isFollowing && !userLoading && !userId ? (
+          {isSaved && <p className={`px-4 pt-3 text-xs ${styles.muted}`}>이 브라우저에만 저장됩니다. 최대 100개.</p>}
+          {isSaved && !userLoading && !userId ? (
+            <div className={styles.panelMessage}><Link href="/login" className={textLink}>로그인하고 북마크 사용하기</Link></div>
+          ) : isSaved && (bookmarkState?.error || currentBookmarks?.error) ? (
+            <p role="alert" className={styles.panelMessage}>북마크를 불러오지 못했어요. 브라우저 저장 설정을 확인하고 새로고침해 주세요.</p>
+          ) : isSaved && (userLoading || !currentBookmarks || bookmarkState?.owner !== userId) ? (
+            <p role="status" className={styles.panelMessage}>북마크를 불러오는 중…</p>
+          ) : isSaved && ranked.length === 0 ? (
+            <div className={styles.panelMessage}><p>저장한 글이 없거나 더 이상 볼 수 없는 글이에요.</p><button className={textLink} onClick={() => setFeedSort("all")}>최신 글 둘러보기</button></div>
+          ) : isFollowing && !userLoading && !userId ? (
             <div className={styles.panelMessage}>
               <p className={styles.muted}>로그인하면 구독한 유니버스의 글을 모아볼 수 있어요.</p>
               <Link href="/login" className={textLink}>로그인하기 <ArrowRight size={14} aria-hidden="true" /></Link>
             </div>
-          ) : (isFollowing ? userLoading || !currentFollowing : loading) ? (
+          ) : (!isSaved && (isFollowing ? userLoading || !currentFollowing : loading)) ? (
             <p role="status" className={`${styles.panelMessage} ${styles.muted}`}>글을 불러오는 중…</p>
-          ) : (isFollowing ? currentFollowing?.error : errors.posts) ? (
+          ) : (!isSaved && (isFollowing ? currentFollowing?.error : errors.posts)) ? (
             <div className={styles.panelMessage}>
               <p role="status" className={`mb-3 ${styles.muted}`}>글 목록을 불러오지 못했어요.</p>
               <button type="button" className={secondaryAction} onClick={() => { if (isFollowing) { setFollowing(null); setFollowingRetry(n => n + 1); } else retry(); }}>다시 시도</button>
@@ -488,7 +559,7 @@ export default function HomeClient() {
             </div>
           ) : (
             <ul className={styles.rows}>
-              {ranked.slice(0, 7).map((post) => (
+              {(isSaved ? ranked : ranked.slice(0, 7)).map((post) => (
                 <li key={post.id}>
                   <Link href={post.href} className={styles.feedLink}>
                     <div className="min-w-0">
@@ -507,6 +578,7 @@ export default function HomeClient() {
                     </span>
                     <ArrowUpRight size={16} className={styles.feedArrow} aria-hidden="true" />
                   </Link>
+                  {userId && <div className="flex justify-end px-4 pb-2"><button type="button" disabled={bookmarkState?.owner !== userId || bookmarkState?.error || (!bookmarkIds.includes(String(post.id)) && bookmarkIds.length >= 100)} aria-pressed={bookmarkIds.includes(String(post.id))} className={`${textLink} disabled:opacity-50`} onClick={() => toggleBookmark(String(post.id))}><Bookmark size={16} fill={bookmarkIds.includes(String(post.id)) ? "currentColor" : "none"} aria-hidden="true" />{bookmarkIds.includes(String(post.id)) ? "저장 취소" : "저장"}</button></div>}
                 </li>
               ))}
             </ul>
